@@ -1,0 +1,26 @@
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { width:100%; height:100%; background:#05060c; overflow:hidden; overscroll-behavior:none;
+  touch-action:none; user-select:none; -webkit-user-select:none; font-family:'Courier New',monospace; }
+#stage { position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(120% 120% at 50% 40%, #10131f 0%, #05060c 70%); }
+#game { image-rendering:pixelated; image-rendering:crisp-edges; background:#0a0c14;
+  box-shadow:0 0 60px rgba(20,30,60,.8); }
+/* ---- Controles táctiles translúcidos sobre el área de juego ---- */
+#pad { position:fixed; left:14px; bottom:16px; width:118px; height:118px; z-index:10;
+  opacity:.34; }
+#pad .cross { position:absolute; width:34px; height:34px; background:#cfd6e4;
+  border:2px solid #eef2fa; border-radius:6px; }
+#pad .up    { left:42px; top:0;    clip-path:polygon(50% 18%, 88% 82%, 12% 82%); }
+#pad .down  { left:42px; bottom:0; clip-path:polygon(12% 18%, 88% 18%, 50% 82%); }
+#pad .left  { left:0;    top:42px; clip-path:polygon(18% 50%, 82% 12%, 82% 88%); }
+#pad .right { right:0;   top:42px; clip-path:polygon(82% 50%, 18% 12%, 18% 88%); }
+#pad .hub { position:absolute; left:42px; top:42px; width:34px; height:34px; border-radius:50%;
+  background:#8b93a6; border:2px solid #eef2fa; }
+#pad.active { opacity:.55; }
+#btns { position:fixed; right:14px; bottom:16px; display:flex; gap:14px; align-items:flex-end; z-index:10; }
+.tbtn { width:74px; height:74px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-weight:bold; font-size:12px; letter-spacing:.5px; opacity:.42; border:3px solid; }
+#btnAttack { background:#7a1f24; color:#ffd9d9; border-color:#d98a8a; }
+#btnJump   { background:#1f4f6e; color:#d4ecff; border-color:#8ac4e8; }
+.tbtn.pressed { opacity:.85; transform:scale(.94); }
+@media (pointer:fine) { #pad, #btns { opacity:.18; } #pad:hover, #btns:hover { opacity:.4; } }
