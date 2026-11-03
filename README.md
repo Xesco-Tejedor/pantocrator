@@ -1,6 +1,6 @@
 # PANTOCRÀTOR
 
-Arcade d'acció i plataformes 2D a les ruïnes postapocalíptiques del MNAC (Museu Nacional d'Art de Catalunya). Homenatge jugable a la placa arcade de 1987: pixel art estricte, baixa resolució i desplaçament lateral.
+Arcade d'acció i plataformes 2D a les ruïnes postapocalíptiques del MNAC (Museu Nacional d'Art de Catalunya). Homenatge jugable a la placa arcade de 1987: baixa resolució, desplaçament lateral i art pintat original.
 
 **▶ Demo en línia:** https://xesco-tejedor.github.io/pantocrator/
 
@@ -26,10 +26,11 @@ Funciona al navegador (mòbil i escriptori), sense instal·lació. Al mòbil, mi
 
 ## Tècnica
 
-- Tres fitxers separats: `index.html`, `styles.css`, `game.js`.
+- Tres fitxers separats: `index.html`, `styles.css`, `game.js` (els fons pintats van incrustats dins `game.js`).
 - Canvas intern de 480×270 amb escalat enter i `image-rendering: pixelated`.
-- Sprites definits píxel a píxel al codi; fons amb paral·laxi de tres capes; sense cap asset de tercers.
+- Personatges, mobiliari i efectes dibuixats amb pintura procedural al codi (degradats, corbes i soroll; cap sprite de tercers).
+- Fons pintats generats amb IA per a aquest projecte, incrustats dins el codi; si no es carreguen, el joc usa un fons procedural de reserva amb paral·laxi.
 - Música i efectes xip sintetitzats amb WebAudio (temes de títol, fase i cap).
 - HUD: vida, temporitzador, puntuació, fase i arma en ús.
 
-Obra original creada com a homenatge; els noms d'obres del MNAC s'usen com a referència cultural.
+Obra original creada com a homenatge; els noms d'obres del MNAC s'usen com a referència cultural. Tot l'art del joc és original i s'ha creat per a aquest projecte (els fons, amb assistència d'IA).
