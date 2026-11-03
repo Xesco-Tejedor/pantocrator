@@ -167,7 +167,7 @@ loadInto(DEMON_IMG, DEMON_IMG_SRC);
 /* Guerrer: il·lustracio original guiada per la referencia (full pintat, retall per alfa). */
 function drawWarrior(px, py, dir, st, anim, weapon) {
   let key = 'idle';
-  if (st === 'run') key = Math.floor(anim / 6) % 2 ? 'runA' : 'runB';
+  if (st === 'run') key = Math.floor(anim / 8) % 2 ? 'runA' : 'runB';
   else if (st === 'attack') key = 'attack';
   else if (st === 'air') key = 'air';
   else if (st === 'dive') key = 'dive';
@@ -596,7 +596,7 @@ window.addEventListener('keyup', e => {
 
 /* --- joystick virtual octodireccional amb zona morta de 30px --- */
 const padEl = document.getElementById('pad');
-const DEADZONE = 30;
+const DEADZONE = 12;
 let padTouchId = null;
 function padVector(t) {
   const r = padEl.getBoundingClientRect();
@@ -779,7 +779,7 @@ function spawnParts(x, y, color, n) {
 }
 
 /* ------------------------------------------------------------- física jugador */
-const GRAV = 0.32, RUN = 1.55, JUMPV = -6.3;
+const GRAV = 0.32, RUN = 2.05, JUMPV = -6.3;
 
 function floorsAt(x, w) {
   // retorna llista de superfícies sòlides: segments de terra, pis inferior i plataformes
@@ -1974,11 +1974,12 @@ const TEST = {
             this.phase = 11;
           } else if (this.f - this.vt0 > 90) { this.log('vitrina-break', false); this.phase = 11; }
           break;
-        case 11: // recollir millora d'espasa
-          this.key('right', true);
+        case 11: { // recollir millora d'espasa (espera que l'objecte caigui a terra)
+          const itSw = world.items[0];
+          if (itSw && itSw.vy === 0) this.key('right', true);
           if (player.weapon >= 2) { this.log('pickup-sword', true); this.key('right', false); this.phase = 12; this.warp(470, GY - player.h); player.state = 'idle'; player.dir = -1; }
           else if (this.f - this.vt0 > 240) { this.log('pickup-sword', false, 'weapon=' + player.weapon); this.key('right', false); this.phase = 12; this.warp(470, GY - player.h); player.dir = -1; }
-          break;
+          break; }
         case 12: { // matar la bèstia de x=480
           const before = player.score;
           this.beastTries = (this.beastTries || 0) + 1;
