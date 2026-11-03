@@ -41,212 +41,280 @@ function pix(map, pal, x, y, s, flip) {
 }
 
 const PAL = {
-  k:'#14100c', s:'#e8b07f', d:'#b07a4e', h:'#3a2415', p:'#6b4f2a', b:'#2e1f10',
-  w:'#b9c4d2', W:'#f4f8ff', g:'#d8a23a', r:'#a83232', R:'#e05050', m:'#7a5c8f',
-  G:'#8f9aa8', D:'#5d6672', E:'#f2d78a', n:'#2c3e50', o:'#c96f2e', v:'#4a6741',
-  c:'#caa86a', C:'#8a6f42', t:'#3f6b4f', l:'#7fd4e8', B:'#274b63', u:'#e8e4d8'
+  k:'#14100c', s:'#e8b07f', d:'#b07a4e', h:'#3a2415', p:'#6b4f2a', P:'#453218',
+  b:'#2e1f10', w:'#b9c4d2', W:'#f4f8ff', g:'#d8a23a', y:'#ffe9a8', r:'#a83232',
+  R:'#e05050', m:'#7a5c8f', G:'#8f9aa8', D:'#5d6672', E:'#f2d78a', n:'#2c3e50',
+  o:'#c96f2e', v:'#4a6741', c:'#caa86a', C:'#8a6f42', t:'#3f6b4f', l:'#7fd4e8',
+  B:'#274b63', u:'#e8e4d8', a:'#6f8296', q:'#c9ced8'
 };
 
-/* Guerrer (16x24). Animacions: idle, run x2, jump, attack, dive, hang, hurt */
+/* Guerrer (16x20, dibuixat a escala 2 = 32x40). Estats:
+   idle, run1, run2, jump, attack, dive, hang */
 const SPR = {
   idle: [
-  '....kkkk........',
-  '...khhhhk.......',
-  '...khssk........',
-  '...ksssk........',
-  '....ksdsk.......',
-  '..kksssssk......',
-  '.kssksskssk.....',
-  '.kskkssksk......',
-  '.kk.kppk.k......',
-  '....kpppk.......',
-  '....kp.kpk......',
-  '....kp.kpk......',
-  '....kb.kbk......',
-  '....kb.kbk......',
-  '...kbb.kbbk.....',
-  '................'],
+  '......kkkkk.....',
+  '.....ksssssk....',
+  '....ksssssssk...',
+  '....kskssksk....',
+  '....ksssdssk....',
+  '.....kssddk.....',
+  '....kksssskk....',
+  '..kksssssssskk..',
+  '.kssksssssskssk.',
+  '.ksdkssssssdksk.',
+  '.kk.kdssssdksk..',
+  '....kssddssk.k..',
+  '....kgppppgk....',
+  '....kppPPppk....',
+  '....kpp.kppk....',
+  '...kpp...kppk...',
+  '...kpPk..kPpk...',
+  '...kbk...kbk....',
+  '..kbbk...kbbk...',
+  '..kkkk...kkkk...'],
   run1: [
-  '....kkkk........',
-  '...khhhhk.......',
-  '...khssk........',
-  '...ksssk........',
-  '....ksdsk.......',
-  '..kksssssk......',
-  '.kssksskssk.....',
-  '.kskkssksk......',
-  '.kk.kppk........',
-  '...kpppk........',
-  '..kpp.kppk......',
-  '.kpk...kpk......',
-  '.kb....kbk......',
-  'kbb.....kbb.....',
-  '................',
-  '................'],
+  '......kkkkk.....',
+  '.....ksssssk....',
+  '....ksssssssk...',
+  '....kskssksk....',
+  '....ksssdssk....',
+  '.....kssddk.....',
+  '....kksssskk....',
+  '..kksssssssskk..',
+  '.kssksssssskssk.',
+  '.ksdkssssssdksk.',
+  '.kk.kdssssdksk..',
+  '....kssddssk....',
+  '....kgppppgk....',
+  '...kpppPPpppk...',
+  '..kppk...kppk...',
+  '.kPpk.....kpPk..',
+  '.kpk.......kpk..',
+  '.kbk.......kbk..',
+  'kbbk........kbbk',
+  'kkkk........kkkk'],
   run2: [
-  '....kkkk........',
-  '...khhhhk.......',
-  '...khssk........',
-  '...ksssk........',
-  '....ksdsk.......',
-  '..kksssssk......',
-  '.kssksskssk.....',
-  '.kskkssksk......',
-  '.kk.kppk........',
-  '....kpppk.......',
-  '....kppk........',
-  '...kp..kpk......',
-  '...kb...kb......',
-  '...kbb..kbbk....',
-  '................',
-  '................'],
+  '......kkkkk.....',
+  '.....ksssssk....',
+  '....ksssssssk...',
+  '....kskssksk....',
+  '....ksssdssk....',
+  '.....kssddk.....',
+  '....kksssskk....',
+  '..kksssssssskk..',
+  '.kssksssssskssk.',
+  '.ksdkssssssdksk.',
+  '.kk.kdssssdksk..',
+  '....kssddssk....',
+  '....kgppppgk....',
+  '....kppPPpppk...',
+  '.....kppppk.....',
+  '....kpp.kppk....',
+  '....kPk.kPk.....',
+  '....kbk..kbk....',
+  '...kbbk..kbbk...',
+  '...kkkk..kkkk...'],
   jump: [
-  '....kkkk........',
-  '...khhhhk.......',
-  '...khssk........',
-  '...ksssk........',
-  '....ksdsk.......',
-  '.kkkssssskk.....',
-  'kssskssksssk....',
-  '.kk.kppk.kk.....',
-  '....kpppk.......',
-  '...kppppk.......',
-  '...kp..kpk......',
-  '..kpk..kpk......',
-  '..kb...kbk......',
-  '.kbb...kbbk.....',
-  '................',
-  '................'],
+  '......kkkkk.....',
+  '.....ksssssk....',
+  '....ksssssssk...',
+  '....kskssksk....',
+  '....ksssdssk....',
+  '.....kssddk.....',
+  '....kksssskk....',
+  '.kkksssssssskk..',
+  'kssksssssssskssk',
+  'ksdksssssssdksk.',
+  'kk.kdssssdksk.k.',
+  '...kssddssk.....',
+  '...kgpppppgk....',
+  '...kppPPpppk....',
+  '..kppk..kppk....',
+  '..kpPk..kPpk....',
+  '..kpk....kpk....',
+  '..kbk....kbk....',
+  '.kbbk....kbbk...',
+  '.kkkk....kkkk...'],
   attack: [
-  '....kkkk....kkk.',
-  '...khhhhk..kWWwk',
-  '...khssk..kWwkk.',
-  '...ksssk.kWwk...',
-  '....ksdskWwk....',
-  '..kksssskgk.....',
-  '.kssksskssk.....',
-  '.kskkssksk......',
-  '.kk.kppk........',
-  '....kpppk.......',
-  '....kp.kpk......',
-  '....kp.kpk......',
-  '....kb.kbk......',
-  '...kbb.kbbk.....',
-  '................',
-  '................'],
+  '......kkkkk.....',
+  '.....ksssssk....',
+  '....ksssssssk...',
+  '....kskssksk....',
+  '....ksssdssk....',
+  '.....kssddk.....',
+  '....kksssskk....',
+  '..kksssssssskk..',
+  '.kssksssssskssk.',
+  'kssssssssssdksk.',
+  'kkssssssssdksk..',
+  '..kkssddssk.k...',
+  '....kgppppgk....',
+  '....kppPPppk....',
+  '...kpppk.kpppk..',
+  '..kppk....kppk..',
+  '..kPk......kPk..',
+  '..kbk......kbk..',
+  '.kbbk......kbbk.',
+  '.kkkk......kkkk.'],
   dive: [
-  '....kkkk........',
-  '...khhhhk.......',
-  '...khssk........',
-  '...ksssk........',
-  '....ksdsk.......',
-  '.kkksssssk......',
-  'kssskssksk......',
-  '.kk.kppkkk......',
-  '....kpppk.......',
-  '....kppk........',
-  '....kp.k........',
-  '....kgk.........',
-  '....kWwk........',
-  '....kWwk........',
-  '.....kwk........',
-  '.....kk.........'],
+  '......kkkkk.....',
+  '.....ksssssk....',
+  '....ksssssssk...',
+  '....kskssksk....',
+  '....ksssdssk....',
+  '.....kssddk.....',
+  '....kksssskk....',
+  '..kksssssssskk..',
+  '.kssksssssskssk.',
+  '.ksdkssssssdksk.',
+  '.kk.kdssssdk.kk.',
+  '....kssddssk....',
+  '....kgppppgk....',
+  '....kppPPppk....',
+  '.....kppppk.....',
+  '.....kpppk......',
+  '......kgk.......',
+  '......kWwk......',
+  '......kwwk......',
+  '.......kk.......'],
   hang: [
-  '....kkkk........',
-  '...kskkks.......',
-  '...ksssssk......',
-  '....khssk.......',
-  '....ksssk.......',
-  '....ksdsk.......',
-  '....ksssk.......',
-  '....kpppk.......',
-  '....kppk........',
-  '....kppk........',
+  '....kkk..kkk....',
+  '...kssskksssk...',
+  '....kssssssk....',
+  '....kskssksk....',
+  '....ksssdssk....',
+  '.....kssddk.....',
+  '....kksssskk....',
+  '....kssssssk....',
+  '....kdssssdk....',
+  '....kssddssk....',
+  '....kgppppgk....',
+  '....kppPPppk....',
+  '....kpppppk.....',
+  '....kppppk......',
+  '....kPpk........',
   '....kpk.........',
   '....kbk.........',
-  '....kbk.........',
-  '...kbbk.........',
-  '................',
+  '....kbbk........',
+  '....kkkk........',
   '................']
 };
-for (const k in SPR) { while (SPR[k].length < 24) SPR[k].push('................'); }
 
-/* Bèstia capitelleSC (16x12) */
+/* Bèstia de capitell amb ales (18x13, escala 2 = 36x26) */
 const BEAST1 = [
- '..kk........kk..',
- '.kGGk......kGGk.',
- 'kGGGGkkkkkkGGGGk',
- 'kGkGGGGGGGGGkGk.',
- 'kGGGRGGGGGRGGGk.',
- '.kGGGGGGGGGGGGk.',
- '..kGGkkkkkkGGk..',
- '..kGGkDDDDkGGk..',
- '.kGGGGkkkkGGGGk.',
- '.kDkGGGGGGGGkDk.',
- 'kDk.kDk..kDk.kDk',
- 'kk..kk...kk...kk'];
+ '......kk..........',
+ '.....kGGk....kk...',
+ '....kGGGGk..kGGk..',
+ '...kGGGGGGkkGGGGk.',
+ '..kGGGkGGGGGGGGGGk',
+ '..kGGkGGGGGGGGGGk.',
+ '.kGGkGGGGGGGGGGGGk',
+ '.kGkkGRGGGGGGGRGGk',
+ '.kk.kGGGGGGGGGGGGk',
+ '....kGGGkDDDDGGGk.',
+ '...kGGk.kGGGGk.GGk',
+ '..kDDk..kGGGGk....',
+ '..kkk...kDDk.kDDk.',
+];
 const BEAST2 = [
- '..kk........kk..',
- '.kGGk......kGGk.',
- 'kGGGGkkkkkkGGGGk',
- 'kGkGGGGGGGGGkGk',
- 'kGGGRGGGGGRGGGk',
- '.kGGGGGGGGGGGGk',
- '..kGGkkkkkkGGk.',
- '..kGGkDDDDkGGk.',
- '..kGGGGkkGGGGk.',
- '..kDkGGGGkDk...',
- '...kDk.kDk.kDk.',
- '...kk..kk...kk.'];
+ '..............kk..',
+ '......kk....kGGk..',
+ '.....kGGk..kGGGGk.',
+ '....kGGGGkkGGGGGGk',
+ '..kGGGGGGGGGGGkGGk',
+ '..kGGGGGGGGGGGGkGk',
+ '.kGGGGGGGGGGGGGGkk',
+ '.kGRGGGGGGGRGGGGk.',
+ '.kGGGGGGGGGGGGk...',
+ 'kGGGGkDDDDkGGGGk..',
+ 'kGGk.kGGGGk.kGGk..',
+ 'kk...kGGGGk..kDDk.',
+ '.....kDDk....kkk..',
+];
 
-/* Dimoni de Taüll (12x10) */
+/* Dimoni de Taüll (14x12, escala 2 = 28x24) */
 const DEMON1 = [
- '.kk......kk.',
- 'kRRk....kRRk',
- 'kRrrkkkkrrRk',
- '.krRRRRRRrk.',
- '.krRkrrkRrk.',
- '..krrrrrrk..',
- '..krkrrkrk..',
- '.kk.kkkk.kk.',
- '.k........k.',
- 'k..........k'];
+ '..kk........kk..',
+ '.kRRk......kRRk.',
+ '.kRRRkkkkkkRRRk.',
+ 'kRkRRRRRRRRRRkRk',
+ 'kRRkrRRRRRRrkRRk',
+ 'kRkrRRkRRkRRkrRk',
+ '.kkrRRRRRRRRrkk.',
+ '..kkrRrrrrRkk...',
+ '..kRRkkkkkkRRk..',
+ '.kRk........kRk.',
+ '.kk..........kk.',
+ '................'];
 const DEMON2 = [
- '............',
- '.kk......kk.',
- 'kRRk....kRRk',
- 'kRrrkkkkrrRk',
- '.krRRRRRRrk.',
- '.krRkrrkRrk.',
- '..krrrrrrk..',
- '.kkrkrrkrkk.',
- 'k...kkkk...k',
- '............'];
+ '................',
+ '..kk........kk..',
+ '.kRRk......kRRk.',
+ '.kRRRkkkkkkRRRk.',
+ '.kkRRRRRRRRRRkk.',
+ '.kRkrRRRRRRrkRk.',
+ 'kRkrRRkRRkRRkrRk',
+ 'kRkrRRRRRRRRkrRk',
+ '.kkkrRrrrrRkkk..',
+ '..kk.kkkkkk.kk..',
+ '................',
+ '................'];
 
-/* Vitrina gòtica (14x22) */
+/* Vitrina gòtica amb vidre (16x24, escala 2 = 32x48) */
 const VITRINA = [
- '.....kkkk.....',
- '...kkCCCckk...',
- '..kCccccccCk..',
- '.kCcllllllcCk.',
- '.kClWWWWlLCk..',
- '.kClWggWlLCk..',
- 'kCclWggWlLcck.',
- 'kClWggggWlLCk.',
- 'kClWggggWlLCk.',
- 'kCclWggWlLcck',
- '.kClWggWlLCk..',
- '.kCllllllLCk..',
- '.kCccccccCCk..',
- '.kCCCCCCCCCk..',
- 'kCCkCCCCkCCk..',
- 'kCk.kCCCk.kCk.',
- 'kk..kCCCk..kk.',
- '....kCCCk.....',
- '....kCCCk.....',
- '...kCCCCCk....',
- '...kkkkkkk....',
- '..............'];
+ '......kkkk......',
+ '....kkppppkk....',
+ '...kppCCCCppk...',
+ '..kpCccccccCpk..',
+ '..kCc......cCk..',
+ '.kCc........cCk.',
+ '.kClW.......lCk.',
+ '.kClW.......lCk.',
+ '.kCl........lCk.',
+ '.kCl........lCk.',
+ '.kCl........lCk.',
+ '.kCl........lCk.',
+ '.kCl........lCk.',
+ '.kCllllllllllCk.',
+ '.kCccccccccccCk.',
+ '..kCCppppppCCk..',
+ '..kpk.kCCCk.kpk.',
+ '..kpk.kCCCk.kpk.',
+ '..kpk.kCCCk.kpk.',
+ '..kpkkCCCCCkkpk.',
+ '...kCCCCCCCCk...',
+ '...kkkkkkkkkk...',
+ '................',
+ '................'];
+
+/* Ítems de millora (8x8, escala 2 = 16x16) */
+const ITEM_SWORD = [
+ '..kkkk..',
+ '.kWWwwk.',
+ '.kWwwk..',
+ '.kWwk...',
+ 'kggWk...',
+ '.kggk...',
+ '..kkk...',
+ '........'];
+const ITEM_ARMOR = [
+ '.kkkkkk.',
+ 'kggggggk',
+ 'kgkggkgk',
+ 'kggggggk',
+ '.kggggk.',
+ '.kgGGgk.',
+ '.kkkkkk.',
+ '........'];
+const ITEM_SHIELD = [
+ 'kkkkkkkk',
+ 'kllllllk',
+ 'kllWWllk',
+ 'kllWWllk',
+ '.kllllk.',
+ '..kllk..',
+ '...kk...',
+ '........'];
 
 /* Espasa icona HUD (10x10) */
 const SWORDICON = [
@@ -507,7 +575,7 @@ function loadStage(i) {
   world.vitrinas = s.vitrinas.map(v => ({ x: v.x, y: v.y, w: 14, h: 22, c: v.c, broken: false }));
   world.orbs = []; world.parts = []; world.items = [];
   world.boss = s.boss ? {
-    x: 560, y: 40, hp: 8, maxHp: 8, phase: 0, t: 0, shootT: 90, pillarT: 260,
+    x: 400, y: 40, hp: 8, maxHp: 8, phase: 0, t: 0, shootT: 90, pillarT: 260,
     pillarX: -1, pillarWarn: 0, pillarAct: 0, flash: 0
   } : null;
   player.x = 40; player.y = GY - player.h; player.vx = 0; player.vy = 0;
@@ -829,7 +897,7 @@ function updateBoss() {
   b.shootT--;
   if (b.shootT <= 0 && !player.dead) {
     b.shootT = b.hp <= 4 ? 55 : 85;
-    const sx = b.x + rnd(-40, 40), sy = 90;
+    const sx = b.x + rnd(-30, 30), sy = 118;
     const dx = pcx - sx, dy = (player.y + 8) - sy;
     const d = Math.hypot(dx, dy) || 1, sp = 1.7;
     world.orbs.push({ x: sx, y: sy, vx: dx / d * sp, vy: dy / d * sp, returning: false, dead: false });
@@ -855,8 +923,8 @@ function updateBoss() {
   for (const o of world.orbs) {
     if (o.dead) continue;
     if (o.returning) {
-      o.x += (b.x - o.x) * 0.08; o.y += (80 - o.y) * 0.08;
-      if (Math.hypot(b.x - o.x, 80 - o.y) < 14) {
+      o.x += (b.x - o.x) * 0.08; o.y += (118 - o.y) * 0.08;
+      if (Math.hypot(b.x - o.x, 118 - o.y) < 14) {
         o.dead = true; b.hp--; b.flash = 10; sfx.bossHit(); world.shake = 10;
         player.score += 250;
         spawnParts(b.x, 80, '#f2d78a', 14);
@@ -937,114 +1005,328 @@ function drawText(t, x, y, color, size, align) {
   ctx.fillText(t, x, y);
 }
 
+/* ------------------------------------------------------------ fons i murals */
+function hsh(x, y) {
+  let n = (x * 374761393 + y * 668265263) | 0;
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
+}
+
+const BG_PAL = [
+  { sky0:'#1a2033', sky1:'#3c4258', far:'#2e3652', farD:'#242b44', col:'#8a7a5c', colD:'#6b5c42', arc:'#9a8a68', glow:'#f2d78a' },
+  { sky0:'#241a12', sky1:'#4a3520', far:'#3a2c1c', farD:'#2c2013', col:'#9a7f4e', colD:'#7a6238', arc:'#aa8f58', glow:'#f2d78a' },
+  { sky0:'#2a1c10', sky1:'#54381a', far:'#3a2814', farD:'#2c1e0e', col:'#9a7f4e', colD:'#7a6238', arc:'#b8935a', glow:'#ffe9a8' }
+];
+
 function drawBackground() {
   const s = world.stage, cx = world.camX, cy = world.camY;
+  const P = BG_PAL[world.stageIdx] || BG_PAL[0];
+
   // cel / paret fonda
   const grad = ctx.createLinearGradient(0, 0, 0, VH);
-  grad.addColorStop(0, '#131c2e'); grad.addColorStop(0.7, '#1c2438'); grad.addColorStop(1, '#232838');
+  grad.addColorStop(0, P.sky0); grad.addColorStop(1, P.sky1);
   ctx.fillStyle = grad; ctx.fillRect(0, 0, VW, VH);
 
-  // capa llunyana: arcs apuntats
-  ctx.save(); ctx.translate(-cx * 0.25 % 160, 0);
-  ctx.fillStyle = '#1a2236';
-  for (let x = -160; x < VW + 160; x += 160) {
-    ctx.fillRect(x + 60, 30 - cy * 0.2, 100, 170);
-    ctx.beginPath();
-    ctx.moveTo(x + 60, 200 - cy * 0.2); ctx.lineTo(x + 110, 36 - cy * 0.2); ctx.lineTo(x + 160, 200 - cy * 0.2);
-    ctx.fill();
+  // capa llunyana: silueta de murs enrunats amb finestres (parallax .18)
+  ctx.save(); ctx.translate(-Math.round(cx * 0.18) % 240, 0);
+  const fy = Math.round(-cy * 0.18);
+  for (let x = -240; x < VW + 240; x += 240) {
+    for (let k = 0; k < 4; k++) {
+      const seg = Math.floor((x + 10000) / 240) * 4 + k;
+      const bx = x + k * 62, bh = 60 + hsh(seg, 1) * 70, bw = 44 + hsh(seg, 2) * 18;
+      ctx.fillStyle = P.far;
+      ctx.fillRect(bx, 196 - bh + fy, bw, bh + 90);
+      ctx.fillStyle = P.farD; // cim trencat
+      ctx.fillRect(bx, 196 - bh + fy, bw, 3);
+      for (let j = 0; j < bw; j += 6)
+        if (hsh(seg * 7 + j, 3) > 0.5) ctx.fillRect(bx + j, 196 - bh + fy - 2 - hsh(j, seg) * 5, 5, 4);
+      // finestra apuntada
+      if (hsh(seg, 4) > 0.35) {
+        ctx.fillStyle = P.sky0;
+        const wx = bx + bw / 2 - 5, wy = 196 - bh + 16 + fy;
+        ctx.fillRect(wx, wy, 10, 22);
+        ctx.beginPath(); ctx.moveTo(wx, wy); ctx.lineTo(wx + 5, wy - 7); ctx.lineTo(wx + 10, wy); ctx.fill();
+      }
+    }
   }
   ctx.restore();
 
-  // fresc de fons (mural romànic simplificat)
+  // fresc de fons (parallax .35)
   if (s.mural === 2) drawPantocratorMural();
   else {
-    ctx.save(); ctx.translate(-cx * 0.35, 0);
-    for (let x = -200; x < world.stage.length + 400; x += 520) drawFrescoBand(x + 180, 44 - cy * 0.35);
+    ctx.save(); ctx.translate(-Math.round(cx * 0.35) % 560, 0);
+    const my = Math.round(-cy * 0.35);
+    for (let x = -560; x < VW + 560; x += 560) {
+      drawFrescoPanel(x + 60, 46 + my, world.stageIdx === 1);
+      drawFrescoPanel(x + 330, 52 + my, false);
+    }
     ctx.restore();
   }
 
-  // capa mitjana: columnes amb capitells
-  ctx.save(); ctx.translate(-cx * 0.55 % 210, 0);
-  for (let x = -210; x < VW + 210; x += 210) {
-    const yoff = -cy * 0.55;
-    ctx.fillStyle = '#2a3350'; ctx.fillRect(x + 20, 40 + yoff, 22, 190);
-    ctx.fillStyle = '#38436a'; ctx.fillRect(x + 16, 40 + yoff, 30, 10); // capitell
-    ctx.fillStyle = '#232b45'; ctx.fillRect(x + 16, 226 + yoff, 30, 8);
-    // heràs al capitell
-    ctx.fillStyle = '#3f6b4f';
-    ctx.fillRect(x + 17, 50 + yoff, 4, 10); ctx.fillRect(x + 33, 52 + yoff, 4, 14);
+  // capa mitjana: arcades de pedra amb capitells (parallax .55)
+  ctx.save(); ctx.translate(-Math.round(cx * 0.55) % 230, 0);
+  const ay = Math.round(-cy * 0.55);
+  for (let x = -230; x < VW + 230; x += 230) {
+    const seg = Math.floor((x + 20000) / 230);
+    const broken = hsh(seg, 9) > 0.72;
+    // arc entre columnes
+    ctx.strokeStyle = P.arc; ctx.lineWidth = 10;
+    ctx.beginPath(); ctx.arc(x + 115, 178 + ay, 104, Math.PI, 0); ctx.stroke();
+    ctx.strokeStyle = P.colD; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(x + 115, 178 + ay, 98, Math.PI, 0); ctx.stroke();
+    // columna
+    const colH = broken ? 90 + hsh(seg, 5) * 40 : 190;
+    ctx.fillStyle = P.col; ctx.fillRect(x + 4, 40 + ay, 24, colH);
+    ctx.fillStyle = P.colD;
+    for (let yy = 52; yy < 40 + colH; yy += 22) ctx.fillRect(x + 4, yy + ay, 24, 2);
+    ctx.fillStyle = P.arc; ctx.fillRect(x, 40 + ay, 32, 9);           // capitell
+    ctx.fillStyle = P.colD; ctx.fillRect(x + 2, 47 + ay, 28, 2);
+    ctx.fillStyle = P.arc; ctx.fillRect(x - 2, 40 + colH - 4 + ay, 34, 7); // basa
+    if (broken) { // cim esqueixat
+      ctx.fillStyle = P.sky0;
+      for (let j = 0; j < 24; j += 4)
+        if (hsh(seg + j, 6) > 0.4) ctx.fillRect(x + 4 + j, 36 + ay, 4, 5);
+    }
+    // heura penjant del capitell
+    if (hsh(seg, 7) > 0.4) {
+      ctx.fillStyle = '#3f6b4f';
+      const iv = 3 + Math.floor(hsh(seg, 8) * 4);
+      for (let v = 0; v < iv; v++) {
+        const vx = x + 2 + Math.floor(hsh(seg + v, 10) * 28), vl = 8 + hsh(v, seg) * 22;
+        ctx.fillRect(vx, 49 + ay, 2, vl);
+        ctx.fillStyle = v % 2 ? '#4a6741' : '#3f6b4f';
+        ctx.fillRect(vx - 1, 49 + ay + vl - 4, 4, 4);
+      }
+    }
   }
   ctx.restore();
 
-  // làmpares de les golfes (llunyanes)
-  ctx.save(); ctx.translate(-cx * 0.55 % 260, 0);
-  ctx.fillStyle = '#4a3f22';
-  for (let x = -260; x < VW + 260; x += 260) {
-    ctx.fillRect(x + 129, 0, 1, 42 - cy * 0.55);
-    ctx.beginPath(); ctx.arc(x + 130, 48 - cy * 0.55, 8, 0, Math.PI); ctx.fill();
+  // làmpares llunyanes (parallax .55)
+  ctx.save(); ctx.translate(-Math.round(cx * 0.55) % 300, 0);
+  const ly = Math.round(-cy * 0.55);
+  for (let x = -300; x < VW + 300; x += 300) {
+    ctx.fillStyle = '#4a3f22'; ctx.fillRect(x + 149, 0, 1, 40 + ly);
+    ctx.fillStyle = '#6b5a2a';
+    ctx.beginPath(); ctx.arc(x + 150, 46 + ly, 7, 0, Math.PI); ctx.fill();
+    ctx.fillStyle = '#f2d78a';
+    ctx.fillRect(x + 145, 40 + ly, 2, 2); ctx.fillRect(x + 153, 40 + ly, 2, 2);
+  }
+  ctx.restore();
+
+  // raigs de llum i pols en suspensió
+  ctx.save();
+  ctx.globalAlpha = 0.07; ctx.fillStyle = P.glow;
+  for (let i = 0; i < 3; i++) {
+    const sx = ((i * 220 - cx * 0.7) % (VW + 260) + VW + 260) % (VW + 260) - 130;
+    ctx.beginPath();
+    ctx.moveTo(sx, 0); ctx.lineTo(sx + 46, 0); ctx.lineTo(sx - 40, VH); ctx.lineTo(sx - 86, VH);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  for (let i = 0; i < 36; i++) {
+    const dx = hsh(i, 21) * VW, dy = (hsh(i, 22) * VH + game.frame * (0.12 + hsh(i, 23) * 0.2)) % VH;
+    ctx.fillStyle = 'rgba(242,215,138,' + (0.08 + hsh(i, 24) * 0.14) + ')';
+    ctx.fillRect(dx, VH - dy, 1, 1);
   }
   ctx.restore();
 }
 
-function drawFrescoBand(x, y) {
-  // fris romànic: banda daurada amb figures esquemàtiques
-  ctx.fillStyle = '#4a3820'; ctx.fillRect(x, y, 200, 54);
-  ctx.fillStyle = '#6b4f22'; ctx.fillRect(x + 3, y + 3, 194, 48);
+function drawFrescoPanel(x, y, intact) {
+  // panell de fresc romànic: arcs cecs amb sants, esquerdats i deslluit
+  ctx.fillStyle = '#4a3820'; ctx.fillRect(x, y, 190, 96);
+  ctx.fillStyle = '#6b4f22'; ctx.fillRect(x + 3, y + 3, 184, 90);
+  ctx.fillStyle = '#54401e'; ctx.fillRect(x + 3, y + 3, 184, 5);
+  ctx.fillStyle = '#7a5c1e';
+  for (let i = 0; i < 46; i++) if (hsh(i, x) > 0.5) ctx.fillRect(x + 5 + i * 4, y + 4, 2, 3); // mosaic
+  for (let i = 0; i < 3; i++) {
+    const fx = x + 16 + i * 60;
+    // arc cec
+    ctx.strokeStyle = '#3a2c18'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(fx + 18, y + 42, 20, Math.PI, 0); ctx.stroke();
+    ctx.fillStyle = intact ? '#8a5a2a' : '#5d4020';
+    ctx.fillRect(fx, y + 42, 37, 48);
+    ctx.beginPath(); ctx.arc(fx + 18, y + 42, 17, Math.PI, 0); ctx.fill();
+    // sant: mantell, cap i nimbe
+    const robe = i % 2 ? '#8a3f2a' : '#2a4a6b';
+    ctx.fillStyle = intact ? robe : '#4a3a28';
+    ctx.fillRect(fx + 9, y + 48, 19, 38);
+    ctx.beginPath(); ctx.arc(fx + 18, y + 46, 10, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = intact ? '#c9a06a' : '#6b5638';
+    ctx.fillRect(fx + 13, y + 36, 10, 12);
+    if (intact) {
+      ctx.fillStyle = '#d8a23a';
+      ctx.beginPath(); ctx.arc(fx + 18, y + 40, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#c9a06a'; ctx.fillRect(fx + 13, y + 36, 10, 12);
+      ctx.fillStyle = '#14100c'; ctx.fillRect(fx + 15, y + 40, 2, 2); ctx.fillRect(fx + 20, y + 40, 2, 2);
+      ctx.fillStyle = '#3a2415'; ctx.fillRect(fx + 13, y + 46, 10, 3); // barba
+    }
+  }
+  // esquerdes i zones caigudes
+  ctx.fillStyle = 'rgba(20,16,12,.55)';
   for (let i = 0; i < 5; i++) {
-    const fx = x + 14 + i * 38;
-    ctx.fillStyle = i % 2 ? '#8a3f2a' : '#2a4a6b';
-    ctx.fillRect(fx, y + 14, 16, 30);                    // mantell
-    ctx.fillStyle = '#c9a06a'; ctx.fillRect(fx + 4, y + 6, 8, 8); // cap
-    ctx.fillStyle = '#d8a23a'; ctx.fillRect(fx + 2, y + 4, 12, 3);  // nimbe
+    const cxx = x + hsh(i, x + 3) * 180, cyy = y + hsh(i, x + 5) * 90;
+    if (hsh(i, x) > (intact ? 0.8 : 0.45)) ctx.fillRect(cxx, cyy, 8 + hsh(i, 7) * 22, 5 + hsh(i, 11) * 16);
+  }
+  ctx.strokeStyle = 'rgba(20,16,12,.6)'; ctx.lineWidth = 1;
+  for (let i = 0; i < 3; i++) {
+    const cxx = x + hsh(i, x + 13) * 170, cyy = y + 6;
+    ctx.beginPath(); ctx.moveTo(cxx, cyy);
+    ctx.lineTo(cxx + 6 - hsh(i, 17) * 12, cyy + 30 + hsh(i, 19) * 50); ctx.stroke();
   }
 }
 
 function drawPantocratorMural() {
   const b = world.boss;
-  const mx = 560 - world.camX * 0.35, my = 30 - world.camY * 0.35;
-  // absis
-  ctx.fillStyle = '#3a2c18';
-  ctx.beginPath(); ctx.arc(mx, my + 100, 130, Math.PI, 0); ctx.fill();
-  ctx.fillRect(mx - 130, my + 100, 260, 60);
-  ctx.fillStyle = '#54401e';
-  ctx.beginPath(); ctx.arc(mx, my + 100, 116, Math.PI, 0); ctx.fill();
-  ctx.fillRect(mx - 116, my + 100, 232, 56);
-  // màndorla
+  const mx = 400 - Math.round(world.camX * 0.35), my = 6 - Math.round(world.camY * 0.35);
   const flash = b && b.flash > 0;
-  ctx.fillStyle = flash ? '#fff3c8' : '#7a5c1e';
-  ctx.beginPath(); ctx.ellipse(mx, my + 96, 62, 86, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = flash ? '#fff8e0' : '#96742a';
-  ctx.beginPath(); ctx.ellipse(mx, my + 96, 54, 78, 0, 0, Math.PI * 2); ctx.fill();
-  // figura: mantell blau
-  ctx.fillStyle = '#274b63';
-  ctx.beginPath(); ctx.ellipse(mx, my + 128, 34, 52, 0, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#1d3a4e'; ctx.fillRect(mx - 30, my + 120, 60, 60);
-  // pit i llibre
-  ctx.fillStyle = '#8a6f42'; ctx.fillRect(mx - 24, my + 108, 22, 26);
-  ctx.fillStyle = '#e8e4d8'; ctx.fillRect(mx - 22, my + 110, 18, 22);
-  ctx.fillStyle = '#a83232'; ctx.fillRect(mx - 13, my + 112, 2, 18);
-  // braç dret alçat (gest de llei)
-  ctx.fillStyle = '#274b63'; ctx.fillRect(mx + 10, my + 70, 12, 40);
-  ctx.fillStyle = '#c9a06a'; ctx.fillRect(mx + 12, my + 58, 9, 14);
-  // cap i nimbe
-  ctx.fillStyle = '#d8a23a'; ctx.beginPath(); ctx.arc(mx, my + 52, 22, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#c9a06a'; ctx.beginPath(); ctx.arc(mx, my + 52, 13, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#3a2415'; ctx.fillRect(mx - 13, my + 42, 26, 6);       // cabell
-  ctx.fillRect(mx - 9, my + 58, 18, 8);                                    // barba
-  ctx.fillStyle = '#14100c';
-  ctx.fillRect(mx - 6, my + 50, 3, 2); ctx.fillRect(mx + 4, my + 50, 3, 2); // ulls
-  // àngels laterals esquemàtics
-  for (const sx of [-96, 96]) {
-    ctx.fillStyle = '#5d3a4a'; ctx.fillRect(mx + sx - 8, my + 66, 16, 44);
-    ctx.fillStyle = '#c9a06a'; ctx.fillRect(mx + sx - 5, my + 58, 10, 10);
-    ctx.fillStyle = '#8f9aa8'; ctx.fillRect(mx + sx - 14, my + 70, 6, 18); ctx.fillRect(mx + sx + 8, my + 70, 6, 18);
+
+  // absis: bandes concèntriques de mosaic
+  const bands = ['#33240f', '#4a3416', '#54401e', '#6b4f22'];
+  for (let i = 0; i < bands.length; i++) {
+    ctx.fillStyle = bands[i];
+    ctx.beginPath(); ctx.arc(mx, my + 150, 152 - i * 12, Math.PI, 0); ctx.fill();
+    ctx.fillRect(mx - 152 + i * 12, my + 150, (152 - i * 12) * 2, 84);
   }
+  // punts de mosaic a la banda exterior
+  ctx.fillStyle = '#7a5c1e';
+  for (let a = 0; a < 40; a++) {
+    const ang = Math.PI + (a / 39) * Math.PI;
+    ctx.fillRect(mx + Math.cos(ang) * 145 - 1, my + 150 + Math.sin(ang) * 145 - 1, 2, 2);
+  }
+  // ziga-zaga decorativa
+  ctx.fillStyle = '#8a6f2a';
+  for (let a = 0; a < 26; a++) {
+    const ang = Math.PI + (a / 25) * Math.PI;
+    const r = 126 + (a % 2) * 5;
+    ctx.fillRect(mx + Math.cos(ang) * r - 2, my + 150 + Math.sin(ang) * r - 2, 4, 4);
+  }
+
+  // màndorla
+  ctx.fillStyle = flash ? '#fff3c8' : '#7a5c1e';
+  ctx.beginPath(); ctx.ellipse(mx, my + 118, 64, 92, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = flash ? '#fff8e0' : '#96742a';
+  ctx.beginPath(); ctx.ellipse(mx, my + 118, 57, 85, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = flash ? '#fffdf0' : '#b8933a';
+  ctx.beginPath(); ctx.ellipse(mx, my + 118, 50, 78, 0, 0, Math.PI * 2); ctx.fill();
+
+  // tron i coixí
+  ctx.fillStyle = '#5d3a1e'; ctx.fillRect(mx - 34, my + 148, 68, 34);
+  ctx.fillStyle = '#7a4a26'; ctx.fillRect(mx - 30, my + 144, 60, 10);
+  ctx.fillStyle = '#8a3f2a'; ctx.fillRect(mx - 26, my + 146, 52, 5);
+
+  // mantell blau amb plecs
+  ctx.fillStyle = '#274b63';
+  ctx.beginPath(); ctx.ellipse(mx, my + 148, 33, 40, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillRect(mx - 33, my + 128, 66, 40);
+  ctx.fillStyle = '#1d3a4e';
+  ctx.fillRect(mx - 26, my + 130, 3, 48); ctx.fillRect(mx - 10, my + 132, 3, 50);
+  ctx.fillRect(mx + 6, my + 132, 3, 50); ctx.fillRect(mx + 22, my + 130, 3, 48);
+  // genolls i peus
+  ctx.fillStyle = '#1d3a4e';
+  ctx.beginPath(); ctx.ellipse(mx - 16, my + 176, 12, 9, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(mx + 16, my + 176, 12, 9, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#c9a06a';
+  ctx.fillRect(mx - 20, my + 182, 10, 5); ctx.fillRect(mx + 12, my + 182, 10, 5);
+
+  // pit: túnica vermella i llibre obert
+  ctx.fillStyle = '#8a3f2a'; ctx.fillRect(mx - 14, my + 96, 30, 40);
+  ctx.fillStyle = '#a83232'; ctx.fillRect(mx - 12, my + 98, 26, 12);
+  ctx.fillStyle = '#274b63'; ctx.fillRect(mx - 26, my + 96, 12, 40); // braç esquerre al llibre
+  ctx.fillStyle = '#c9a06a'; ctx.fillRect(mx - 27, my + 132, 11, 8);  // mà esquerra
+  ctx.fillStyle = '#a83232'; ctx.fillRect(mx - 26, my + 118, 22, 24); // coberta del llibre
+  ctx.fillStyle = '#e8e4d8'; ctx.fillRect(mx - 24, my + 120, 9, 20);
+  ctx.fillRect(mx - 13, my + 120, 9, 20);
+  ctx.fillStyle = '#5d6672';
+  for (let ln = 0; ln < 4; ln++) { ctx.fillRect(mx - 22, my + 123 + ln * 4, 5, 1); ctx.fillRect(mx - 11, my + 123 + ln * 4, 5, 1); }
+
+  // braç dret alçat en gest de llei
+  ctx.fillStyle = '#274b63'; ctx.fillRect(mx + 16, my + 88, 12, 34);
+  ctx.fillStyle = '#1d3a4e'; ctx.fillRect(mx + 22, my + 76, 9, 16);
+  ctx.fillStyle = '#c9a06a'; ctx.fillRect(mx + 23, my + 62, 8, 15);   // mà
+  ctx.fillRect(mx + 24, my + 58, 2, 5); ctx.fillRect(mx + 27, my + 56, 2, 7); ctx.fillRect(mx + 30, my + 58, 2, 5); // dits
+
+  // cap, nimbe crucífer
+  ctx.fillStyle = flash ? '#fff3c8' : '#d8a23a';
+  ctx.beginPath(); ctx.arc(mx, my + 52, 21, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#a83232';
+  ctx.fillRect(mx - 1, my + 36, 3, 32); ctx.fillRect(mx - 14, my + 48, 29, 3);
+  ctx.fillStyle = '#c9a06a';
+  ctx.beginPath(); ctx.arc(mx, my + 52, 13, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#e8b07f'; ctx.fillRect(mx - 6, my + 48, 12, 8);
+  ctx.fillStyle = '#3a2415';
+  ctx.fillRect(mx - 12, my + 42, 24, 6);          // cabell
+  ctx.fillRect(mx - 13, my + 48, 3, 14); ctx.fillRect(mx + 10, my + 48, 3, 14); // bandes laterals
+  ctx.fillRect(mx - 8, my + 57, 16, 9);           // barba
+  ctx.fillStyle = '#14100c';
+  ctx.fillRect(mx - 6, my + 50, 3, 2); ctx.fillRect(mx + 3, my + 50, 3, 2); // ulls
+  ctx.fillRect(mx - 1, my + 55, 2, 1);            // nas
+
+  // alfa i omega
+  drawText('A', mx - 52, my + 44, '#f2d78a', 13, 'center');
+  drawText('Ω', mx + 52, my + 44, '#f2d78a', 13, 'center');
+
+  // àngels laterals amb ales
+  for (const sx of [-92, 92]) {
+    const ax = mx + sx, ay = my + 92;
+    ctx.fillStyle = '#8f9aa8'; // ales
+    ctx.beginPath(); ctx.ellipse(ax - (sx < 0 ? -10 : 10), ay + 8, 9, 22, sx < 0 ? -0.5 : 0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#5d3a4a'; // túnica
+    ctx.fillRect(ax - 8, ay, 16, 52);
+    ctx.fillStyle = '#4a2c3a'; ctx.fillRect(ax - 8, ay + 18, 16, 3); ctx.fillRect(ax - 8, ay + 34, 16, 3);
+    ctx.fillStyle = '#c9a06a'; ctx.fillRect(ax - 5, ay - 10, 10, 11); // cap
+    ctx.fillStyle = '#d8a23a'; ctx.beginPath(); ctx.arc(ax, ay - 6, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#c9a06a'; ctx.fillRect(ax - 5, ay - 10, 10, 11);
+    ctx.fillStyle = '#3a2415'; ctx.fillRect(ax - 5, ay - 11, 10, 3);
+    ctx.fillStyle = '#5d3a4a'; // braços en oració
+    ctx.fillRect(ax - 12, ay + 8, 6, 14); ctx.fillRect(ax + 6, ay + 8, 6, 14);
+    ctx.fillStyle = '#c9a06a'; ctx.fillRect(ax - 3, ay + 12, 6, 6);
+  }
+
+  // banda d'apòstols sota l'absis
+  for (let i = 0; i < 6; i++) {
+    const px2 = mx - 100 + i * 40, py = my + 244;
+    ctx.strokeStyle = '#3a2c18'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(px2, py, 15, Math.PI, 0); ctx.stroke();
+    ctx.fillStyle = i % 2 ? '#8a3f2a' : '#2a4a6b';
+    ctx.fillRect(px2 - 8, py - 2, 16, 26);
+    ctx.beginPath(); ctx.arc(px2, py - 2, 8, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#c9a06a'; ctx.fillRect(px2 - 4, py - 10, 8, 8);
+    ctx.fillStyle = '#d8a23a'; ctx.fillRect(px2 - 6, py - 12, 12, 2);
+  }
+
   // barra de vida del cap
   if (b) {
-    ctx.fillStyle = '#000'; ctx.fillRect(VW / 2 - 60, 14, 120, 7);
-    ctx.fillStyle = '#a83232'; ctx.fillRect(VW / 2 - 59, 15, 118 * (b.hp / b.maxHp), 5);
-    drawText('PANTOCRÀTOR', VW / 2, 23, '#f2d78a', 7, 'center');
+    ctx.fillStyle = 'rgba(5,6,12,.6)'; ctx.fillRect(VW / 2 - 62, 32, 124, 11);
+    ctx.strokeStyle = '#8a6f42'; ctx.strokeRect(VW / 2 - 61.5, 32.5, 123, 10);
+    ctx.fillStyle = '#a83232'; ctx.fillRect(VW / 2 - 59, 35, 118 * (b.hp / b.maxHp), 5);
+    drawText('PANTOCRÀTOR', VW / 2, 45, '#f2d78a', 7, 'center');
   }
+}
+
+/* Emblema del Pantocràtor per a la pantalla de títol (centrat, escala fixa) */
+function drawTitleEmblem(cx, cy) {
+  ctx.fillStyle = '#7a5c1e';
+  ctx.beginPath(); ctx.ellipse(cx, cy, 30, 44, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#b8933a';
+  ctx.beginPath(); ctx.ellipse(cx, cy, 25, 39, 0, 0, Math.PI * 2); ctx.fill();
+  // mantell blau
+  ctx.fillStyle = '#274b63';
+  ctx.beginPath(); ctx.ellipse(cx, cy + 14, 14, 20, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillRect(cx - 14, cy + 8, 28, 18);
+  ctx.fillStyle = '#1d3a4e'; ctx.fillRect(cx - 8, cy + 8, 2, 24); ctx.fillRect(cx + 6, cy + 8, 2, 24);
+  // túnica i llibre
+  ctx.fillStyle = '#8a3f2a'; ctx.fillRect(cx - 6, cy, 13, 14);
+  ctx.fillStyle = '#a83232'; ctx.fillRect(cx - 12, cy + 8, 10, 11);
+  ctx.fillStyle = '#e8e4d8'; ctx.fillRect(cx - 11, cy + 9, 4, 9); ctx.fillRect(cx - 6, cy + 9, 4, 9);
+  // braç dret alçat
+  ctx.fillStyle = '#274b63'; ctx.fillRect(cx + 8, cy - 6, 5, 14);
+  ctx.fillStyle = '#c9a06a'; ctx.fillRect(cx + 9, cy - 13, 4, 8);
+  // nimbe i cap
+  ctx.fillStyle = '#d8a23a'; ctx.beginPath(); ctx.arc(cx, cy - 16, 10, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#a83232'; ctx.fillRect(cx - 1, cy - 24, 2, 16); ctx.fillRect(cx - 7, cy - 17, 14, 2);
+  ctx.fillStyle = '#c9a06a'; ctx.beginPath(); ctx.arc(cx, cy - 16, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#3a2415'; ctx.fillRect(cx - 6, cy - 21, 12, 3); ctx.fillRect(cx - 4, cy - 13, 8, 4);
+  ctx.fillStyle = '#14100c'; ctx.fillRect(cx - 3, cy - 17, 2, 1); ctx.fillRect(cx + 2, cy - 17, 2, 1);
 }
 
 function drawWorld() {
@@ -1053,30 +1335,56 @@ function drawWorld() {
   ctx.translate(-cx + (world.shake ? rnd(-world.shake, world.shake) : 0), -cy + (world.shake ? rnd(-world.shake, world.shake) : 0));
   if (world.shake > 0) world.shake *= 0.85;
 
-  // terra principal: llosana pedregosa amb esquerdes
-  for (const g of s.ground) drawFloor(g.x, g.w, GY, '#3d4557', '#2c3242');
-  for (const g of s.lower) drawFloor(g.x, g.w, LY, '#272c3a', '#1d212c');
+  // terra: marbre escairat / pis inferior fosc
+  for (const g of s.ground) drawFloor(g.x, g.w, GY, ['#b3a586', '#9a8b6a', '#8a7a58'], false);
+  for (const g of s.lower) drawFloor(g.x, g.w, LY, ['#4a4a56', '#3a3a46', '#2e2e38'], true);
 
-  // enderrocs als fons dels forats
-  ctx.fillStyle = '#2c3242';
+  // vores trencades dels forats
+  ctx.fillStyle = '#6b5c42';
   for (let i = 0; i < s.ground.length - 1; i++) {
     const gx = s.ground[i].x + s.ground[i].w;
-    ctx.fillRect(gx + 6, LY - 8, 10, 8); ctx.fillRect(gx + 22, LY - 5, 7, 5);
+    for (let j = 0; j < 5; j++) if (hsh(gx + j, 31) > 0.4) ctx.fillRect(gx - 4 + j * 2, GY - 2 - hsh(j, gx) * 5, 3, 4);
+    const gx2 = s.ground[i + 1].x;
+    for (let j = 0; j < 5; j++) if (hsh(gx2 - j, 32) > 0.4) ctx.fillRect(gx2 + j * 2, GY - 2 - hsh(j, gx2) * 5, 3, 4);
+  }
+  // enderrocs als fons dels forats i al pis inferior
+  for (let i = 0; i < s.ground.length - 1; i++) {
+    const gx = s.ground[i].x + s.ground[i].w;
+    drawRubble(gx + 12, LY, 46);
   }
 
-  // plataformes: bancs modernistes i pedra
+  // plataformes: bancs modernistes (trencadís) i pedra
   for (const p of s.platforms) {
     if (p.t === 'stone') {
-      ctx.fillStyle = '#4a5164'; ctx.fillRect(p.x, p.y, p.w, p.h);
-      ctx.fillStyle = '#5d6672'; ctx.fillRect(p.x, p.y, p.w, 2);
+      ctx.fillStyle = '#5d5142'; ctx.fillRect(p.x, p.y, p.w, p.h + 4);
+      ctx.fillStyle = '#8a7a5c'; ctx.fillRect(p.x, p.y, p.w, 3);
+      ctx.fillStyle = '#3a3226';
+      for (let i = 4; i < p.w - 4; i += 14) if (hsh(p.x + i, 41) > 0.5) ctx.fillRect(p.x + i, p.y + 3, 1, p.h);
     } else {
-      // banc Gaudí: seient fusta, potes corbes i respaldo
-      ctx.fillStyle = '#6b4f2a'; ctx.fillRect(p.x, p.y, p.w, 4);
-      ctx.fillStyle = '#8a6f42'; ctx.fillRect(p.x, p.y, p.w, 2);
+      // banc Gaudí: respaldo de trencadís, seient de fusta, potes de ferro
+      const trenc = ['#7fb3d8', '#e8e4d8', '#4a90b8', '#d8a23a', '#8fb8d8', '#c9ced8'];
+      for (let tx = 0; tx < p.w - 8; tx += 4)
+        for (let ty = 0; ty < 8; ty += 4) {
+          ctx.fillStyle = trenc[Math.floor(hsh(p.x + tx, ty * 7) * trenc.length)];
+          ctx.fillRect(p.x + 4 + tx, p.y - 11 + ty, 3, 3);
+        }
+      ctx.strokeStyle = '#4a3a20'; ctx.lineWidth = 1;
+      ctx.strokeRect(p.x + 3.5, p.y - 11.5, p.w - 7, 10);
       ctx.fillStyle = '#4a3a20';
-      ctx.fillRect(p.x + 4, p.y + 4, 3, 10); ctx.fillRect(p.x + p.w - 7, p.y + 4, 3, 10);
-      ctx.fillRect(p.x + 2, p.y - 8, 3, 8); ctx.fillRect(p.x + p.w - 5, p.y - 8, 3, 8);
-      ctx.fillStyle = '#6b4f2a'; ctx.fillRect(p.x + 1, p.y - 9, p.w - 2, 3); // respaldo
+      ctx.fillRect(p.x + 2, p.y - 13, 3, 13); ctx.fillRect(p.x + p.w - 5, p.y - 13, 3, 13);
+      // seient
+      ctx.fillStyle = '#8a6f42'; ctx.fillRect(p.x, p.y - 1, p.w, 6);
+      ctx.fillStyle = '#caa86a'; ctx.fillRect(p.x, p.y - 1, p.w, 1);
+      ctx.fillStyle = '#6b4f2a';
+      for (let i = 6; i < p.w; i += 10) ctx.fillRect(p.x + i, p.y, 1, 5);
+      // potes de ferro forjat
+      ctx.fillStyle = '#2c2620';
+      ctx.fillRect(p.x + 6, p.y + 5, 3, 10); ctx.fillRect(p.x + p.w - 9, p.y + 5, 3, 10);
+      ctx.fillRect(p.x + 5, p.y + 13, 5, 2); ctx.fillRect(p.x + p.w - 10, p.y + 13, 5, 2);
+      if (p.t === 'moving') {
+        ctx.fillStyle = 'rgba(242,215,138,' + (0.12 + 0.1 * Math.sin(game.frame / 20)) + ')';
+        ctx.fillRect(p.x - 2, p.y - 14, p.w + 4, 30);
+      }
     }
   }
 
@@ -1084,52 +1392,72 @@ function drawWorld() {
   for (const ch of s.chandeliers) {
     const swing = (player.hangCh === ch) ? player.hangSwing : Math.sin(game.frame / 90 + ch.x) * 0.08;
     const hx = ch.x + Math.sin(swing) * ch.len, hy = ch.y + Math.cos(swing) * ch.len;
-    ctx.strokeStyle = '#6b5a2a'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(ch.x, ch.y); ctx.lineTo(hx, hy); ctx.stroke();
-    ctx.fillStyle = '#8a6f2a';
-    ctx.beginPath(); ctx.arc(hx, hy + 4, 9, 0, Math.PI); ctx.fill();
-    ctx.fillRect(hx - 9, hy + 3, 18, 2);
-    // espelmes
-    for (let i = -1; i <= 1; i++) {
-      ctx.fillStyle = '#e8e4d8'; ctx.fillRect(hx + i * 6 - 1, hy - 1, 2, 5);
-      ctx.fillStyle = (game.frame + i * 7) % 12 < 8 ? '#f2d78a' : '#e0a050';
-      ctx.fillRect(hx + i * 6 - 1, hy - 4, 2, 3);
+    // cadena d'anelles
+    ctx.fillStyle = '#6b5a2a';
+    const links = Math.floor(ch.len / 5);
+    for (let i = 0; i <= links; i++) {
+      const t = i / links;
+      ctx.fillRect(ch.x + (hx - ch.x) * t - 1, ch.y + (hy - ch.y) * t - 1, 2 + (i % 2), 2);
     }
+    // corona amb espelmes
+    ctx.fillStyle = 'rgba(242,215,138,.10)';
+    ctx.beginPath(); ctx.arc(hx, hy, 18, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#8a6f2a';
+    ctx.beginPath(); ctx.arc(hx, hy + 3, 10, 0, Math.PI); ctx.fill();
+    ctx.fillRect(hx - 10, hy + 2, 20, 2);
+    ctx.fillStyle = '#6b5a2a'; ctx.fillRect(hx - 1, hy - 6, 2, 8);
+    for (let i = -2; i <= 2; i++) {
+      const cxx = hx + i * 5;
+      ctx.fillStyle = '#e8e4d8'; ctx.fillRect(cxx - 1, hy - 3, 2, 6);
+      ctx.fillStyle = (game.frame + i * 7) % 12 < 8 ? '#f2d78a' : '#e0a050';
+      ctx.fillRect(cxx - 1, hy - 6, 2, 3);
+    }
+    // vidres penjants
+    ctx.fillStyle = '#7fd4e8';
+    ctx.fillRect(hx - 7, hy + 6, 1, 3); ctx.fillRect(hx + 6, hy + 6, 1, 3); ctx.fillRect(hx, hy + 7, 1, 3);
   }
 
   // vitrines gòtiques
   for (const v of world.vitrinas) {
     if (v.broken) {
-      ctx.fillStyle = '#5d6672'; ctx.fillRect(v.x - 5, v.y - 6, 10, 6);
+      drawRubble(v.x - 14, v.y, 30);
+      ctx.fillStyle = '#7fd4e8';
+      ctx.fillRect(v.x - 9, v.y - 3, 2, 2); ctx.fillRect(v.x + 5, v.y - 2, 2, 2);
       continue;
     }
-    pix(VITRINA, PAL, v.x - 7, v.y - 22, 1, false);
+    const im = v.c === 'sword' ? ITEM_SWORD : v.c === 'armor' ? ITEM_ARMOR : ITEM_SHIELD;
+    ctx.fillStyle = 'rgba(242,215,138,.28)';
+    ctx.beginPath(); ctx.arc(v.x, v.y - 28, 11, 0, Math.PI * 2); ctx.fill();
+    pix(im, PAL, v.x - 8, v.y - 36, 2, false);
+    pix(VITRINA, PAL, v.x - 16, v.y - 48, 2, false);
   }
 
   // ítems
   for (const it of world.items) {
     const bob = Math.sin(game.frame / 14) * 2;
-    ctx.fillStyle = it.c === 'sword' ? '#f4f8ff' : it.c === 'armor' ? '#d8a23a' : '#7fd4e8';
-    ctx.fillRect(it.x, it.y + bob, it.w, it.h);
-    ctx.fillStyle = '#14100c'; ctx.fillRect(it.x, it.y + bob, it.w, 1);
+    const map = it.c === 'sword' ? ITEM_SWORD : it.c === 'armor' ? ITEM_ARMOR : ITEM_SHIELD;
+    ctx.fillStyle = 'rgba(242,215,138,.18)';
+    ctx.beginPath(); ctx.arc(it.x + 6, it.y + bob + 5, 12, 0, Math.PI * 2); ctx.fill();
+    pix(map, PAL, it.x - 2, it.y + bob - 3, 2, false);
   }
 
   // enemics
   for (const e of world.enemies) {
     if (e.hit > 0 && (e.hit % 4 < 2)) continue;
     if (e.t === 'beast') {
-      pix((e.anim % 30 < 15) ? BEAST1 : BEAST2, PAL, e.x - 1, e.y, 1, e.dir < 0);
+      pix((e.anim % 30 < 15) ? BEAST1 : BEAST2, PAL, e.x + e.w / 2 - 18, e.y + e.h - 26, 2, e.dir < 0);
     } else {
-      pix((e.anim % 24 < 12) ? DEMON1 : DEMON2, PAL, e.x, e.y, 1, player.x < e.x);
+      pix((e.anim % 24 < 12) ? DEMON1 : DEMON2, PAL, e.x + e.w / 2 - 16, e.y + e.h - 24, 2, player.x < e.x);
     }
   }
 
   // orbes de llum
   for (const o of world.orbs) {
+    ctx.fillStyle = o.returning ? 'rgba(255,248,224,.3)' : 'rgba(242,215,138,.25)';
+    ctx.beginPath(); ctx.arc(o.x, o.y, o.returning ? 8 : 6, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = o.returning ? '#fff8e0' : '#f2d78a';
     ctx.beginPath(); ctx.arc(o.x, o.y, o.returning ? 5 : 3.5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(o.x - 1, o.y - 1, 2, 2);
+    ctx.fillStyle = '#fff'; ctx.fillRect(o.x - 1, o.y - 1, 2, 2);
   }
 
   // pilar de llum del cap
@@ -1141,9 +1469,12 @@ function drawWorld() {
   if (b && b.pillarAct > 0) {
     ctx.fillStyle = 'rgba(255,248,224,.92)'; ctx.fillRect(b.pillarX - 12, 40, 24, LY);
     ctx.fillStyle = 'rgba(242,215,138,.5)'; ctx.fillRect(b.pillarX - 20, 40, 40, LY);
+    for (let i = 0; i < 6; i++) {
+      ctx.fillStyle = '#fff8e0';
+      ctx.fillRect(b.pillarX - 16 + hsh(i, game.frame % 8) * 32, GY - 4 - hsh(i, 3) * 10, 2, 2);
+    }
   }
 
-  // jugador
   drawPlayer();
 
   // partícules
@@ -1152,15 +1483,41 @@ function drawWorld() {
   ctx.restore();
 }
 
-function drawFloor(x, w, y, c1, c2) {
-  ctx.fillStyle = c1; ctx.fillRect(x, y, w, 90);
-  ctx.fillStyle = c2;
-  for (let i = 0; i < w; i += 24) ctx.fillRect(x + i, y, 1, 90);
-  ctx.fillRect(x, y + 26, w, 1); ctx.fillRect(x, y + 58, w, 1);
-  ctx.fillStyle = '#5d6672'; ctx.fillRect(x, y, w, 2);
-  // vegetació rústega
+function drawRubble(x, y, w) {
+  ctx.fillStyle = '#3a3226';
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  for (let i = 0; i <= w; i += 6) ctx.lineTo(x + i, y - 3 - hsh(x + i, 51) * 8);
+  ctx.lineTo(x + w, y); ctx.fill();
+  ctx.fillStyle = '#5d5142';
+  for (let i = 2; i < w - 2; i += 7) if (hsh(x + i, 52) > 0.4) ctx.fillRect(x + i, y - 4 - hsh(i, x) * 5, 3, 2);
+}
+
+function drawFloor(x, w, y, tones, dark) {
+  // llosana de marbre escairat amb rajoles trencades
+  ctx.fillStyle = tones[2]; ctx.fillRect(x, y, w, 130);
+  const T = 16;
+  for (let i = 0; i < w; i += T) {
+    for (let yy = 0; yy < 64; yy += T) {
+      const v = hsh(x + i, y + yy);
+      const even = ((i + yy) / T) % 2 === 0;
+      ctx.fillStyle = even ? tones[0] : tones[1];
+      ctx.fillRect(x + i, y + yy, T - 1, T - 1);
+      if (v > 0.86) { ctx.fillStyle = tones[2]; ctx.fillRect(x + i + 2, y + yy + 2, T - 5, T - 5); }       // rajola caiguda
+      else if (v > 0.7) { ctx.fillStyle = tones[2]; ctx.fillRect(x + i + 3, y + yy + 5, T - 6, 1); ctx.fillRect(x + i + 7, y + yy + 5, 1, 7); } // esquerda
+    }
+  }
+  const fg = ctx.createLinearGradient(0, y + 30, 0, y + 110);
+  fg.addColorStop(0, 'rgba(10,8,6,0)'); fg.addColorStop(1, 'rgba(10,8,6,.62)');
+  ctx.fillStyle = fg; ctx.fillRect(x, y + 30, w, 100);
+  ctx.fillStyle = dark ? '#5a5a68' : '#d8cbb0'; ctx.fillRect(x, y, w, 2); // cantell il·luminat
+  // herba rústega a la vora
   ctx.fillStyle = '#3f6b4f';
-  for (let i = 10; i < w; i += 90) { ctx.fillRect(x + i, y - 3, 2, 3); ctx.fillRect(x + i + 3, y - 5, 2, 5); }
+  for (let i = 10; i < w - 4; i += 34) {
+    if (hsh(x + i, 61) > 0.45) {
+      ctx.fillRect(x + i, y - 3, 2, 3); ctx.fillRect(x + i + 3, y - 5, 2, 5); ctx.fillRect(x + i + 6, y - 2, 2, 2);
+    }
+  }
 }
 
 function drawPlayer() {
@@ -1173,23 +1530,37 @@ function drawPlayer() {
   else if (player.state === 'dive') map = SPR.dive;
   else if (player.state === 'hang') map = SPR.hang;
   const flip = player.dir < 0;
-  pix(map, PAL, player.x - 2, player.y - 4, 1, flip);
-  // espasa: llargària segons arma
-  if (player.state === 'attack' || player.state === 'dive' || player.state === 'hang') {
+  const px = player.x + player.w / 2 - 16, py = player.y + player.h - 40;
+  pix(map, PAL, px, py, 2, flip);
+
+  // espasa en mà (idle/run/aire): fulla curta cap endavant
+  if (player.state === 'idle' || player.state === 'run' || player.state === 'air') {
+    const sx = flip ? px + 2 : px + 22;
+    ctx.fillStyle = '#d8a23a'; ctx.fillRect(sx, py + 19, 3, 3);
+    ctx.fillStyle = '#f4f8ff'; ctx.fillRect(flip ? sx - 10 : sx + 3, py + 19, 10, 2);
+    ctx.fillStyle = '#b9c4d2'; ctx.fillRect(flip ? sx - 10 : sx + 3, py + 21, 10, 1);
+  }
+  // espasa d'atac: llargària segons arma, amb arc del cop
+  if (player.state === 'attack' || player.state === 'dive') {
     const long = player.weapon >= 2;
+    const len = long ? 30 : 22;
     ctx.fillStyle = '#f4f8ff';
-    if (player.state === 'dive') ctx.fillRect(player.x + 4, player.y + 18, 3, long ? 16 : 11);
-    else if (player.state === 'attack') {
-      const sx = flip ? player.x - (long ? 20 : 14) : player.x + player.w + 2;
-      ctx.fillRect(sx, player.y + 4, long ? 20 : 14, 3);
-      ctx.fillStyle = 'rgba(244,248,255,.35)';
-      ctx.fillRect(sx, player.y + 1, long ? 20 : 14, 9); // arc del cop
+    if (player.state === 'dive') {
+      ctx.fillRect(player.x + 3, player.y + player.h - 2, 5, long ? 18 : 12);
+      ctx.fillStyle = 'rgba(244,248,255,.3)';
+      ctx.fillRect(player.x + 1, player.y + player.h - 2, 9, long ? 18 : 12);
+    } else {
+      const sx = flip ? px + 6 - len : px + 26;
+      ctx.fillRect(sx, py + 14, len, 3);
+      ctx.fillStyle = '#b9c4d2'; ctx.fillRect(sx, py + 17, len, 1);
+      ctx.fillStyle = 'rgba(244,248,255,.25)';
+      ctx.fillRect(sx, py + 9, len, 13);
     }
   }
   // escut actiu
   if (player.shield > 0) {
     ctx.strokeStyle = 'rgba(127,212,232,.7)'; ctx.lineWidth = 1;
-    ctx.strokeRect(player.x - 3, player.y - 5, player.w + 6, player.h + 7);
+    ctx.strokeRect(player.x - 6, player.y - 8, player.w + 12, player.h + 12);
   }
 }
 
@@ -1217,19 +1588,18 @@ function drawHUD() {
 /* ------------------------------------------------------------------ pantalles */
 function drawTitle() {
   drawBackground();
-  ctx.fillStyle = 'rgba(5,6,12,.45)'; ctx.fillRect(0, 0, VW, VH);
-  // títol amb píxels grans
+  ctx.fillStyle = 'rgba(5,6,12,.5)'; ctx.fillRect(0, 0, VW, VH);
+  drawTitleEmblem(VW / 2, 88);
   const T = 'PANTOCRÀTOR';
   ctx.font = 'bold 34px "Courier New", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  ctx.fillStyle = '#14100c'; ctx.fillText(T, VW / 2 + 2, 44);
-  ctx.fillStyle = '#d8a23a'; ctx.fillText(T, VW / 2, 42);
-  drawText('Ruïnes del MNAC · homenatge a l\'arcade de 1987', VW / 2, 84, '#caa86a', 9, 'center');
-  if (game.frame % 90 < 60) drawText('PULSA ENTER O TOCA LA PANTALLA', VW / 2, 130, '#e8e4d8', 10, 'center');
-  drawText('MOU: creueta / fletxes · SALTAR: botó / espai · ATACAR: botó / X', VW / 2, 168, '#8f9aa8', 8, 'center');
-  drawText('Diagonal avall + atacar en l\'aire: atac descendent', VW / 2, 180, '#8f9aa8', 8, 'center');
-  drawText('Penja\'t dels llamps de aranya · trenca vitrines per a millores', VW / 2, 192, '#8f9aa8', 8, 'center');
-  drawText('Desvia els orbes del Pantocràtor amb l\'espasa · M: silenci', VW / 2, 204, '#8f9aa8', 8, 'center');
-  drawText('Obra original: sprites i música procedurals, sense assets de tercers', VW / 2, 244, '#5d6672', 7, 'center');
+  ctx.fillStyle = '#14100c'; ctx.fillText(T, VW / 2 + 2, 150);
+  ctx.fillStyle = '#d8a23a'; ctx.fillText(T, VW / 2, 148);
+  drawText('Ruïnes del MNAC · homenatge a l\'arcade de 1987', VW / 2, 188, '#caa86a', 9, 'center');
+  if (game.frame % 90 < 60) drawText('PULSA ENTER O TOCA LA PANTALLA', VW / 2, 210, '#e8e4d8', 10, 'center');
+  drawText('MOU: creueta/fletxes · SALTAR: espai · ATACAR: X', VW / 2, 230, '#8f9aa8', 8, 'center');
+  drawText('Avall+atacar en l\'aire: atac descendent · Penja\'t dels llamps', VW / 2, 240, '#8f9aa8', 8, 'center');
+  drawText('Trenca vitrines · Desvia els orbes amb l\'espasa · M: silenci', VW / 2, 250, '#8f9aa8', 8, 'center');
+  drawText('Obra original: sprites i música procedurals, sense assets de tercers', VW / 2, 262, '#5d6672', 7, 'center');
 }
 
 function drawStageCard() {
