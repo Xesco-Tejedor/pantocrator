@@ -24,3 +24,10 @@ html,body { width:100%; height:100%; background:#05060c; overflow:hidden; oversc
 #btnJump   { background:#1f4f6e; color:#d4ecff; border-color:#8ac4e8; }
 .tbtn.pressed { opacity:.85; transform:scale(.94); }
 @media (pointer:fine) { #pad, #btns { opacity:.18; } #pad:hover, #btns:hover { opacity:.4; } }
+
+/* ---- Capa CRT: scanlines + viñeta arcade ---- */
+#stage::after { content:""; position:fixed; inset:0; pointer-events:none; z-index:20;
+  background:
+    radial-gradient(130% 150% at 50% 45%, transparent 55%, rgba(0,0,0,.5) 100%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px);
+              }
