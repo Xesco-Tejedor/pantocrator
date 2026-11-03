@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0c14">
+<title>PANTOCRÀTOR · Arcade en les ruïnes del MNAC</title>
+<link rel="stylesheet" href="styles.css?v=20261103-1">
+</head>
+<body>
+<div id="stage">
+  <canvas id="game" width="480" height="270"></canvas>
+  <div id="pad" aria-label="Cruceta">
+    <div class="cross up"></div><div class="cross right"></div>
+    <div class="cross down"></div><div class="cross left"></div>
+    <div class="hub"></div>
+  </div>
+  <div id="btns">
+    <div id="btnAttack" class="tbtn" aria-label="Atacar">ATACAR</div>
+    <div id="btnJump" class="tbtn" aria-label="Saltar">SALTAR</div>
+  </div>
+</div>
+<div id="testlog" style="display:none"></div>
+<script src="game.js?v=20261103-1"></script>
+</body>
+</html>
