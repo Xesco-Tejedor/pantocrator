@@ -745,7 +745,7 @@ const player = {
   x: 40, y: 100, w: 11, h: 20, vx: 0, vy: 0, dir: 1,
   state: 'idle', anim: 0, coyote: 0, invuln: 0, timer: 0,
   hp: 12, maxHp: 12, lives: 3, score: 0, weapon: 1, armor: 0, shield: 0,
-  onGround: false, onLower: false, hangCh: null, hangSwing: 0, fellFromY: null,
+  onGround: false, onLower: false, hangCh: null, hangSwing: 0, fellFromY: null, airJumps: 0,
   attackT: 0, dead: false
 };
 
@@ -837,10 +837,16 @@ function updatePlayer() {
   /* ---------- gravetat i salt amb coyote time ---------- */
   player.vy += GRAV;
   if (player.vy > 7) player.vy = 7;
-  if (player.onGround) player.coyote = JUMP_TOLERANCE;
+  if (player.onGround) { player.coyote = JUMP_TOLERANCE; player.airJumps = 1; }
   if (input.jumpBuf > 0 && player.coyote > 0) {
     input.jumpBuf = 0; player.coyote = 0;
     player.vy = JUMPV; player.onGround = false; player.state = 'air';
+    sfx.jumpS();
+  } else if (input.jumpBuf > 0 && player.airJumps > 0 && !player.onGround && player.state !== 'dive') {
+    // doble salt: una vegada per estada a l'aire, des de qualsevol salt previ
+    input.jumpBuf = 0; player.airJumps--;
+    player.vy = JUMPV * 0.95; player.state = 'air';
+    spawnParts(player.x + player.w / 2, player.y + player.h, '#e8e4d8', 5);
     sfx.jumpS();
   }
   if (!input.jumpHeld && player.vy < -2.2) player.vy = -2.2; // salt variable
@@ -1914,10 +1920,25 @@ const TEST = {
           this.minY = Math.min(this.minY, player.y);
           if (player.onGround && player.vy === 0 && this.f > 80) {
             this.log('jump', this.minY < GY - player.h - 20, 'minY=' + this.minY.toFixed(0));
+            this.phase = 3.5;
+            this.warp(300, GY - player.h); player.state = 'idle'; player.onGround = true;
+          } break;
+        case 3.5: // doble salt: primer salt des de terra
+          input.jumpHeld = true; input.pressJump();
+          this.phase = 3.6; this.sawSecond = false; this.djMinY = player.y; break;
+        case 3.6:
+          if (!this.sawSecond && player.vy > -1.2) { input.pressJump(); this.sawSecond = 'pressed'; }
+          if (this.sawSecond === 'pressed' && player.vy < -2) this.sawSecond = true;
+          this.djMinY = Math.min(this.djMinY, player.y);
+          if (player.onGround && player.vy === 0) {
+            input.jumpHeld = false;
+            this.log('double-jump', this.sawSecond === true && player.airJumps === 0, 'airJumps=' + player.airJumps);
             this.phase = 4;
             // preparar coyote: vora del primer forat (terra acaba a 560)
             this.warp(545, GY - player.h); player.state = 'idle'; player.onGround = true;
-          } break;
+          }
+          if (this.f > 2000) { this.log('double-jump', false, 'timeout st=' + player.state); this.phase = 4; this.warp(545, GY - player.h); player.onGround = true; }
+          break;
         case 4: // camina fins a caure de la vora
           this.key('right', true);
           if (!player.onGround) { this.key('right', false); this.coyoteWait = 4; this.phase = 5; } break;
