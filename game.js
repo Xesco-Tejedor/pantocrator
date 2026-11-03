@@ -1836,7 +1836,7 @@ function drawTitle() {
 }
 
 function drawStageCard() {
-  drawWorld(); drawHUD();
+  drawBackground(); drawWorld(); drawHUD();
   ctx.fillStyle = 'rgba(5,6,12,.72)'; ctx.fillRect(0, 90, VW, 60);
   drawText('STAGE 0' + (world.stageIdx + 1), VW / 2, 100, '#d8a23a', 16, 'center');
   drawText(world.stage.name, VW / 2, 124, '#e8e4d8', 10, 'center');
