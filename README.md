@@ -1,4 +1,4 @@
-# PANTOCRÀTOR
+# PANTHOKRATOR
 
 Arcade d'acció i plataformes 2D a les ruïnes postapocalíptiques del MNAC (Museu Nacional d'Art de Catalunya). Homenatge jugable a la placa arcade de 1987: baixa resolució, desplaçament lateral i art pintat original.
 
@@ -15,14 +15,14 @@ Funciona al navegador (mòbil i escriptori), sense instal·lació. Al mòbil, mi
 - **Làmpares de aranya:** salta a prop d'una làmpara i t'hi enganxaràs automàticament (ancoratge magnètic de 48 px); balanceja't amb esquerra/dreta i salta per enlairar-te.
 - **Fosos:** no hi ha mort instantània. Caure des de zones altes et porta a rutes inferiors amb dany lleu i més enemics terrestres; hauràs de tornar a pujar.
 - **Vitrines gòtiques:** trenca-les per aconseguir espasa llarga, armadura o escut.
-- **Enemics:** bèsties dels capitells romànics, dimonis dels frescos de Sant Climent de Taüll i, al final, el Pantocràtor: dispara projectils de llum des del fons cap al pla d'acció. **Desvia els orbes amb l'espasa** per fer-li mal i esquiva el pilar de llum telegrafia't.
+- **Enemics:** bèsties dels capitells romànics, dimonis dels frescos de Sant Climent de Taüll i, al final, el Panthokrator: dispara projectils de llum des del fons cap al pla d'acció. **Desvia els orbes amb l'espasa** per fer-li mal i esquiva el pilar de llum telegrafia't.
 - **M:** silencia la música.
 
 ## Fases
 
 1. Vestíbul en ruïnes
 2. Sala romànica
-3. El Pantocràtor (arena de cap)
+3. El Panthokrator (arena de cap)
 
 ## Tècnica
 
