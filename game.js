@@ -58,6 +58,51 @@ const ITEM_SWORD = [
  '.kggk...',
  '..kkk...',
  '........'];
+const ITEM_COIN = [
+  '..kkkk..',
+  '.kggggk.',
+  'kgyyyygk',
+  'kygEEgyk',
+  'kygEEgyk',
+  'kgyyyygk',
+  '.kggggk.',
+  '..kkkk..'];
+const ITEM_COINBIG = [
+  '..kkkk..',
+  '.kEEEEk.',
+  'kEyyyyEk',
+  'EyWEEWyE',
+  'EyWEEWyE',
+  'kEyyyyEk',
+  '.kEEEEk.',
+  '..kkkk..'];
+const ITEM_HEART = [
+  '.RR..RR.',
+  'RRRRRRRR',
+  'RrRRRRrR',
+  'RRRRRRRR',
+  '.RRRRRR.',
+  '..RRRR..',
+  '...RR...',
+  '........'];
+const ITEM_TIME = [
+  '.kkkkkk.',
+  '.kEEEEk.',
+  '..kEEk..',
+  '...kk...',
+  '..kEEk..',
+  '.kEEEEk.',
+  '.kkkkkk.',
+  '........'];
+const ITEM_POW = [
+  '...kk...',
+  '..kEEk..',
+  'kkEEEEkk',
+  'kEEEEEEk',
+  '.kEEEEk.',
+  '..kEEk..',
+  '.kk..kk.',
+  '........'];
 const ITEM_ARMOR = [
  '.kkkkkk.',
  'kggggggk',
@@ -169,23 +214,25 @@ function drawWarrior(px, py, dir, st, anim, weapon) {
   let key = 'idle';
   if (st === 'run') key = Math.floor(anim / 8) % 2 ? 'runA' : 'runB';
   else if (st === 'attack') key = 'attack';
+  else if (st === 'crouch' || st === 'cattack') key = 'crouch';
   else if (st === 'air') key = 'air';
   else if (st === 'dive') key = 'dive';
   else if (st === 'hang') key = 'hang';
   const im = (weapon >= 2 && WARRIOR_IMG_L[key]) || WARRIOR_IMG[key];
   // flaix del cop (efecte, no forma part del sprite)
-  if (st === 'attack') {
+  if (st === 'attack' || st === 'cattack') {
+    const fy = st === 'cattack' ? -13 : -28;
     ctx.save(); ctx.translate(px, py); ctx.scale(dir, 1);
     ctx.fillStyle = 'rgba(244,248,255,.13)';
-    ctx.beginPath(); ctx.moveTo(6, -28);
-    ctx.arc(6, -28, 26, -0.5, 0.5);
+    ctx.beginPath(); ctx.moveTo(6, fy);
+    ctx.arc(6, fy, st === 'cattack' ? 22 : 26, -0.5, 0.5);
     ctx.closePath(); ctx.fill();
     ctx.restore();
   }
   ctx.save();
   ctx.translate(px, py); ctx.scale(dir, 1);
   ctx.filter = 'drop-shadow(0 0 1.6px rgba(10,8,6,.85))';
-  if (im && im.complete && im.naturalWidth) ctx.drawImage(im, -30, -52, 60, 54);
+  if (im && im.complete && im.naturalWidth) ctx.drawImage(im, -37, -64, 74, 66);
   ctx.filter = 'none';
   ctx.restore();
 }
@@ -257,7 +304,7 @@ function drawBeast(e, anim) {
   ctx.translate(e.x + e.w / 2, e.y + e.h);
   ctx.scale(dir, 1);
   ctx.filter = 'drop-shadow(0 0 1.6px rgba(10,8,6,.85))';
-  if (im && im.complete && im.naturalWidth) ctx.drawImage(im, -22, -26, 44, 28);
+  if (im && im.complete && im.naturalWidth) ctx.drawImage(im, -28, -34, 56, 36);
   ctx.filter = 'none';
   ctx.restore();
 }
@@ -287,7 +334,7 @@ function drawDemon(e, anim, facingLeft) {
   ctx.translate(e.x + e.w / 2, e.y + e.h / 2);
   ctx.scale(facingLeft ? -1 : 1, 1);
   ctx.filter = 'brightness(1.18) drop-shadow(0 0 2.4px rgba(255,110,60,.9))';
-  if (im && im.complete && im.naturalWidth) ctx.drawImage(im, -14, -10.5, 28, 21);
+  if (im && im.complete && im.naturalWidth) ctx.drawImage(im, -18, -12, 36, 24);
   ctx.filter = 'none';
   ctx.restore();
 }
@@ -699,7 +746,7 @@ const STAGES = [
       { x: 1730, y: 250, w: 60, h: 8, t: 'stone' }, { x: 1950, y: 160, w: 88, h: 8, t: 'bench' }
     ],
     chandeliers: [{ x: 880, y: 40, len: 60 }, { x: 1500, y: 30, len: 66 }],
-    vitrinas: [{ x: 420, y: GY, c: 'sword' }, { x: 1400, y: GY, c: 'shield' }],
+    vitrinas: [{ x: 420, y: GY, c: 'sword' }, { x: 950, y: GY, c: 'time' }, { x: 1400, y: GY, c: 'shield' }, { x: 1900, y: GY, c: 'coinbig' }, { x: 620, y: LY, c: 'heart' }],
     enemies: [
       { x: 480, y: GY, t: 'beast' }, { x: 760, y: GY, t: 'beast' }, { x: 1050, y: GY, t: 'demon' },
       { x: 1350, y: GY, t: 'beast' }, { x: 1650, y: GY, t: 'demon' }, { x: 2000, y: GY, t: 'beast' },
@@ -718,7 +765,7 @@ const STAGES = [
       { x: 2100, y: 140, w: 88, h: 8, t: 'bench' }, { x: 2300, y: 100, w: 72, h: 8, t: 'bench' }
     ],
     chandeliers: [{ x: 480, y: 36, len: 62 }, { x: 1000, y: 30, len: 70 }, { x: 1560, y: 34, len: 60 }, { x: 2050, y: 40, len: 56 }],
-    vitrinas: [{ x: 250, y: GY, c: 'armor' }, { x: 1200, y: GY, c: 'sword' }, { x: 2150, y: GY, c: 'shield' }],
+    vitrinas: [{ x: 250, y: GY, c: 'armor' }, { x: 700, y: GY, c: 'pow' }, { x: 1200, y: GY, c: 'sword' }, { x: 1500, y: GY, c: 'weapon' }, { x: 2050, y: GY, c: 'time' }, { x: 2150, y: GY, c: 'shield' }, { x: 500, y: LY, c: 'coinbig' }],
     enemies: [
       { x: 320, y: GY, t: 'beast' }, { x: 620, y: GY, t: 'demon' }, { x: 800, y: GY, t: 'beast' },
       { x: 1150, y: GY, t: 'beast' }, { x: 1300, y: GY, t: 'demon' }, { x: 1700, y: GY, t: 'beast' },
@@ -732,14 +779,14 @@ const STAGES = [
     lower: [],
     platforms: [{ x: 140, y: 160, w: 88, h: 8, t: 'bench' }, { x: 420, y: 160, w: 88, h: 8, t: 'bench' }],
     chandeliers: [{ x: 340, y: 36, len: 64 }],
-    vitrinas: [{ x: 80, y: GY, c: 'sword' }],
+    vitrinas: [{ x: 80, y: GY, c: 'sword' }, { x: 300, y: GY, c: 'heart' }, { x: 500, y: GY, c: 'time' }],
     enemies: []
   }
 ];
 
 /* ------------------------------------------------------------------- món */
 const world = {
-  stageIdx: 0, stage: null, enemies: [], vitrinas: [], orbs: [], parts: [], items: [],
+  stageIdx: 0, stage: null, enemies: [], vitrinas: [], orbs: [], parts: [], items: [], daggers: [],
   camX: 0, camY: 0, shake: 0, boss: null
 };
 
@@ -749,7 +796,7 @@ function loadStage(i) {
   world.stage = s;
   world.enemies = s.enemies.map(e => makeEnemy(e.t, e.x, e.y));
   world.vitrinas = s.vitrinas.map(v => ({ x: v.x, y: v.y, w: 14, h: 22, c: v.c, broken: false }));
-  world.orbs = []; world.parts = []; world.items = [];
+  world.orbs = []; world.parts = []; world.items = []; world.daggers = [];
   world.boss = s.boss ? {
     x: 400, y: 40, hp: 8, maxHp: 8, phase: 0, t: 0, shootT: 90, pillarT: 260,
     pillarX: -1, pillarWarn: 0, pillarAct: 0, flash: 0
@@ -761,15 +808,15 @@ function loadStage(i) {
 }
 
 function makeEnemy(t, x, y) {
-  if (t === 'beast') return { t, x, y: y - 12, w: 15, h: 12, vx: 0.5, hp: 2, dir: Math.random() < 0.5 ? -1 : 1, anim: 0, baseY: y - 12, hit: 0 };
-  return { t, x, y: y - 60, w: 12, h: 10, hp: 1, anim: 0, baseY: y - 60, ph: rnd(0, 6), diveT: rnd(120, 300), diving: 0, hit: 0 };
+  if (t === 'beast') return { t, x, y: y - 15, w: 19, h: 15, vx: 0.5, hp: 2, dir: Math.random() < 0.5 ? -1 : 1, anim: 0, baseY: y - 15, hit: 0 };
+  return { t, x, y: y - 60, w: 15, h: 12, hp: 1, anim: 0, baseY: y - 60, ph: rnd(0, 6), diveT: rnd(120, 300), diving: 0, hit: 0 };
 }
 
 /* ------------------------------------------------------------------ jugador */
 const JUMP_TOLERANCE = 8;    // coyote time (frames), segons el disseny
 const MAGNETIC_RADIUS = 48;  // ancoratge magnètic als elements penjants
 const player = {
-  x: 40, y: 100, w: 11, h: 20, vx: 0, vy: 0, dir: 1,
+  x: 40, y: 100, w: 13, h: 24, vx: 0, vy: 0, dir: 1,
   state: 'idle', anim: 0, coyote: 0, invuln: 0, timer: 0,
   hp: 12, maxHp: 12, lives: 3, score: 0, weapon: 1, armor: 0, shield: 0,
   onGround: false, onLower: false, hangCh: null, hangSwing: 0, fellFromY: null, airJumps: 0,
@@ -853,8 +900,12 @@ function updatePlayer() {
     return;
   }
 
+  /* ---------- agafar-se ---------- */
+  if (player.onGround && input.down && (player.state === 'idle' || player.state === 'run')) player.state = 'crouch';
+  if (player.state === 'crouch' && (!input.down || !player.onGround)) player.state = player.onGround ? 'idle' : 'air';
+
   /* ---------- moviment horitzontal ---------- */
-  const locked = (player.state === 'attack' && player.onGround) || player.state === 'dive';
+  const locked = (player.state === 'attack' && player.onGround) || player.state === 'dive' || player.state === 'crouch' || player.state === 'cattack';
   if (!locked) {
     if (input.left)  { player.vx = -RUN; player.dir = -1; }
     else if (input.right) { player.vx = RUN; player.dir = 1; }
@@ -879,19 +930,20 @@ function updatePlayer() {
   if (!input.jumpHeld && player.vy < -2.2) player.vy = -2.2; // salt variable
 
   /* ---------- atac ---------- */
-  if (input.attackBuf > 0 && player.state !== 'attack' && player.state !== 'dive') {
+  if (input.attackBuf > 0 && player.state !== 'attack' && player.state !== 'cattack' && player.state !== 'dive') {
     input.attackBuf = 0;
     if (!player.onGround && input.down) {
       /* ATAC DESCENDENT: buffer d'entrada, animació fixada en caiguda fins
          a colpejar enemic o tocar terra. */
       player.state = 'dive';
     } else {
-      player.state = 'attack'; player.attackT = 0; sfx.swing();
+      player.state = player.state === 'crouch' ? 'cattack' : 'attack';
+      player.attackT = 0; sfx.swing(); throwDaggers();
     }
   }
-  if (player.state === 'attack') {
+  if (player.state === 'attack' || player.state === 'cattack') {
     player.attackT++;
-    if (player.attackT > 14) player.state = player.onGround ? 'idle' : 'air';
+    if (player.attackT > 14) player.state = player.onGround ? (input.down ? 'crouch' : 'idle') : 'air';
   }
 
   /* ---------- integració ---------- */
@@ -951,8 +1003,9 @@ function updatePlayer() {
   }
 
   /* ---------- estat/animació ---------- */
-  if (player.state !== 'attack' && player.state !== 'dive' && player.state !== 'hang') {
+  if (player.state !== 'attack' && player.state !== 'cattack' && player.state !== 'dive' && player.state !== 'hang') {
     if (!player.onGround) player.state = 'air';
+    else if (player.state === 'crouch') { /* es manté agafat mentre baix segueixi premut (línia 905) */ }
     else if (player.vx !== 0) player.state = 'run';
     else player.state = 'idle';
   }
@@ -965,13 +1018,61 @@ function updatePlayer() {
 }
 
 function swordBox() {
-  const reach = player.weapon >= 2 ? 22 : 15;
+  const reach = player.weapon >= 3 ? 26 : player.weapon >= 2 ? 22 : 15;
   if (player.state === 'dive') return { x: player.x - 2, y: player.y + player.h - 4, w: player.w + 4, h: 14 };
-  if (player.state === 'attack' || (player.state === 'air' && false)) {}
+  if (player.state === 'cattack') return player.dir === 1
+    ? { x: player.x + player.w, y: player.y + player.h - 10, w: reach, h: 10 }
+    : { x: player.x - reach, y: player.y + player.h - 10, w: reach, h: 10 };
   if (player.state !== 'attack' && player.state !== 'hang') return null;
   return player.dir === 1
     ? { x: player.x + player.w, y: player.y + 2, w: reach, h: 12 }
     : { x: player.x - reach, y: player.y + 2, w: reach, h: 12 };
+}
+
+/* Arsenal estil placa 1987 (referència Black Tiger): arma principal amb nivells
+   de poder (1-4) i dagues llançables a partir del nivell 3. */
+function throwDaggers() {
+  if (player.weapon < 3) return;
+  const y = player.state === 'cattack' ? player.y + player.h - 10 : player.y + 11;
+  const n = player.weapon >= 4 ? 2 : 1;
+  for (let i = 0; i < n; i++)
+    world.daggers.push({ x: player.x + player.w / 2 + player.dir * 9, y, vx: player.dir * 3.2, vy: i === 0 ? 0 : -0.7, life: 90 });
+}
+
+function updateDaggers() {
+  for (const d of world.daggers) {
+    d.x += d.vx; d.y += d.vy; d.life--;
+    if (d.life <= 0) { d.dead = true; continue; }
+    for (const e of world.enemies) {
+      if (e.hp <= 0) continue;
+      if (overlap({ x: d.x - 3, y: d.y - 1.5, w: 6, h: 3 }, e)) {
+        e.hp -= 1; e.hit = 8; sfx.hit(); d.dead = true;
+        spawnParts(d.x, d.y, '#c9ced8', 4);
+        player.score += 10;
+        if (e.hp <= 0) {
+          player.score += e.t === 'demon' ? 150 : 100;
+          spawnParts(e.x + e.w / 2, e.y + e.h / 2, '#8f9aa8', 10);
+          dropLoot(e);
+        }
+        break;
+      }
+    }
+    if (d.dead) continue;
+    for (const o of world.orbs) {
+      if (o.dead || o.returning) continue;
+      if (Math.abs(o.x - d.x) < 7 && Math.abs(o.y - d.y) < 7) { o.returning = true; sfx.deflect(); d.dead = true; break; }
+    }
+  }
+  world.daggers = world.daggers.filter(d => !d.dead);
+}
+
+/* Botí dels enemics: monedes, cors i millores d'arma (referència: zenny) */
+function dropLoot(e) {
+  const r = Math.random();
+  let c;
+  if (e.t === 'demon') c = r < 0.45 ? 'coinbig' : r < 0.75 ? 'heart' : (player.weapon < 4 ? 'weapon' : 'coinbig');
+  else c = r < 0.55 ? 'coin' : r < 0.8 ? 'heart' : 'coinbig';
+  world.items.push({ x: e.x + e.w / 2 - 6, y: e.y - 6, w: 12, h: 10, c, vy: -2.2 });
 }
 
 function swordHits() {
@@ -981,13 +1082,15 @@ function swordHits() {
   for (const e of world.enemies) {
     if (e.hp <= 0) continue;
     if (overlap(sb, e)) {
-      e.hp--; e.hit = 8; sfx.hit();
+      const dmg = player.weapon >= 4 ? 3 : player.weapon >= 2 ? 2 : 1;
+      e.hp -= dmg; e.hit = 8; sfx.hit();
       spawnParts(e.x + e.w / 2, e.y + e.h / 2, '#c9ced8', 5);
       if (player.state === 'dive') { player.vy = -4.2; player.state = 'air'; } // rebot
       player.score += 10;
       if (e.hp <= 0) {
         player.score += e.t === 'demon' ? 150 : 100;
         spawnParts(e.x + e.w / 2, e.y + e.h / 2, '#8f9aa8', 10);
+        dropLoot(e);
       }
     }
   }
@@ -1060,9 +1163,24 @@ function updateItems() {
     if (it.y > gy - 10) { it.y = gy - 10; it.vy = 0; }
     if (overlap(player, it)) {
       it.taken = true; sfx.pickup();
-      if (it.c === 'sword') { player.weapon = 2; }
+      if (it.c === 'sword') { player.weapon = Math.max(player.weapon, 2); }
+      if (it.c === 'weapon') { player.weapon = Math.min(4, player.weapon + 1); sfx.clearS(); }
       if (it.c === 'armor') { player.armor = 1; if (player.maxHp < 16) { player.maxHp = 16; player.hp = Math.min(player.maxHp, player.hp + 4); } }
       if (it.c === 'shield') { player.shield = 1; }
+      if (it.c === 'coin') { player.score += 50; }
+      if (it.c === 'coinbig') { player.score += 150; }
+      if (it.c === 'heart') { player.hp = Math.min(player.maxHp, player.hp + 2); player.score += 50; }
+      if (it.c === 'time') { player.timer += 1800; player.score += 50; }
+      if (it.c === 'pow') {
+        const x0 = world.camX - 30, x1 = world.camX + VW + 30;
+        for (const e of world.enemies) {
+          if (e.hp > 0 && e.x > x0 && e.x < x1) {
+            e.hp = 0; player.score += e.t === 'demon' ? 150 : 100;
+            spawnParts(e.x + e.w / 2, e.y + e.h / 2, '#f2d78a', 10);
+          }
+        }
+        sfx.clearS();
+      }
       player.score += 100;
     }
   }
@@ -1705,10 +1823,19 @@ function drawWorld() {
   // ítems
   for (const it of world.items) {
     const bob = Math.sin(game.frame / 14) * 2;
-    const map = it.c === 'sword' ? ITEM_SWORD : it.c === 'armor' ? ITEM_ARMOR : ITEM_SHIELD;
+    const map = (it.c === 'sword' || it.c === 'weapon') ? ITEM_SWORD : it.c === 'armor' ? ITEM_ARMOR : it.c === 'shield' ? ITEM_SHIELD : it.c === 'coin' ? ITEM_COIN : it.c === 'coinbig' ? ITEM_COINBIG : it.c === 'heart' ? ITEM_HEART : it.c === 'time' ? ITEM_TIME : ITEM_POW;
     ctx.fillStyle = 'rgba(242,215,138,.18)';
     ctx.beginPath(); ctx.arc(it.x + 6, it.y + bob + 5, 12, 0, Math.PI * 2); ctx.fill();
     pix(map, PAL, it.x - 2, it.y + bob - 3, 2, false);
+    if (it.c === 'weapon') drawText('+', it.x + 9, it.y + bob - 6, '#ffe9a8', 8);
+  }
+
+  // dagues en vol
+  for (const d of world.daggers) {
+    ctx.fillStyle = '#f4f8ff';
+    ctx.fillRect(d.x - 3, d.y - 1, 6, 2);
+    ctx.fillStyle = '#d8a23a';
+    ctx.fillRect(d.x - (d.vx > 0 ? 5 : -3), d.y - 1, 2, 2);
   }
 
   // enemics (pintats: gàrgola alada / esperit)
@@ -1770,8 +1897,8 @@ function drawPlayer() {
   if (player.invuln > 0 && (game.frame % 6 < 3) && !player.dead) return; // parpelleig
   let st = player.state;
   if (player.dead) st = 'air';
-  if (st !== 'run' && st !== 'air' && st !== 'attack' && st !== 'dive' && st !== 'hang') st = 'idle';
-  const anim = st === 'attack' ? player.attackT : player.anim;
+  if (st !== 'run' && st !== 'air' && st !== 'attack' && st !== 'cattack' && st !== 'crouch' && st !== 'dive' && st !== 'hang') st = 'idle';
+  const anim = (st === 'attack' || st === 'cattack') ? player.attackT : player.anim;
   const hangDrop = st === 'hang' ? 12 : 0;
   drawWarrior(player.x + player.w / 2, player.y + player.h + hangDrop, player.dir, st, anim, player.weapon);
   // escut actiu
@@ -1790,7 +1917,7 @@ function drawHUD() {
   ctx.fillStyle = 'rgba(5,6,12,.6)'; ctx.fillRect(4, 4, 20, 20);
   ctx.strokeStyle = '#8b93a6'; ctx.strokeRect(4.5, 4.5, 19, 19);
   pix(SWORDICON, PAL, 9, 9, 1, false);
-  if (player.weapon >= 2) { ctx.fillStyle = '#d8a23a'; ctx.fillRect(6, 21, 16, 2); }
+  for (let i = 0; i < player.weapon; i++) { ctx.fillStyle = i < 2 ? '#d8a23a' : '#ffe9a8'; ctx.fillRect(6 + i * 4.5, 21, 3.5, 2); }
   drawText('HP', 28, 5, '#e05050', 9);
   ctx.fillStyle = '#14100c'; ctx.fillRect(46, 6, 66, 7);
   ctx.fillStyle = '#a83232'; ctx.fillRect(47, 7, 64, 5);
@@ -1817,9 +1944,9 @@ function drawTitle() {
   ctx.fillStyle = '#d8a23a'; ctx.fillText(T, VW / 2, 148);
   drawText('Ruïnes del MNAC · homenatge a l\'arcade de 1987', VW / 2, 188, '#caa86a', 9, 'center');
   if (game.frame % 90 < 60) drawText('PULSA ENTER O TOCA LA PANTALLA', VW / 2, 210, '#e8e4d8', 10, 'center');
-  drawText('MOU: creueta/fletxes · SALTAR: espai · ATACAR: X', VW / 2, 230, '#8f9aa8', 8, 'center');
-  drawText('Avall+atacar en l\'aire: atac descendent · Penja\'t dels llamps', VW / 2, 240, '#8f9aa8', 8, 'center');
-  drawText('Trenca vitrines · Desvia els orbes amb l\'espasa · M: silenci', VW / 2, 250, '#8f9aa8', 8, 'center');
+  drawText('MOU: creueta/fletxes · SALTAR: espai · ATACAR: X · Avall: agafa\'t', VW / 2, 230, '#8f9aa8', 8, 'center');
+  drawText('Agafat+atacar: cop baix · Avall+atacar en l\'aire: atac descendent · Penja\'t dels llamps', VW / 2, 240, '#8f9aa8', 8, 'center');
+  drawText('Trenca vitrines · Recull bonus i millores d\'arma · Desvia els orbes · M: silenci', VW / 2, 250, '#8f9aa8', 8, 'center');
   drawText('Sprites i música procedurals · fons pintats generats per a aquest joc', VW / 2, 262, '#5d6672', 7, 'center');
 }
 
@@ -1877,7 +2004,7 @@ function step() {
   } else if (game.state === 'play') {
     updateMovingPlatforms();
     updatePlayer();
-    if (!player.dead) { updateEnemies(); updateItems(); updateBoss(); }
+    if (!player.dead) { updateEnemies(); updateItems(); updateDaggers(); updateBoss(); }
     updateParts();
     updateCamera();
   } else if (game.state === 'gameover' || game.state === 'win') {
@@ -2012,9 +2139,70 @@ const TEST = {
           this.beastTries = (this.beastTries || 0) + 1;
           input.pressAttack();
           const alive = world.enemies.some(e => e.t === 'beast' && Math.abs(e.x - 480) < 30);
-          if (!alive) { this.log('beast-kill', true, 'score+'); this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp; }
-          else if (this.beastTries > 400) { this.log('beast-kill', false, 'abans=' + before); this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp; }
+          if (!alive) { this.log('beast-kill', true, 'score+'); this.phase = 12.5; this.warp(1364, GY - player.h); player.state = 'idle'; player.onGround = true; player.dir = 1; }
+          else if (this.beastTries > 400) { this.log('beast-kill', false, 'abans=' + before); this.phase = 12.5; this.warp(1364, GY - player.h); player.state = 'idle'; player.onGround = true; player.dir = 1; }
           break; }
+        case 12.5: { // agafar-se i cop baix: trenca la vitrina de x=1400 agafat
+          this.key('down', true);
+          if (player.state === 'crouch' && !this.sawCrouch) { this.sawCrouch = true; input.pressAttack(); }
+          const vc = world.vitrinas.find(v => Math.abs(v.x - 1400) < 20);
+          if (vc && vc.broken) {
+            this.log('crouch-attack', true);
+            this.key('down', false); this.phase = 12.6;
+          } else if (this.f > (this.cT0 || (this.cT0 = this.f)) + 400) {
+            this.log('crouch-attack', false, 'st=' + player.state);
+            this.key('down', false); this.phase = 12.6;
+          } break; }
+        case 12.6: { // millora d'arma -> nivell 3 i dagues llançables
+          if (player.weapon < 3 && !this.wSpawned) { this.wSpawned = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'weapon', vy: 0 }); }
+          if (player.weapon >= 3 && !this.dCheck) {
+            if (player.state === 'idle' || player.state === 'run') { this.dCheck = true; this.attSeen = false; input.pressAttack(); }
+          }
+          if (this.dCheck) {
+            if (!this.attSeen && input.attackBuf === 0 && (player.state === 'idle' || player.state === 'run')) input.pressAttack();
+            if (!this.attSeen && (player.state === 'attack' || player.state === 'cattack') && player.attackT < 3) this.attSeen = true;
+            if (world.daggers.length > 0) { this.log('weapon-up-daggers', player.weapon >= 3, 'weapon=' + player.weapon); this.phase = 12.7; this.warp(690, GY - player.h); player.dir = 1; }
+            else if (this.attSeen && player.attackT > 6) { this.log('weapon-up-daggers', false, 'cap daga weapon=' + player.weapon); this.phase = 12.7; this.warp(690, GY - player.h); player.dir = 1; }
+          }
+          if (this.f > (this.cT1 || (this.cT1 = this.f)) + 400) { this.log('weapon-up-daggers', false, 'timeout weapon=' + player.weapon); this.phase = 12.7; this.warp(690, GY - player.h); player.dir = 1; }
+          break; }
+        case 12.7: { // daga mata la bèstia de x=760 i deixa botí
+          if (!player.onGround) break;
+          if (!this.dk0) {
+            this.dk0 = true;
+            const b = world.enemies.find(e => e.t === 'beast' && Math.abs(e.x - 760) < 40);
+            if (b) { b.hp = 1; b.vx = 0; b.dir = -1; }
+            input.pressAttack();
+          }
+          const b2 = world.enemies.find(e => e.t === 'beast' && Math.abs(e.x - 760) < 80);
+          const loot = world.items.some(i => i.c === 'coin' || i.c === 'coinbig' || i.c === 'heart');
+          if (!b2 && loot) { this.log('dagger-kill-drop', true); this.phase = 12.8; }
+          else if (!b2 && !loot) { this.log('dagger-kill-drop', false, 'morta sense botí'); this.phase = 12.8; }
+          else if (this.f > (this.cT2 || (this.cT2 = this.f)) + 500) { this.log('dagger-kill-drop', false, 'timeout weapon=' + player.weapon + ' dag=' + world.daggers.length + ' beast=' + (b2 ? b2.hp + '@' + Math.round(b2.x) : 'cap')); this.phase = 12.8; }
+          break; }
+        case 12.8: { // bonus de temps (+30s) i POW (neteja la pantalla)
+          if (!this.t0) {
+            this.t0 = player.timer;
+            world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'time', vy: 0 });
+          }
+          if (!this.tDone && player.timer > this.t0 - 100) {
+            this.tDone = true;
+            world.enemies.push(makeEnemy('beast', player.x + 120, GY));
+            world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'pow', vy: 0 });
+          }
+          if (this.tDone) {
+            const alive = world.enemies.some(e => e.t === 'beast' && e.x > player.x + 40 && e.x < player.x + 300);
+            if (!alive) {
+              this.log('time-bonus', true, 'timer+30s');
+              this.log('pow-bonus', true);
+              this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
+            }
+          }
+          if (this.f > (this.cT3 || (this.cT3 = this.f)) + 500) {
+            if (!this.tDone) this.log('time-bonus', false, 'timeout');
+            else this.log('pow-bonus', false, 'timeout');
+            this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
+          } break; }
         case 13: // caure al forat: dany lleu, no mort, pis inferior
           if (player.onGround) {
             this.log('pit-fall-no-death', !player.dead && player.onLower, 'onLower=' + player.onLower);
