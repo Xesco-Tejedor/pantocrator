@@ -1,6 +1,6 @@
 'use strict';
 /* =========================================================================
-   PANTOCRÀTOR — arcade d'acció i plataformes a les ruïnes del MNAC
+   PANTHOKRATOR — arcade d'acció i plataformes a les ruïnes del MNAC
    Homenatge jugable a la placa arcade de 1987. Obra 100% original:
    sprites procedurals per píxels, música xip sintetitzada, sense assets
    de tercers.
@@ -508,9 +508,9 @@ const sfx = {
     } catch (e) {}
   },
   now() { return this.ctx ? this.ctx.currentTime : 0; },
-  swing()  { this.tone(720, this.now(), 0.09, 'square', 0.10, -420); },
-  hit()    { this.tone(180, this.now(), 0.10, 'sawtooth', 0.16, -110); },
-  smash()  { const t = this.now(); this.tone(320, t, 0.08, 'square', 0.14, -180); this.tone(160, t + 0.05, 0.14, 'triangle', 0.16, -80); },
+  swing()  { this.tone(880, this.now(), 0.07, 'square', 0.10, -520); },
+  hit()    { const t = this.now(); this.tone(160, t, 0.09, 'sawtooth', 0.18, -120); this.tone(90, t, 0.05, 'square', 0.12); },
+  smash()  { const t = this.now(); this.tone(340, t, 0.07, 'square', 0.15, -200); this.tone(150, t + 0.04, 0.13, 'triangle', 0.17, -90); },
   pickup() { const t = this.now(); [523, 659, 784, 1046].forEach((f, i) => this.tone(f, t + i * 0.07, 0.1, 'square', 0.11)); },
   jumpS()  { this.tone(280, this.now(), 0.12, 'square', 0.09, 220); },
   grabS()  { this.tone(520, this.now(), 0.08, 'triangle', 0.12, 160); },
@@ -521,13 +521,30 @@ const sfx = {
   clearS() { const t = this.now(); [523, 659, 784, 1046, 1318].forEach((f, i) => this.tone(f, t + i * 0.09, 0.14, 'square', 0.11)); },
   bossHit(){ this.tone(90, this.now(), 0.2, 'sawtooth', 0.2, -40); },
   /* Seqüenciador senzill: baix + melodia, estil placa 1987 */
+  /* Composicions originals en l'estil de la placa 1987 (referència: Black Tiger):
+     tonalitat menor, baix per corxeres amb octaves, arpegi de farciment i melodia heroica */
   THEMES: {
-    title: { bpm: 96, bass: [0, null, 0, null, -2, null, 0, null, 3, null, 2, null, 0, null, -2, null],
-             mel:  [7, null, 10, null, 12, null, 10, 7, 8, null, 7, null, 5, 7, null, null] },
-    stage: { bpm: 132, bass: [0, 0, null, 0, 0, null, 0, -2, 0, 0, null, 0, 3, null, 2, null],
-             mel:  [null, 12, null, 10, null, 7, null, null, 12, null, 14, null, 12, 10, null, 7] },
-    boss:  { bpm: 150, bass: [0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, -2, -2, -1, -1],
-             mel:  [13, null, 12, 13, null, 12, null, 8, 13, null, 15, null, 13, 12, 8, null] }
+    title: { bpm: 100,
+      bass: [0, null, 0, null, -4, null, -4, null, -9, null, -9, null, -2, null, -2, null,
+             0, null, 0, null, -4, null, -4, null, -7, null, -5, null, 0, null, 0, null],
+      mel:  [12, null, 15, null, 19, null, 17, null, 15, null, 14, null, 12, null, null, null,
+             10, null, 12, null, 15, null, 14, null, 12, null, 10, null, 8, null, 7, null],
+      arp:  [24, 27, 31, 27, 20, 24, 27, 24, 15, 19, 24, 19, 22, 26, 29, 26,
+             24, 27, 31, 27, 20, 24, 27, 24, 17, 21, 26, 21, 24, 27, 31, 27] },
+    stage: { bpm: 142,
+      bass: [0, 12, 0, 12, 0, 12, 0, 12, -4, 8, -4, 8, -2, 10, -2, 10,
+             0, 12, 0, 12, 0, 12, 0, 12, -4, 8, -4, 8, -2, 10, 0, 12],
+      mel:  [12, null, 12, 15, null, 14, 12, null, 15, null, 17, 15, 14, 12, 14, null,
+             12, null, 12, 15, null, 14, 12, null, 19, 17, 15, 14, 15, null, 14, 12],
+      arp:  [24, 27, 31, 27, 24, 27, 31, 27, 20, 24, 27, 24, 22, 26, 29, 26,
+             24, 27, 31, 27, 24, 27, 31, 27, 20, 24, 27, 24, 22, 26, 29, 26] },
+    boss:  { bpm: 158,
+      bass: [0, 0, 12, 0, 11, 11, 12, 11, 0, 0, 12, 0, 8, 8, 10, 11,
+             0, 0, 12, 0, 11, 11, 12, 11, 0, 0, 12, 0, 13, 12, 11, 10],
+      mel:  [19, null, 19, 20, 19, null, 15, null, 19, null, 20, 19, 15, null, 14, 15,
+             19, null, 19, 20, 24, null, 23, null, 20, 19, 20, 19, 15, 14, 15, null],
+      arp:  [24, 27, 31, 27, 23, 27, 30, 27, 24, 27, 31, 27, 20, 24, 27, 24,
+             24, 27, 31, 27, 23, 27, 30, 27, 24, 27, 31, 27, 25, 28, 32, 28] }
   },
   ROOT: 110,
   nfreq(n) { return this.ROOT * Math.pow(2, n / 12); },
@@ -541,7 +558,7 @@ const sfx = {
     const tick = () => {
       if (!this.ctx || this.muted || this.track !== name) return;
       const t = this.ctx.currentTime;
-      const b = th.bass[step % 16], m = th.mel[step % 16];
+      const b = th.bass[step % th.bass.length], m = th.mel[step % th.mel.length], a = th.arp ? th.arp[step % th.arp.length] : null;
       if (b !== null && b !== undefined) {
         const o = this.ctx.createOscillator(), g = this.ctx.createGain();
         o.type = 'triangle'; o.frequency.value = this.nfreq(b);
@@ -553,6 +570,17 @@ const sfx = {
         o.type = 'square'; o.frequency.value = this.nfreq(m);
         g.gain.setValueAtTime(0.16, t); g.gain.exponentialRampToValueAtTime(0.01, t + spb * 0.9);
         o.connect(g); g.connect(this.musicBus); o.start(t); o.stop(t + spb);
+        // eco discret de la melodia, marcatge típic de placa 1987
+        const o2 = this.ctx.createOscillator(), g2 = this.ctx.createGain();
+        o2.type = 'square'; o2.frequency.value = this.nfreq(m);
+        g2.gain.setValueAtTime(0.045, t + spb * 0.5); g2.gain.exponentialRampToValueAtTime(0.005, t + spb);
+        o2.connect(g2); g2.connect(this.musicBus); o2.start(t + spb * 0.5); o2.stop(t + spb + 0.02);
+      }
+      if (a !== null && a !== undefined) {
+        const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+        o.type = 'square'; o.frequency.value = this.nfreq(a);
+        g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.004, t + spb * 0.55);
+        o.connect(g); g.connect(this.musicBus); o.start(t); o.stop(t + spb * 0.6);
       }
       step++;
     };
@@ -700,7 +728,7 @@ const STAGES = [
     ]
   },
   {
-    name: 'EL PANTOCRÀTOR', time: 240, length: 700, mural: 2, boss: true,
+    name: 'EL PANTHOKRATOR', time: 240, length: 700, mural: 2, boss: true,
     ground: [{ x: 0, w: 700 }],
     lower: [],
     platforms: [{ x: 140, y: 160, w: 88, h: 8, t: 'bench' }, { x: 420, y: 160, w: 88, h: 8, t: 'bench' }],
@@ -1568,10 +1596,10 @@ function drawBossBar() {
   ctx.fillStyle = 'rgba(5,6,12,.6)'; ctx.fillRect(VW / 2 - 62, 32, 124, 11);
   ctx.strokeStyle = '#8a6f42'; ctx.strokeRect(VW / 2 - 61.5, 32.5, 123, 10);
   ctx.fillStyle = '#a83232'; ctx.fillRect(VW / 2 - 59, 35, 118 * (b.hp / b.maxHp), 5);
-  drawText('PANTOCRÀTOR', VW / 2, 45, '#f2d78a', 7, 'center');
+  drawText('PANTHOKRATOR', VW / 2, 45, '#f2d78a', 7, 'center');
 }
 
-/* Emblema del Pantocràtor per a la pantalla de títol (pintat, coherent amb el mural) */
+/* Emblema del Panthokrator per a la pantalla de títol (pintat, coherent amb el mural) */
 function drawTitleEmblem(cx, cy) {
   ctx.fillStyle = rgrad(cx, cy, 52, 'rgba(242,215,138,.5)', 'rgba(242,215,138,0)');
   ctx.fillRect(cx - 52, cy - 52, 104, 104);
@@ -1784,7 +1812,7 @@ function drawTitle() {
   drawBackground();
   ctx.fillStyle = 'rgba(5,6,12,.5)'; ctx.fillRect(0, 0, VW, VH);
   drawTitleEmblem(VW / 2, 88);
-  const T = 'PANTOCRÀTOR';
+  const T = 'PANTHOKRATOR';
   ctx.font = 'bold 34px "Courier New", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   ctx.fillStyle = '#14100c'; ctx.fillText(T, VW / 2 + 2, 150);
   ctx.fillStyle = '#d8a23a'; ctx.fillText(T, VW / 2, 148);
@@ -1815,7 +1843,7 @@ function drawWin() {
   drawWorld();
   ctx.fillStyle = 'rgba(5,6,12,.65)'; ctx.fillRect(0, 0, VW, VH);
   drawText('EL PALAU RESPIRA', VW / 2, 70, '#d8a23a', 22, 'center');
-  drawText('Has travessat les ruïnes i apaivagat el Pantocràtor.', VW / 2, 106, '#e8e4d8', 9, 'center');
+  drawText('Has travessat les ruïnes i apaivagat el Panthokrator.', VW / 2, 106, '#e8e4d8', 9, 'center');
   drawText('L\'art romànic del MNAC segueix en peu, píxel a píxel.', VW / 2, 118, '#e8e4d8', 9, 'center');
   drawText('SCORE FINAL: ' + String(player.score).padStart(7, '0'), VW / 2, 146, '#f2d78a', 12, 'center');
   if (game.frame % 90 < 60) drawText('PULSA ENTER O TOCA PER TORNAR', VW / 2, 190, '#8f9aa8', 9, 'center');
