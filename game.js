@@ -625,7 +625,7 @@ window.addEventListener('keyup', e => {
 /* --- joystick virtual octodireccional amb zona morta de 30px --- */
 const padEl = document.getElementById('pad');
 const DEADZONE = 12;
-let padTouchId = null;
+let padTouchId = null, btnATouchId = null, btnJTouchId = null;
 function padVector(t) {
   const r = padEl.getBoundingClientRect();
   const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
@@ -651,10 +651,10 @@ function touchHandler(e) {
     if (e.type === 'touchstart') {
       if (el === btnA || btnA.contains(el)) {
         if (!input.attackHeld) input.pressAttack();
-        input.attackHeld = true; btnA.classList.add('pressed');
+        input.attackHeld = true; btnATouchId = t.identifier; btnA.classList.add('pressed');
       } else if (el === btnJ || btnJ.contains(el)) {
         if (!input.jumpHeld) input.pressJump();
-        input.jumpHeld = true; btnJ.classList.add('pressed');
+        input.jumpHeld = true; btnJTouchId = t.identifier; btnJ.classList.add('pressed');
       } else if (padTouchId === null && t.clientX < window.innerWidth * 0.45 && t.clientY > window.innerHeight * 0.35) {
         padTouchId = t.identifier; padEl.classList.add('active');
         applyPad(padVector(t));
@@ -666,9 +666,8 @@ function touchHandler(e) {
         padTouchId = null; padEl.classList.remove('active');
         applyPad({ l: 0, r: 0, u: 0, d: 0 });
       }
-      const el2 = document.elementFromPoint(t.clientX, t.clientY);
-      if (el2 !== btnA && !btnA.contains(el2 || btnA)) { input.attackHeld = false; btnA.classList.remove('pressed'); }
-      if (el2 !== btnJ && !btnJ.contains(el2 || btnJ)) { input.jumpHeld = false; btnJ.classList.remove('pressed'); }
+      if (t.identifier === btnATouchId) { btnATouchId = null; input.attackHeld = false; btnA.classList.remove('pressed'); }
+      if (t.identifier === btnJTouchId) { btnJTouchId = null; input.jumpHeld = false; btnJ.classList.remove('pressed'); }
     }
   }
 }
@@ -678,7 +677,7 @@ window.addEventListener('mousedown', () => { sfx.init(); sfx.resume(); gameStart
 window.addEventListener('blur', () => {
   input.left = input.right = input.up = input.down = false;
   input.jumpHeld = input.attackHeld = false;
-  padTouchId = null;
+  padTouchId = btnATouchId = btnJTouchId = null;
 });
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { input.left = input.right = input.up = input.down = false; }
