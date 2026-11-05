@@ -12,7 +12,7 @@ Funciona al navegador (mòbil i escriptori), sense instal·lació. Al mòbil, mi
 - **Saltar:** botó SALTAR o espai/Z. Amb *coyote time*: pots saltar uns mil·lisegons després de deixar la vora.
 - **Atacar:** botó ATACAR o X/J.
 - **Agafar-se:** mantén avall a la cruceta (o fletxa/S) a terra; el personatge s'ajup i no es mou.
-- **Cop baix:** agafat, prem atacar per fer un esmolada ras que trenque vitrines i enemics baixos.
+- **Cop baix:** agafat, prem atacar per fer una estocada rasament visible que trenque vitrines i enemics baixos.
 - **Atac descendent:** diagonal avall + atacar mentre caus; l'animació queda fixada fins a colpejar o tocar terra.
 - **Làmpares de aranya:** salta a prop d'una làmpara i t'hi enganxaràs automàticament (ancoratge magnètic de 48 px); balanceja't amb esquerra/dreta i salta per enlairar-te.
 - **Fosos:** no hi ha mort instantània. Caure des de zones altes et porta a rutes inferiors amb dany lleu i més enemics terrestres; hauràs de tornar a pujar.
@@ -23,6 +23,7 @@ Funciona al navegador (mòbil i escriptori), sense instal·lació. Al mòbil, mi
   - **DESTRAL:** lenta i contundent; al nivell 3 llenca una destral en arc que fa el doble de dany.
   - **MARTELL:** curt i molt lent, però el cop més fort del joc i empenta els enemics.
   Troba-les a les vitrines i al botí dels enemics; tornar a agafar la mateixa arma en puja el nivell.
+- **Fusió d'armes:** agafar una arma de tipus DIFERENT la combina amb la que duus en lloc de canviar-la. Cada fusió suma +1 de dany, +4 d'abast i els efectes especials de l'arma fusionada (dard perforant, destral en arc, retrocés de martell), i l'atac dispara els projectils de totes les armes combinades. Nivells de fusió: **DUAL** (2 armes), **TRIPLE** (3) i **ARMA LLEGENDÀRIA** (4), amb aura de color pròpia.
 - **Botí i bonus:** els enemics deixen monedes d'or (+50 i +150 punts); a les vitrines també hi ha cors (+2 HP), rellotges de sorra (+30 s) i el POW, que escombra tots els enemics de la pantalla.
 - **Enemics:** bèsties dels capitells romànics, dimonis dels frescos de Sant Climent de Taüll i, al final, el Panthokrator: dispara projectils de llum des del fons cap al pla d'acció. **Desvia els orbes amb l'espasa** per fer-li mal i esquiva el pilar de llum telegrafia't.
 - **M:** silencia la música.
