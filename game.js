@@ -294,12 +294,13 @@ function drawWarrior(px, py, dir, st, anim, weapon) {
     const cn = comboN();
     const p0 = Math.min(1, player.attackT / curW().frames);
     const col = cn > 0 ? TIER_COLS[cn] : (wt === 'llanca' ? '#7fd4e8' : wt === 'destral' ? '#e8783c' : wt === 'martell' ? '#f2d78a' : '#f4f8ff');
-    const r = (st === 'cattack' ? 22 : 26) * (0.65 + 0.55 * p0) + cn * 3;
+    const RR = (curW().reach[player.weapon - 1] || 15) + cn * 4;  // abast real del cop (mateix valor que el hitbox)
+    const r = Math.max(st === 'cattack' ? 20 : 24, RR + 4) * (0.65 + 0.55 * p0);
     ctx.save(); ctx.translate(px, py); ctx.scale(dir, 1);
     ctx.globalAlpha = (st === 'cattack' ? 0.26 : 0.24) * Math.sin(p0 * Math.PI);
     ctx.fillStyle = col;
     ctx.beginPath(); ctx.moveTo(6, fy);
-    if (wt === 'llanca') ctx.rect(6, fy - 2, r + 16, 4.5);           // estocada llarga i prima
+    if (wt === 'llanca') ctx.rect(6, fy - 2, r, 4.5);                // estocada llarga i prima (r ja inclou l'abast)
     else ctx.arc(6, fy, wt === 'destral' ? r + 6 : wt === 'martell' ? r - 2 : r, -0.5, 0.5);
     ctx.closePath(); ctx.fill();
     ctx.restore();
@@ -1165,10 +1166,8 @@ function updatePlayer() {
   }
   function landOn(f) {
     if (player.state === 'dive') { spawnParts(player.x + 6, player.y + player.h, '#8a6f42', 5); sfx.smash(); }
-    /* caiguda des de zona alta: dany lleu d'impacte, MAI mortal (el cop no pot matar) */
-    if (player.fellFromY !== null && player.y - player.fellFromY > 70) {
-      if (player.invuln <= 0) { player.hp = Math.max(1, player.hp - 1); player.invuln = 60; sfx.hurtS(); }
-    }
+    /* Salts i caigudes NO resten mai vida (petició directa de l'usuari, 5 nov 2026):
+       ni l'impacte d'una caiguda alta ni caure dins un fos descompten HP. */
     player.fellFromY = null;
     player.vy = 0; player.onGround = true;
     player.onLower = (f.y === LY);
@@ -1224,13 +1223,13 @@ function swordBox() {
 /* Arsenal estil placa 1987 (referència Black Tiger): quatre armes trobables,
    cadascuna amb nivells de poder (1-4) i caràcter propi; projectil a nivell 3+. */
 const WEAPONS = {
-  espasa:  { name: 'ESPASA',  reach: [15, 22, 26, 26], dmg: [1, 2, 2, 3], frames: 14 },
-  llanca:  { name: 'LLANÇA',  reach: [24, 30, 36, 42], dmg: [1, 1, 2, 2], frames: 11 },
-  destral: { name: 'DESTRAL', reach: [16, 19, 22, 25], dmg: [2, 2, 3, 4], frames: 18 },
-  martell: { name: 'MARTELL', reach: [13, 15, 17, 19], dmg: [2, 3, 4, 5], frames: 18 },
-  falcio:  { name: 'FALCIÓ',  reach: [17, 20, 24, 28], dmg: [1, 2, 3, 3], frames: 10 },
-  ballesta:{ name: 'BALLESTA', reach: [9, 10, 11, 12], dmg: [1, 1, 2, 2], frames: 12 },
-  maca:    { name: 'MAÇA',    reach: [18, 20, 22, 24], dmg: [3, 4, 5, 6], frames: 22 }
+  espasa:  { name: 'ESPASA',  reach: [26, 31, 36, 41], dmg: [1, 2, 2, 3], frames: 14 },
+  llanca:  { name: 'LLANÇA',  reach: [34, 40, 46, 52], dmg: [1, 1, 2, 2], frames: 11 },
+  destral: { name: 'DESTRAL', reach: [24, 27, 31, 35], dmg: [2, 2, 3, 4], frames: 18 },
+  martell: { name: 'MARTELL', reach: [20, 23, 26, 30], dmg: [2, 3, 4, 5], frames: 18 },
+  falcio:  { name: 'FALCIÓ',  reach: [26, 30, 34, 38], dmg: [1, 2, 3, 3], frames: 10 },
+  ballesta:{ name: 'BALLESTA', reach: [12, 14, 16, 18], dmg: [1, 1, 2, 2], frames: 12 },
+  maca:    { name: 'MAÇA',    reach: [26, 29, 32, 36], dmg: [3, 4, 5, 6], frames: 22 }
 };
 const WTYPES = ['llanca', 'destral', 'martell', 'falcio', 'ballesta', 'maca'];
 const curW = () => WEAPONS[player.wtype] || WEAPONS.espasa;
@@ -2459,8 +2458,25 @@ const TEST = {
           this.beastTries = (this.beastTries || 0) + 1;
           input.pressAttack();
           const alive = world.enemies.some(e => e.t === 'beast' && Math.abs(e.x - 480) < 30);
-          if (!alive) { this.log('beast-kill', true, 'score+'); this.phase = 12.5; this.warp(1364, GY - player.h); player.state = 'idle'; player.onGround = true; player.dir = 1; }
-          else if (this.beastTries > 400) { this.log('beast-kill', false, 'abans=' + before); this.phase = 12.5; this.warp(1364, GY - player.h); player.state = 'idle'; player.onGround = true; player.dir = 1; }
+          if (!alive) { this.log('beast-kill', true, 'score+'); this.phase = 12.05; this.warp(1000, GY - player.h); player.state = 'idle'; }
+          else if (this.beastTries > 400) { this.log('beast-kill', false, 'abans=' + before); this.phase = 12.05; this.warp(1000, GY - player.h); player.state = 'idle'; }
+          break; }
+        case 12.05: { // abast real: l'espasa nivell 1 toca una bèstia a 30px del cos (l'abast antic de 15px no hi arribava)
+          if (!player.onGround) break;
+          { // mesura aïllada: desa i restaura l'arma real del jugador
+            const w0 = player.weapon, t0 = player.wtype, f0 = player.fused;
+            player.weapon = 1; player.wtype = 'espasa'; player.fused = []; player.dir = 1;
+            player.state = 'attack'; player.attackT = 0;
+            const sb = swordBox();
+            player.state = 'idle';
+            const reach = WEAPONS.espasa.reach[0];
+            const b = makeEnemy('beast', player.x + 30, GY);
+            const hitReal = !!sb && overlap(sb, b);
+            this.log('long-reach-hit', !!sb && sb.w === reach && reach >= 26 && hitReal,
+              'hitbox w=' + (sb && sb.w) + ' bèstia a +' + Math.round(b.x - player.x) + 'px overlap=' + hitReal);
+            player.weapon = w0; player.wtype = t0; player.fused = f0;
+          }
+          this.phase = 12.5; this.warp(1364, GY - player.h); player.state = 'idle'; player.onGround = true; player.dir = 1;
           break; }
         case 12.5: { // agafar-se i cop baix: trenca la vitrina de x=1400 agafat
           this.key('down', true);
@@ -2615,17 +2631,17 @@ const TEST = {
             this.log('fusio-maca', false, 'no pickup');
             this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
           } break; }
-        case 13: // caure al forat: dany lleu, no mort, pis inferior
+        case 13: // caure al forat: SENSE dany, no mort, pis inferior
           if (player.onGround) {
             this.log('pit-fall-no-death', !player.dead && player.onLower, 'onLower=' + player.onLower);
-            this.log('pit-fall-light-damage', player.hp < this.hpBeforeFall && player.hp >= this.hpBeforeFall - 2, 'hp=' + player.hp + '/' + this.hpBeforeFall);
+            this.log('pit-fall-no-damage', player.hp === this.hpBeforeFall, 'hp=' + player.hp + '/' + this.hpBeforeFall);
             this.phase = 13.5;
-            // caiguda de molta altura amb 1 hp: no ha de matar mai
-            player.hp = 1; player.invuln = 0; this.warp(700, GY - 160); player.vy = 0.5;
+            // caiguda de molta altura: tampoc resta vida
+            player.hp = 5; player.invuln = 0; this.warp(700, GY - 160); player.vy = 0.5;
           } break;
-        case 13.5: // aterra a la banqueta (caiguda > 70px) amb 1 hp
+        case 13.5: // aterra a la banqueta (caiguda > 70px) amb la vida intacta
           if (player.onGround) {
-            this.log('high-fall-never-lethal', !player.dead && player.hp === 1, 'hp=' + player.hp + ' dead=' + player.dead);
+            this.log('high-fall-no-damage', !player.dead && player.hp === 5, 'hp=' + player.hp + ' dead=' + player.dead);
             this.phase = 14;
             this.warp(220, 90); player.vy = 2; this.key('down', true);
           } break;
