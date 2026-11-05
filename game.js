@@ -1048,9 +1048,9 @@ function updatePlayer() {
   }
   function landOn(f) {
     if (player.state === 'dive') { spawnParts(player.x + 6, player.y + player.h, '#8a6f42', 5); sfx.smash(); }
-    /* caiguda des de zona alta al pis inferior: dany lleu d'impacte, no mort */
+    /* caiguda des de zona alta: dany lleu d'impacte, MAI mortal (el cop no pot matar) */
     if (player.fellFromY !== null && player.y - player.fellFromY > 70) {
-      if (player.invuln <= 0) { player.hp -= 1; player.invuln = 60; sfx.hurtS(); if (player.hp <= 0) { killPlayer(); return; } }
+      if (player.invuln <= 0) { player.hp = Math.max(1, player.hp - 1); player.invuln = 60; sfx.hurtS(); }
     }
     player.fellFromY = null;
     player.vy = 0; player.onGround = true;
@@ -2365,6 +2365,13 @@ const TEST = {
           if (player.onGround) {
             this.log('pit-fall-no-death', !player.dead && player.onLower, 'onLower=' + player.onLower);
             this.log('pit-fall-light-damage', player.hp < this.hpBeforeFall && player.hp >= this.hpBeforeFall - 2, 'hp=' + player.hp + '/' + this.hpBeforeFall);
+            this.phase = 13.5;
+            // caiguda de molta altura amb 1 hp: no ha de matar mai
+            player.hp = 1; player.invuln = 0; this.warp(700, GY - 160); player.vy = 0.5;
+          } break;
+        case 13.5: // aterra a la banqueta (caiguda > 70px) amb 1 hp
+          if (player.onGround) {
+            this.log('high-fall-never-lethal', !player.dead && player.hp === 1, 'hp=' + player.hp + ' dead=' + player.dead);
             this.phase = 14;
             this.warp(220, 90); player.vy = 2; this.key('down', true);
           } break;
