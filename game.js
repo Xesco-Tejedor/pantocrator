@@ -265,26 +265,38 @@ loadInto(WARRIOR_IMG_L, WARRIOR_IMG_LONG_SRC);
 loadInto(BEAST_IMG, BEAST_IMG_SRC);
 loadInto(DEMON_IMG, DEMON_IMG_SRC);
 
+// Low stance uses the same grounded lunge anatomy throughout the strike.
+// Remove the baked-in sword so ALL equipped weapons have one hand-held shape.
+const LOW_BODY = document.createElement('canvas');
+function prepareLowBody() {
+  const im = WARRIOR_IMG.attack;
+  if (!im.complete || !im.naturalWidth) return;
+  LOW_BODY.width = 120; LOW_BODY.height = 108;
+  const c = LOW_BODY.getContext('2d'); c.drawImage(im, 0, 0);
+  c.clearRect(83, 39, 37, 14);
+}
+WARRIOR_IMG.attack.addEventListener('load', prepareLowBody); prepareLowBody();
+
 /* Guerrer: il·lustracio original guiada per la referencia (full pintat, retall per alfa). */
 function drawWarrior(px, py, dir, st, anim, weapon) {
   let key = 'idle';
   if (st === 'run') key = Math.floor(anim / 8) % 2 ? 'runA' : 'runB';
   else if (st === 'attack') key = 'attack';
-  else if (st === 'crouch' || st === 'cattack') key = 'crouch';
+  else if (st === 'crouch' || st === 'cattack') key = 'low';
   else if (st === 'air') key = 'air';
   else if (st === 'dive') key = 'dive';
   else if (st === 'hang') key = 'hang';
-  const im = (weapon >= 2 && WARRIOR_IMG_L[key]) || WARRIOR_IMG[key];
+  const im = key === 'low' ? LOW_BODY : ((weapon >= 2 && WARRIOR_IMG_L[key]) || WARRIOR_IMG[key]);
   // flaix del cop (efecte, no forma part del sprite)
   if (st === 'attack' || st === 'cattack') {
-    const fy = st === 'cattack' ? -13 : -28;
+    const fy = st === 'cattack' ? -24 : -28;
     const wt = player.wtype || 'espasa';
     const cn = comboN();
     const p0 = Math.min(1, player.attackT / curW().frames);
     const col = cn > 0 ? TIER_COLS[cn] : (wt === 'llanca' ? '#7fd4e8' : wt === 'destral' ? '#e8783c' : wt === 'martell' ? '#f2d78a' : '#f4f8ff');
     const r = (st === 'cattack' ? 22 : 26) * (0.65 + 0.55 * p0) + cn * 3;
     ctx.save(); ctx.translate(px, py); ctx.scale(dir, 1);
-    ctx.globalAlpha = st === 'cattack' ? 0.36 : 0.24;
+    ctx.globalAlpha = (st === 'cattack' ? 0.26 : 0.24) * Math.sin(p0 * Math.PI);
     ctx.fillStyle = col;
     ctx.beginPath(); ctx.moveTo(6, fy);
     if (wt === 'llanca') ctx.rect(6, fy - 2, r + 16, 4.5);           // estocada llarga i prima
@@ -295,23 +307,27 @@ function drawWarrior(px, py, dir, st, anim, weapon) {
   ctx.save();
   ctx.translate(px, py); ctx.scale(dir, 1);
   ctx.filter = 'drop-shadow(0 0 1.6px rgba(10,8,6,.85))';
-  if (im && im.complete && im.naturalWidth) ctx.drawImage(im, -37, -64, 74, 66);
+  if (key === 'low' && LOW_BODY.width > 1) {
+    // Identical feet and body scale in crouch and strike; no full-height pose swap.
+    const thrust = st === 'cattack' ? Math.sin(Math.PI * Math.min(1, player.attackT / curW().frames)) * 2 : 0;
+    ctx.drawImage(LOW_BODY, -37 + thrust, -44, 74, 46);
+  } else if (im && im.complete && im.naturalWidth) ctx.drawImage(im, -37, -64, 74, 66);
   ctx.filter = 'none';
   ctx.restore();
   /* Arma empunyada: dibuix recognoscible per tipus damunt del sprite, a dreta i
      agachat (l'espasa ja ve pintada al sprite). No toca el sprite del personatge. */
   const wtp = player.wtype || 'espasa';
-  if (st === 'attack' || st === 'cattack') {
-    const W = curW(), p = Math.min(1, player.attackT / W.frames);
+  if (st === 'attack' || st === 'cattack' || st === 'crouch') {
+    const W = curW(), p = st === 'crouch' ? 0 : Math.min(1, player.attackT / W.frames);
     const R = (W.reach[player.weapon - 1] || 15) + comboN() * 4;
-    const hx = 9, hy = st === 'cattack' ? -13 : -28;
+    const hx = st === 'cattack' || st === 'crouch' ? 14 : 9, hy = st === 'cattack' || st === 'crouch' ? -24 : -28;
     ctx.save(); ctx.translate(px, py); ctx.scale(dir, 1); ctx.lineCap = 'round';
     if (comboN() > 0) { ctx.shadowColor = TIER_COLS[comboN()]; ctx.shadowBlur = 7; }
     if (wtp === 'espasa') {
       /* Cop baix amb espasa: estocada visible. Dempeus l'espasa ja ve pintada
          al sprite d'atac, per això només es dibuixa agachat. */
-      if (st === 'cattack') {
-        const ext = Math.max(9, R - 3) * Math.min(1, p * 1.6);
+      if (st === 'cattack' || st === 'crouch') {
+        const ext = 9 + Math.max(0, R - 9) * Math.sin(p * Math.PI);
         ctx.globalAlpha = 0.38 * (1 - p * 0.55);                     // estela del cop
         ctx.strokeStyle = comboN() ? TIER_COLS[comboN()] : '#f4f8ff'; ctx.lineWidth = 5;
         ctx.beginPath(); ctx.moveTo(hx - 4, hy - 2); ctx.lineTo(hx + ext + 3, hy - 2); ctx.stroke();
@@ -467,7 +483,7 @@ function swordArm(st, anim, weapon, bob, SK0, SK1) {
 /* Bèstia de capitell: gàrgola alada amb volum. Peus a la base del hitbox. */
 /* Bestia de capitell: lleo alat de pedra (il·lustracio original, referencia MNAC). */
 function drawBeast(e, anim) {
-  const key = ['bA', 'bB', 'bIdle', 'bB'][Math.floor(anim / 8) % 4];
+  const key = e.moving ? ['bA', 'bB'][Math.floor((e.walkAnim || 0) / 6) % 2] : 'bIdle';
   const im = BEAST_IMG[key];
   const dir = e.dir < 0 ? -1 : 1;
   ctx.save();
@@ -584,7 +600,11 @@ function ensureFloorStrips() {
 function drawFloor(x, w, y) {
   ensureFloorStrips();
   const strip = (y === LY) ? world._strips.lower : world._strips.main;
-  for (let i = 0; i < w; i += 256) ctx.drawImage(strip, x + i, y);
+  // Clip the final tile: drawing all 256px used to paint solid marble OVER gaps.
+  for (let i = 0; i < w; i += 256) {
+    const sw = Math.min(256, w - i);
+    ctx.drawImage(strip, 0, 0, sw, strip.height, x + i, y, sw, strip.height);
+  }
 }
 
 /* Vitrina gòtica amb vidre i volum */
@@ -1074,6 +1094,8 @@ function updatePlayer() {
   if (player.onGround && input.down && (player.state === 'idle' || player.state === 'run')) player.state = 'crouch';
   if (player.state === 'crouch' && (!input.down || !player.onGround)) player.state = player.onGround ? 'idle' : 'air';
 
+  if (player.state === 'crouch') { if (input.left) player.dir = -1; else if (input.right) player.dir = 1; }
+
   /* ---------- moviment horitzontal ---------- */
   const locked = (player.state === 'attack' && player.onGround) || player.state === 'dive' || player.state === 'crouch' || player.state === 'cattack';
   if (!locked) {
@@ -1108,7 +1130,7 @@ function updatePlayer() {
       player.state = 'dive';
     } else {
       player.state = player.state === 'crouch' ? 'cattack' : 'attack';
-      player.attackT = 0; sfx.swing(); throwDaggers();
+      player.attackT = 0; if (player.onGround) player.vx = 0; sfx.swing(); throwDaggers();
     }
   }
   if (player.state === 'attack' || player.state === 'cattack') {
@@ -1191,8 +1213,8 @@ function swordBox() {
   const reach = (curW().reach[player.weapon - 1] || 15) + comboN() * 4;
   if (player.state === 'dive') return { x: player.x - 2, y: player.y + player.h - 4, w: player.w + 4, h: 14 };
   if (player.state === 'cattack') return player.dir === 1
-    ? { x: player.x + player.w, y: player.y + player.h - 10, w: reach, h: 10 }
-    : { x: player.x - reach, y: player.y + player.h - 10, w: reach, h: 10 };
+    ? { x: player.x + player.w, y: player.y + player.h - 26, w: reach, h: 26 }
+    : { x: player.x - reach, y: player.y + player.h - 26, w: reach, h: 26 };
   if (player.state !== 'attack' && player.state !== 'hang') return null;
   return player.dir === 1
     ? { x: player.x + player.w, y: player.y + 2, w: reach, h: 12 }
@@ -1349,31 +1371,47 @@ function updateEnemies() {
     if (e.hit > 0) e.hit--;
     const pcx = player.x + player.w / 2;
     if (e.t === 'beast') {
-      const near = Math.abs(pcx - (e.x + e.w / 2)) < 90 && Math.abs(player.y - e.y) < 40;
+      const ecx = e.x + e.w / 2, dx = pcx - ecx;
+      const sameLevel = Math.abs(player.y + player.h - (e.y + e.h)) < 32;
+      const near = Math.abs(dx) < 190 && sameLevel && !player.dead;
+      // Bind to a walkable segment by FEET, never by a mismatched sprite height.
+      const segments = Math.abs(e.y + e.h - LY) < 8 ? world.stage.lower : world.stage.ground;
+      const seg = e.walkSeg || segments.find(g => ecx >= g.x && ecx <= g.x + g.w);
+      if (seg) e.walkSeg = seg;
       const sp = near ? 0.95 : 0.45;
-      e.dir = near ? (pcx > e.x ? 1 : -1) : e.dir;
-      e.x += sp * e.dir;
-      // no caure de la seva superfície
-      const onSeg = (seg, y) => e.x > seg.x - 4 && e.x + e.w < seg.x + seg.w + 4 && Math.abs(e.baseY - (y - 12)) < 2;
-      const inG = world.stage.ground.some(g => onSeg(g, GY)), inL = world.stage.lower.some(g => onSeg(g, LY));
-      if (!inG && !inL) { e.dir *= -1; e.x += sp * e.dir * 2; }
+      if (near && Math.abs(dx) > 9) e.dir = dx > 0 ? 1 : -1;
+      const oldX = e.x;
+      if (seg) {
+        const lo = seg.x + 2, hi = seg.x + seg.w - e.w - 2;
+        const target = e.x + (near && Math.abs(dx) < 19 ? 0 : sp * e.dir);
+        e.x = clamp(target, lo, hi);
+        // A chasing beast waits facing you at a gap; a patrol turns once.
+        if (!near && (target < lo || target > hi)) e.dir *= -1;
+      }
+      e.moving = Math.abs(e.x - oldX) > 0.01;
+      if (e.moving) e.walkAnim = (e.walkAnim || 0) + sp;
       if (!player.dead && player.invuln <= 0 && overlap(player, e)) playerDamage(1, e.x + e.w / 2);
     } else {
-      // dimoni: ondula i s'abraona
-      e.ph += 0.05;
-      if (e.diving > 0) {
-        e.diving--;
-        e.x += (pcx - e.x) * 0.03;
-        e.y += 1.4;
-        if (e.diving === 1) { e.baseY = e.y - 70; }
+      // Deliberate approach, fixed dive vector, then a smooth return to roost.
+      if (e.homeX === undefined) { e.homeX = e.x; e.homeY = e.baseY; e.mode = 'hover'; }
+      e.ph += 0.035;
+      if (e.mode === 'dive') {
+        e.x += e.diveVX; e.y += e.diveVY;
+        if (--e.diving <= 0 || e.y >= GY - e.h - 2) e.mode = 'return';
+      } else if (e.mode === 'return') {
+        e.x += clamp(e.homeX - e.x, -1.05, 1.05);
+        e.y += clamp(e.homeY - e.y, -1.3, 1.3);
+        if (Math.abs(e.x - e.homeX) < 2 && Math.abs(e.y - e.homeY) < 2) { e.mode = 'hover'; e.diveT = 150; }
       } else {
-        e.y = e.baseY + Math.sin(e.ph) * 8;
-        e.x += Math.sin(e.ph * 0.6) * 0.5;
-        e.diveT--;
-        if (e.diveT <= 0 && Math.abs(pcx - e.x) < 110) { e.diving = 55; e.diveT = rnd(180, 320); }
-        if (e.y > e.baseY + 30) e.baseY = e.y - 20;
+        e.x += clamp(e.homeX + Math.sin(e.ph * 0.6) * 12 - e.x, -0.7, 0.7);
+        e.y += clamp(e.homeY + Math.sin(e.ph) * 6 - e.y, -0.7, 0.7);
+        if (--e.diveT <= 0 && Math.abs(pcx - e.x) < 180 && !player.dead) {
+          const dx = pcx - (e.x + e.w / 2), dy = Math.max(12, player.y + 10 - e.y);
+          const d = Math.hypot(dx, dy);
+          e.diveVX = dx / d * 1.8; e.diveVY = dy / d * 1.8;
+          e.diving = Math.min(100, Math.ceil(d / 1.8)); e.mode = 'dive';
+        }
       }
-      if (e.y > 300) { e.y = e.baseY = 120; }
       if (!player.dead && player.invuln <= 0 && overlap(player, e)) playerDamage(1, e.x + e.w / 2);
     }
   }
@@ -1999,6 +2037,23 @@ function drawWorld() {
   ctx.translate(-cx + (world.shake ? rnd(-world.shake, world.shake) : 0), -cy + (world.shake ? rnd(-world.shake, world.shake) : 0));
   if (world.shake > 0) world.shake *= 0.85;
 
+  // Open shafts: dark recess, masonry walls, bright broken lips and warning marks.
+  for (let i = 0; i < s.ground.length - 1; i++) {
+    const l = s.ground[i].x + s.ground[i].w, r = s.ground[i + 1].x;
+    ctx.fillStyle = lgrad(l, GY, l, LY, '#090c16', '#232331');
+    ctx.fillRect(l, GY, r - l, LY - GY);
+    for (const x of [l, r - 5]) {
+      ctx.fillStyle = '#68553e'; ctx.fillRect(x, GY, 5, LY - GY);
+      ctx.fillStyle = '#b59562'; ctx.fillRect(x, GY, 2, LY - GY);
+      for (let y = GY + 10; y < LY; y += 12) { ctx.fillStyle = '#282127'; ctx.fillRect(x, y, 5, 2); }
+    }
+    for (const edge of [l - 18, r]) {
+      ctx.fillStyle = '#2a201c'; ctx.fillRect(edge, GY - 4, 18, 4);
+      ctx.fillStyle = '#e2b25c';
+      for (let a = 0; a < 18; a += 6) ctx.fillRect(edge + a, GY - 4, 3, 4);
+    }
+  }
+
   // terra: marbre pre-rendejat amb vetes i clapes
   for (const g of s.ground) drawFloor(g.x, g.w, GY);
   for (const g of s.lower) drawFloor(g.x, g.w, LY);
@@ -2435,11 +2490,13 @@ const TEST = {
           if (!player.onGround) break;
           if (!this.dk0) {
             this.dk0 = true;
-            const b = world.enemies.find(e => e.t === 'beast' && Math.abs(e.x - 760) < 40);
-            if (b) { b.hp = 1; b.vx = 0; b.dir = -1; }
+            // Use a fresh projectile target: patrols now genuinely move away from their spawn.
+            world.enemies = [];
+            const b = makeEnemy('beast', 760, GY); b.hp = 1; b.dir = -1;
+            world.enemies.push(b); this.daggerTarget = b;
             input.pressAttack();
           }
-          const b2 = world.enemies.find(e => e.t === 'beast' && Math.abs(e.x - 760) < 80);
+          const b2 = world.enemies.includes(this.daggerTarget) ? this.daggerTarget : null;
           const loot = world.items.some(i => i.c === 'coin' || i.c === 'coinbig' || i.c === 'heart');
           if (!b2 && loot) { this.log('dagger-kill-drop', true); this.phase = 12.8; }
           else if (!b2 && !loot) { this.log('dagger-kill-drop', false, 'morta sense botí'); this.phase = 12.8; }
