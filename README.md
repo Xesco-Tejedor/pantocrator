@@ -17,13 +17,16 @@ Funciona al navegador (mòbil i escriptori), sense instal·lació. Al mòbil, mi
 - **Làmpares de aranya:** salta a prop d'una làmpara i t'hi enganxaràs automàticament (ancoratge magnètic de 48 px); balanceja't amb esquerra/dreta i salta per enlairar-te.
 - **Fosos:** no hi ha mort instantània. Caure des de zones altes et porta a rutes inferiors amb dany lleu i més enemics terrestres; hauràs de tornar a pujar.
 - **Vitrines gòtiques:** trenca-les per aconseguir espasa llarga, armadura, escut i bonus.
-- **Quatre armes trobables**, cadascuna amb 4 nivells de poder i joc propi:
+- **Set armes trobables**, cadascuna amb 4 nivells de poder i joc propi:
   - **ESPASA:** equilibrada; al nivell 3 llenca dagues (2 al nivell 4) que també desvien orbes.
   - **LLANÇA:** l'abast més llarg i cop ràpid, dany més baix; al nivell 3 llenca un dard que forada enemics.
   - **DESTRAL:** lenta i contundent; al nivell 3 llenca una destral en arc que fa el doble de dany.
   - **MARTELL:** curt i molt lent, però el cop més fort del joc i empenta els enemics.
+  - **FALCIÓ:** fulla corba ràpida amb esmolada ampla; llenca una onada tallant que travessa enemics.
+  - **BALLESTA:** curt de cos a cos, però **dispara virotons des del nivell 1** (ràpids i precisos; al nivell 3 foraden, al 4 en llenca dos).
+  - **MAÇA:** molt lenta i devastadora: el dany més alt del joc i una empenta brutal amb tremolor de pantalla.
   Troba-les a les vitrines i al botí dels enemics; tornar a agafar la mateixa arma en puja el nivell.
-- **Fusió d'armes:** agafar una arma de tipus DIFERENT la combina amb la que duus en lloc de canviar-la. Cada fusió suma +1 de dany, +4 d'abast i els efectes especials de l'arma fusionada (dard perforant, destral en arc, retrocés de martell), i l'atac dispara els projectils de totes les armes combinades. Nivells de fusió: **DUAL** (2 armes), **TRIPLE** (3) i **ARMA LLEGENDÀRIA** (4), amb aura de color pròpia.
+- **Fusió d'armes:** agafar una arma de tipus DIFERENT la **brandes** i l'anterior es **fusiona**: no en perds cap. Cada fusió suma +1 de dany, +4 d'abast, +2 de retrocés i els projectils de totes les armes combinades. Nivells de fusió: **DUAL** (2 armes), **TRIPLE** (3), **LLEGENDÀRIA** (4), **MÍTICA** (5), **ÈPICA** (6) i **ARMA DIVINA** (7), amb aura de color pròpia.
 - **Botí i bonus:** els enemics deixen monedes d'or (+50 i +150 punts); a les vitrines també hi ha cors (+2 HP), rellotges de sorra (+30 s) i el POW, que escombra tots els enemics de la pantalla.
 - **Enemics:** bèsties dels capitells romànics, dimonis dels frescos de Sant Climent de Taüll i, al final, el Panthokrator: dispara projectils de llum des del fons cap al pla d'acció. **Desvia els orbes amb l'espasa** per fer-li mal i esquiva el pilar de llum telegrafia't.
 - **M:** silencia la música.
