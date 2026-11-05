@@ -17,7 +17,12 @@ Funciona al navegador (mòbil i escriptori), sense instal·lació. Al mòbil, mi
 - **Làmpares de aranya:** salta a prop d'una làmpara i t'hi enganxaràs automàticament (ancoratge magnètic de 48 px); balanceja't amb esquerra/dreta i salta per enlairar-te.
 - **Fosos:** no hi ha mort instantània. Caure des de zones altes et porta a rutes inferiors amb dany lleu i més enemics terrestres; hauràs de tornar a pujar.
 - **Vitrines gòtiques:** trenca-les per aconseguir espasa llarga, armadura, escut i bonus.
-- **Arsenal en 4 nivells:** l'espasa creix en abast i dany amb cada millora; al nivell 3 llences dagues a distància (i 2 per cop al nivell 4). Les dagues també desvien orbes.
+- **Quatre armes trobables**, cadascuna amb 4 nivells de poder i joc propi:
+  - **ESPASA:** equilibrada; al nivell 3 llenca dagues (2 al nivell 4) que també desvien orbes.
+  - **LLANÇA:** l'abast més llarg i cop ràpid, dany més baix; al nivell 3 llenca un dard que forada enemics.
+  - **DESTRAL:** lenta i contundent; al nivell 3 llenca una destral en arc que fa el doble de dany.
+  - **MARTELL:** curt i molt lent, però el cop més fort del joc i empenta els enemics.
+  Troba-les a les vitrines i al botí dels enemics; tornar a agafar la mateixa arma en puja el nivell.
 - **Botí i bonus:** els enemics deixen monedes d'or (+50 i +150 punts); a les vitrines també hi ha cors (+2 HP), rellotges de sorra (+30 s) i el POW, que escombra tots els enemics de la pantalla.
 - **Enemics:** bèsties dels capitells romànics, dimonis dels frescos de Sant Climent de Taüll i, al final, el Panthokrator: dispara projectils de llum des del fons cap al pla d'acció. **Desvia els orbes amb l'espasa** per fer-li mal i esquiva el pilar de llum telegrafia't.
 - **M:** silencia la música.
