@@ -15,7 +15,7 @@ Funciona al navegador (mòbil i escriptori), sense instal·lació. Al mòbil, mi
 - **Cop baix:** agafat, prem atacar per fer una estocada rasament visible que trenque vitrines i enemics baixos.
 - **Atac descendent:** diagonal avall + atacar mentre caus; l'animació queda fixada fins a colpejar o tocar terra.
 - **Làmpares de aranya:** salta a prop d'una làmpara i t'hi enganxaràs automàticament (ancoratge magnètic de 48 px); balanceja't amb esquerra/dreta i salta per enlairar-te.
-- **Fosos:** no hi ha mort instantània. Caure des de zones altes et porta a rutes inferiors amb dany lleu i més enemics terrestres; hauràs de tornar a pujar.
+- **Fosos:** no hi ha mort instantània ni dany per caiguda. Saltar i caure no resta mai vida: caure des de zones altes et porta a rutes inferiors amb més enemics terrestres; hauràs de tornar a pujar.
 - **Vitrines gòtiques:** trenca-les per aconseguir espasa llarga, armadura, escut i bonus.
 - **Set armes trobables**, cadascuna amb 4 nivells de poder i joc propi:
   - **ESPASA:** equilibrada; al nivell 3 llenca dagues (2 al nivell 4) que també desvien orbes.
