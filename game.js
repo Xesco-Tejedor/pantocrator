@@ -266,6 +266,50 @@ function drawWarrior(px, py, dir, st, anim, weapon) {
   if (im && im.complete && im.naturalWidth) ctx.drawImage(im, -37, -64, 74, 66);
   ctx.filter = 'none';
   ctx.restore();
+  /* Arma empunyada: dibuix recognoscible per tipus damunt del sprite, a dreta i
+     agachat (l'espasa ja ve pintada al sprite). No toca el sprite del personatge. */
+  const wtp = player.wtype || 'espasa';
+  if ((st === 'attack' || st === 'cattack') && wtp !== 'espasa') {
+    const W = curW(), p = Math.min(1, player.attackT / W.frames);
+    const R = W.reach[player.weapon - 1] || 15;
+    const hx = 9, hy = st === 'cattack' ? -13 : -28;
+    ctx.save(); ctx.translate(px, py); ctx.scale(dir, 1); ctx.lineCap = 'round';
+    if (wtp === 'llanca') {
+      const ext = Math.max(10, R - 6) * Math.min(1, p * 1.7);
+      ctx.strokeStyle = '#14100c'; ctx.lineWidth = 3.4;
+      ctx.beginPath(); ctx.moveTo(hx - 7, hy); ctx.lineTo(hx + ext, hy); ctx.stroke();
+      ctx.strokeStyle = '#8a5a2e'; ctx.lineWidth = 1.9;
+      ctx.beginPath(); ctx.moveTo(hx - 7, hy); ctx.lineTo(hx + ext, hy); ctx.stroke();
+      ctx.fillStyle = '#14100c';
+      ctx.beginPath(); ctx.moveTo(hx + ext, hy - 3.6); ctx.lineTo(hx + ext + 9, hy); ctx.lineTo(hx + ext, hy + 3.6); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#e6eef7';
+      ctx.beginPath(); ctx.moveTo(hx + ext + 1, hy - 2.2); ctx.lineTo(hx + ext + 8, hy); ctx.lineTo(hx + ext + 1, hy + 2.2); ctx.closePath(); ctx.fill();
+    } else {
+      const a = wtp === 'destral' ? -1.15 + p * 1.75 : -1.55 + p * 2.0;
+      const L = wtp === 'destral' ? 16 : 13;
+      const ex = hx + Math.cos(a) * L, ey = hy + Math.sin(a) * L;
+      ctx.strokeStyle = '#14100c'; ctx.lineWidth = 3.6;
+      ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(ex, ey); ctx.stroke();
+      ctx.strokeStyle = '#7a4f28'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(ex, ey); ctx.stroke();
+      ctx.save(); ctx.translate(ex, ey); ctx.rotate(a + Math.PI / 2);
+      if (wtp === 'destral') {
+        ctx.fillStyle = '#14100c';
+        ctx.beginPath(); ctx.moveTo(0, -8); ctx.quadraticCurveTo(10, -5, 10, 0); ctx.quadraticCurveTo(10, 5, 0, 8); ctx.quadraticCurveTo(4.8, 0, 0, -8); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#dfe8f2';
+        ctx.beginPath(); ctx.moveTo(0.8, -6.4); ctx.quadraticCurveTo(8.4, -4, 8.4, 0); ctx.quadraticCurveTo(8.4, 4, 0.8, 6.4); ctx.quadraticCurveTo(4.2, 0, 0.8, -6.4); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#93a8c4';
+        ctx.beginPath(); ctx.moveTo(4.6, -2.6); ctx.quadraticCurveTo(7.6, -1.2, 7.6, 0); ctx.quadraticCurveTo(7.6, 1.2, 4.6, 2.6); ctx.quadraticCurveTo(6, 0, 4.6, -2.6); ctx.closePath(); ctx.fill();
+      } else {
+        ctx.fillStyle = '#14100c'; ctx.fillRect(-6.5, -6.5, 12, 13);
+        ctx.fillStyle = '#c7d2e0'; ctx.fillRect(-5.5, -5.5, 10, 11);
+        ctx.fillStyle = '#8fa0b8'; ctx.fillRect(-5.5, 2.5, 10, 3);
+        ctx.fillStyle = '#caa14a'; ctx.fillRect(-5.5, -5.5, 2.4, 11); ctx.fillRect(2.1, -5.5, 2.4, 11);
+      }
+      ctx.restore();
+    }
+    ctx.restore();
+  }
 }
 function leg(hx, hy, ang, bend) {
   const kx = hx + Math.sin(ang) * 8, ky = hy + Math.cos(ang) * 8;
