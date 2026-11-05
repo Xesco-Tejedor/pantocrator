@@ -149,6 +149,35 @@ const ITEM_SHIELD = [
  '...kk...',
  '........'];
 
+const ITEM_FALCIO = [
+  '..kkk...',
+  '.kWWk...',
+  'kWWk....',
+  'kWk.....',
+  'kWk.....',
+  'kggk....',
+  '.kk.....',
+  '........'];
+const ITEM_CROSSBOW = [
+  'kk...kk.',
+  'kWk.kWk.',
+  '.kWkWk..',
+  '..kpk...',
+  '..kpk...',
+  '..kgk...',
+  '........',
+  '........'];
+const ITEM_FLAIL = [
+  '.....kk.',
+  '....kGGk',
+  '...kGGGk',
+  '....kGGk',
+  '...kkk..',
+  '..k.k...',
+  '.k...k..',
+  '........'];
+const iconFor = c => c === 'espasa' ? SWORDICON : c === 'falcio' ? ITEM_FALCIO : c === 'ballesta' ? ITEM_CROSSBOW : c === 'maca' ? ITEM_FLAIL : c === 'llanca' ? ITEM_SPEAR : c === 'destral' ? ITEM_AXE : c === 'martell' ? ITEM_HAMMER : c === 'sword' || c === 'weapon' ? ITEM_SWORD : c === 'armor' ? ITEM_ARMOR : c === 'shield' ? ITEM_SHIELD : c === 'coin' ? ITEM_COIN : c === 'coinbig' ? ITEM_COINBIG : c === 'heart' ? ITEM_HEART : c === 'time' ? ITEM_TIME : ITEM_POW;
+
 /* Espasa icona HUD (10x10) */
 const SWORDICON = [
  '....kk....',
@@ -305,7 +334,7 @@ function drawWarrior(px, py, dir, st, anim, weapon) {
       ctx.beginPath(); ctx.moveTo(hx + ext, hy - 3.6); ctx.lineTo(hx + ext + 9, hy); ctx.lineTo(hx + ext, hy + 3.6); ctx.closePath(); ctx.fill();
       ctx.fillStyle = '#e6eef7';
       ctx.beginPath(); ctx.moveTo(hx + ext + 1, hy - 2.2); ctx.lineTo(hx + ext + 8, hy); ctx.lineTo(hx + ext + 1, hy + 2.2); ctx.closePath(); ctx.fill();
-    } else {
+    } else if (wtp === 'destral' || wtp === 'martell') {
       const a = wtp === 'destral' ? -1.15 + p * 1.75 : -1.55 + p * 2.0;
       const L = wtp === 'destral' ? 16 : 13;
       const ex = hx + Math.cos(a) * L, ey = hy + Math.sin(a) * L;
@@ -328,6 +357,51 @@ function drawWarrior(px, py, dir, st, anim, weapon) {
         ctx.fillStyle = '#caa14a'; ctx.fillRect(-5.5, -5.5, 2.4, 11); ctx.fillRect(2.1, -5.5, 2.4, 11);
       }
       ctx.restore();
+    } else if (wtp === 'falcio') {
+      /* fulla corba: esmolada ampla descendent */
+      const a = -1.35 + p * 2.15;
+      const mx = hx + Math.cos(a) * 9, my = hy + Math.sin(a) * 9;
+      const tx = hx + Math.cos(a + 0.55) * 18, ty = hy + Math.sin(a + 0.55) * 18;
+      ctx.strokeStyle = '#14100c'; ctx.lineWidth = 4.2;
+      ctx.beginPath(); ctx.moveTo(hx - 5, hy); ctx.quadraticCurveTo(mx, my, tx, ty); ctx.stroke();
+      ctx.strokeStyle = '#e6eef7'; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.moveTo(hx - 5, hy); ctx.quadraticCurveTo(mx, my, tx, ty); ctx.stroke();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 0.9;
+      ctx.beginPath(); ctx.moveTo(hx - 3, hy - 1); ctx.quadraticCurveTo(mx, my - 1, tx - 1, ty - 1); ctx.stroke();
+      ctx.fillStyle = '#caa14a'; ctx.fillRect(hx - 7, hy - 2.6, 2.6, 5.2);   // pont daurat
+    } else if (wtp === 'ballesta') {
+      /* ballesta: fusta, arc i corda, amb retrocés en disparar */
+      const rec = p * 2.2;
+      ctx.strokeStyle = '#14100c'; ctx.lineWidth = 3.2;
+      ctx.beginPath(); ctx.moveTo(hx - 6 - rec, hy); ctx.lineTo(hx + 12 - rec, hy); ctx.stroke();
+      ctx.strokeStyle = '#6b4f2a'; ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.moveTo(hx - 6 - rec, hy); ctx.lineTo(hx + 12 - rec, hy); ctx.stroke();
+      const bxx = hx + 8 - rec;
+      ctx.strokeStyle = '#14100c'; ctx.lineWidth = 2.6;
+      ctx.beginPath(); ctx.moveTo(bxx, hy - 7); ctx.quadraticCurveTo(bxx + 3.4, hy, bxx, hy + 7); ctx.stroke();
+      ctx.strokeStyle = '#8f9aa8'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(bxx, hy - 7); ctx.quadraticCurveTo(bxx + 3.4, hy, bxx, hy + 7); ctx.stroke();
+      ctx.strokeStyle = '#e8e4d8'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(bxx, hy - 7); ctx.lineTo(hx + 2 - rec, hy); ctx.lineTo(bxx, hy + 7); ctx.stroke(); // corda
+      ctx.fillStyle = '#caa86a'; ctx.fillRect(hx + 1 - rec, hy - 0.75, 9, 1.5); // virotó encarat
+    } else if (wtp === 'maca') {
+      /* maça: mànega, cadena i bola de punxes en rotació contundent */
+      const a = -1.7 + p * 2.5;
+      const jx = hx + Math.cos(a) * 8, jy = hy + Math.sin(a) * 8;
+      const bx = hx + Math.cos(a) * 17, by = hy + Math.sin(a) * 17;
+      ctx.strokeStyle = '#14100c'; ctx.lineWidth = 3.4;
+      ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(jx, jy); ctx.stroke();          // mànega
+      ctx.strokeStyle = '#6b4f2a'; ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(jx, jy); ctx.stroke();
+      ctx.strokeStyle = '#14100c'; ctx.lineWidth = 2.6;
+      ctx.beginPath(); ctx.moveTo(jx, jy); ctx.lineTo(bx, by); ctx.stroke();          // cadena
+      ctx.strokeStyle = '#8f9aa8'; ctx.lineWidth = 1.1;
+      ctx.beginPath(); ctx.moveTo(jx, jy); ctx.lineTo(bx, by); ctx.stroke();
+      ctx.fillStyle = '#14100c'; ctx.beginPath(); ctx.arc(bx, by, 4.8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#c7d2e0'; ctx.beginPath(); ctx.arc(bx, by, 3.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#14100c';
+      for (let i = 0; i < 8; i++) { const sa = i * Math.PI / 4; ctx.fillRect(bx + Math.cos(sa) * 4.4 - 0.9, by + Math.sin(sa) * 4.4 - 0.9, 1.8, 1.8); } // punxes
+      ctx.fillStyle = '#8fa0b8'; ctx.beginPath(); ctx.arc(bx - 1, by - 1, 1.2, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
   }
@@ -520,7 +594,7 @@ function drawVitrina(v) {
   ctx.fillStyle = rgrad(x, y - 26, 16, 'rgba(242,215,138,.3)', 'rgba(242,215,138,0)');
   ctx.fillRect(x - 16, y - 46, 32, 48);
   // ítem dins
-  const im = v.c === 'sword' ? ITEM_SWORD : v.c === 'armor' ? ITEM_ARMOR : ITEM_SHIELD;
+  const im = iconFor(v.c);
   pix(im, PAL, x - 8, y - 36, 2, false);
   // vidre: pa vertical amb degradat i reflexes
   ctx.fillStyle = lgrad(x, y - 44, x, y - 6, 'rgba(191,238,248,.34)', 'rgba(42,74,107,.42)');
@@ -842,7 +916,7 @@ const STAGES = [
       { x: 1730, y: 250, w: 60, h: 8, t: 'stone' }, { x: 1950, y: 160, w: 88, h: 8, t: 'bench' }
     ],
     chandeliers: [{ x: 880, y: 40, len: 60 }, { x: 1500, y: 30, len: 66 }],
-    vitrinas: [{ x: 420, y: GY, c: 'sword' }, { x: 820, y: GY, c: 'llanca' }, { x: 950, y: GY, c: 'time' }, { x: 1400, y: GY, c: 'shield' }, { x: 1900, y: GY, c: 'coinbig' }, { x: 2050, y: GY, c: 'destral' }, { x: 620, y: LY, c: 'heart' }],
+    vitrinas: [{ x: 420, y: GY, c: 'sword' }, { x: 820, y: GY, c: 'llanca' }, { x: 950, y: GY, c: 'time' }, { x: 1100, y: GY, c: 'falcio' }, { x: 1400, y: GY, c: 'shield' }, { x: 1650, y: GY, c: 'ballesta' }, { x: 1900, y: GY, c: 'coinbig' }, { x: 2050, y: GY, c: 'destral' }, { x: 620, y: LY, c: 'heart' }],
     enemies: [
       { x: 480, y: GY, t: 'beast' }, { x: 760, y: GY, t: 'beast' }, { x: 1050, y: GY, t: 'demon' },
       { x: 1350, y: GY, t: 'beast' }, { x: 1650, y: GY, t: 'demon' }, { x: 2000, y: GY, t: 'beast' },
@@ -861,7 +935,7 @@ const STAGES = [
       { x: 2100, y: 140, w: 88, h: 8, t: 'bench' }, { x: 2300, y: 100, w: 72, h: 8, t: 'bench' }
     ],
     chandeliers: [{ x: 480, y: 36, len: 62 }, { x: 1000, y: 30, len: 70 }, { x: 1560, y: 34, len: 60 }, { x: 2050, y: 40, len: 56 }],
-    vitrinas: [{ x: 250, y: GY, c: 'armor' }, { x: 700, y: GY, c: 'pow' }, { x: 950, y: GY, c: 'martell' }, { x: 1200, y: GY, c: 'sword' }, { x: 1500, y: GY, c: 'weapon' }, { x: 1800, y: GY, c: 'destral' }, { x: 2050, y: GY, c: 'time' }, { x: 2150, y: GY, c: 'shield' }, { x: 500, y: LY, c: 'coinbig' }],
+    vitrinas: [{ x: 250, y: GY, c: 'armor' }, { x: 700, y: GY, c: 'pow' }, { x: 950, y: GY, c: 'martell' }, { x: 1080, y: GY, c: 'maca' }, { x: 1200, y: GY, c: 'sword' }, { x: 1500, y: GY, c: 'weapon' }, { x: 1800, y: GY, c: 'destral' }, { x: 2050, y: GY, c: 'time' }, { x: 2150, y: GY, c: 'shield' }, { x: 500, y: LY, c: 'coinbig' }],
     enemies: [
       { x: 320, y: GY, t: 'beast' }, { x: 620, y: GY, t: 'demon' }, { x: 800, y: GY, t: 'beast' },
       { x: 1150, y: GY, t: 'beast' }, { x: 1300, y: GY, t: 'demon' }, { x: 1700, y: GY, t: 'beast' },
@@ -875,7 +949,7 @@ const STAGES = [
     lower: [],
     platforms: [{ x: 140, y: 160, w: 88, h: 8, t: 'bench' }, { x: 420, y: 160, w: 88, h: 8, t: 'bench' }],
     chandeliers: [{ x: 340, y: 36, len: 64 }],
-    vitrinas: [{ x: 80, y: GY, c: 'sword' }, { x: 300, y: GY, c: 'heart' }, { x: 420, y: GY, c: 'llanca' }, { x: 500, y: GY, c: 'time' }],
+    vitrinas: [{ x: 80, y: GY, c: 'sword' }, { x: 300, y: GY, c: 'heart' }, { x: 420, y: GY, c: 'llanca' }, { x: 500, y: GY, c: 'time' }, { x: 580, y: GY, c: 'falcio' }],
     enemies: []
   }
 ];
@@ -1131,33 +1205,43 @@ const WEAPONS = {
   espasa:  { name: 'ESPASA',  reach: [15, 22, 26, 26], dmg: [1, 2, 2, 3], frames: 14 },
   llanca:  { name: 'LLANÇA',  reach: [24, 30, 36, 42], dmg: [1, 1, 2, 2], frames: 11 },
   destral: { name: 'DESTRAL', reach: [16, 19, 22, 25], dmg: [2, 2, 3, 4], frames: 18 },
-  martell: { name: 'MARTELL', reach: [13, 15, 17, 19], dmg: [2, 3, 4, 5], frames: 18 }
+  martell: { name: 'MARTELL', reach: [13, 15, 17, 19], dmg: [2, 3, 4, 5], frames: 18 },
+  falcio:  { name: 'FALCIÓ',  reach: [17, 20, 24, 28], dmg: [1, 2, 3, 3], frames: 10 },
+  ballesta:{ name: 'BALLESTA', reach: [9, 10, 11, 12], dmg: [1, 1, 2, 2], frames: 12 },
+  maca:    { name: 'MAÇA',    reach: [18, 20, 22, 24], dmg: [3, 4, 5, 6], frames: 22 }
 };
-const WTYPES = ['llanca', 'destral', 'martell'];
+const WTYPES = ['llanca', 'destral', 'martell', 'falcio', 'ballesta', 'maca'];
 const curW = () => WEAPONS[player.wtype] || WEAPONS.espasa;
 /* Fusió d'armes: agafar un tipus DIFERENT el combina amb l'actual en lloc de
    canviar-la. Cada fusió suma +1 de dany, +4 d'abast, els efectes especials de
    l'arma fusionada (dard perforant, destral en arc, retrocés de martell) i un
    nivell de fusió: DUAL, TRIPLE i ARMA LLEGENDÀRIA. */
-const TIER_NAMES = ['', 'DUAL', 'TRIPLE', 'LLEGENDÀRIA'];
-const TIER_COLS = ['#d8a23a', '#7fd4e8', '#e8783c', '#f2d78a'];
+const TIER_NAMES = ['', 'DUAL', 'TRIPLE', 'LLEGENDÀRIA', 'MÍTICA', 'ÈPICA', 'DIVINA'];
+const TIER_COLS = ['#d8a23a', '#7fd4e8', '#e8783c', '#f2d78a', '#c98af2', '#8af2a0', '#ffffff'];
 const comboN = () => (player.fused ? player.fused.length : 0);
+const hasType = t => player.wtype === t || player.fused.includes(t);
+function fuseOrSwitch(t) {
+  /* Tipus nou: passa a empunyar-se i l'arma anterior es fusiona (es combina,
+     no es perd): cada combinació augmenta el poder de destrucció. */
+  player.fused.push(player.wtype);
+  player.wtype = t;
+  fuseFX();
+}
 function fuseFX() {
   const n = comboN();
-  world.announce = n >= 3 ? 'ARMA LLEGENDÀRIA!' : 'FUSIÓ ' + TIER_NAMES[n] + '!';
+  world.announce = n >= 3 ? 'ARMA ' + TIER_NAMES[n] + '!' : 'FUSIÓ ' + TIER_NAMES[n] + '!';
   world.announceT = 150;
   world.shake = Math.max(world.shake, 4);
   spawnParts(player.x + player.w / 2, player.y + 6, TIER_COLS[n], 14);
   sfx.clearS();
 }
 function throwDaggers() {
-  if (player.weapon < 3) return;
   /* amb fusió, l'atac dispara els projectils de TOTES les armes combinades */
   const types = [player.wtype || 'espasa', ...player.fused];
   const y = player.state === 'cattack' ? player.y + player.h - 10 : player.y + 11;
   const x = player.x + player.w / 2 + player.dir * 9;
   const bonus = comboN();
-  for (const t of types) {
+  const fire = t => {
     if (t === 'llanca') {         // dard ràpid que FORADA enemics
       world.daggers.push({ x, y, vx: player.dir * 4.4, vy: 0, life: 110, k: 'dart', pierce: true, dmg: 1 + bonus });
     } else if (t === 'destral') { // destral pesant amb trajectòria en arc, dany 2
@@ -1166,9 +1250,17 @@ function throwDaggers() {
       const n = player.weapon >= 4 ? 2 : 1;
       for (let i = 0; i < n; i++)
         world.daggers.push({ x, y, vx: player.dir * 3.2, vy: i === 0 ? 0 : -0.7, life: 90, k: 'dagger', dmg: 1 + bonus });
+    } else if (t === 'falcio') {  // onada tallant que travessa enemics
+      world.daggers.push({ x, y, vx: player.dir * 3.8, vy: 0, life: 100, k: 'wave', pierce: true, dmg: 2 + bonus, ph: 0 });
+    } else if (t === 'ballesta') { // virotó ràpid i precís; forada a nivell 3+, doble a 4
+      const n = player.weapon >= 4 ? 2 : 1;
+      for (let i = 0; i < n; i++)
+        world.daggers.push({ x, y: y - 2, vx: player.dir * 5.5, vy: i === 0 ? 0 : -0.5, life: 130, k: 'bolt', pierce: player.weapon >= 3, dmg: 2 + bonus });
     }
-    // martell: sense projectil; el seu joc és el cop cos a cos amb retrocés
-  }
+    // martell i maça: sense projectil; el seu joc és el cop cos a cos amb retrocés
+  };
+  if (player.weapon >= 3) { for (const t of types) fire(t); }
+  else if (player.wtype === 'ballesta') fire('ballesta');  // la ballesta dispara a TOTS els nivells
 }
 
 function updateDaggers() {
@@ -1219,7 +1311,7 @@ function swordHits() {
     if (e.hp <= 0) continue;
     if (overlap(sb, e)) {
       const dmg = (curW().dmg[player.weapon - 1] || 1) + comboN();
-      if ((player.wtype === 'martell' || player.fused.includes('martell')) && e.hit <= 0) { e.x += player.dir * 10; world.shake = Math.max(world.shake, 2); }
+      if ((hasType('martell') || hasType('maca')) && e.hit <= 0) { e.x += player.dir * (hasType('maca') ? 14 : 10); world.shake = Math.max(world.shake, hasType('maca') ? 3 : 2); }
       e.hp -= dmg; e.hit = 8; sfx.hit();
       spawnParts(e.x + e.w / 2, e.y + e.h / 2, '#c9ced8', 5);
       if (player.state === 'dive') { player.vy = -4.2; player.state = 'air'; } // rebot
@@ -1300,14 +1392,13 @@ function updateItems() {
     if (it.y > gy - 10) { it.y = gy - 10; it.vy = 0; }
     if (overlap(player, it)) {
       it.taken = true; sfx.pickup();
-      if (it.c === 'sword') {
-        if (player.wtype === 'espasa') player.weapon = Math.max(player.weapon, 2);
-        else if (!player.fused.includes('espasa')) { player.fused.push('espasa'); fuseFX(); }
-        else { player.weapon = Math.min(4, player.weapon + 1); sfx.clearS(); }
-      }
-      if (it.c === 'llanca' || it.c === 'destral' || it.c === 'martell') {
-        if (player.wtype === it.c || player.fused.includes(it.c)) { player.weapon = Math.min(4, player.weapon + 1); sfx.clearS(); }
-        else { player.fused.push(it.c); fuseFX(); }   // es combina: no canvia d'arma
+      if (it.c === 'sword' || WEAPONS[it.c]) {
+        const t = it.c === 'sword' ? 'espasa' : it.c;
+        if (player.wtype === t || player.fused.includes(t)) {
+          if (it.c === 'sword' && player.wtype === 'espasa') player.weapon = Math.max(player.weapon, 2);
+          else player.weapon = Math.min(4, player.weapon + 1);
+          sfx.clearS();
+        } else fuseOrSwitch(t);
       }
       if (it.c === 'weapon') { player.weapon = Math.min(4, player.weapon + 1); sfx.clearS(); }
       if (it.c === 'armor') { player.armor = 1; if (player.maxHp < 16) { player.maxHp = 16; player.hp = Math.min(player.maxHp, player.hp + 4); } }
@@ -1968,7 +2059,7 @@ function drawWorld() {
   // ítems
   for (const it of world.items) {
     const bob = Math.sin(game.frame / 14) * 2;
-    const map = (it.c === 'sword' || it.c === 'weapon') ? ITEM_SWORD : it.c === 'llanca' ? ITEM_SPEAR : it.c === 'destral' ? ITEM_AXE : it.c === 'martell' ? ITEM_HAMMER : it.c === 'armor' ? ITEM_ARMOR : it.c === 'shield' ? ITEM_SHIELD : it.c === 'coin' ? ITEM_COIN : it.c === 'coinbig' ? ITEM_COINBIG : it.c === 'heart' ? ITEM_HEART : it.c === 'time' ? ITEM_TIME : ITEM_POW;
+    const map = iconFor(it.c);
     ctx.fillStyle = 'rgba(242,215,138,.18)';
     ctx.beginPath(); ctx.arc(it.x + 6, it.y + bob + 5, 12, 0, Math.PI * 2); ctx.fill();
     pix(map, PAL, it.x - 2, it.y + bob - 3, 2, false);
@@ -1987,6 +2078,17 @@ function drawWorld() {
       ctx.fillStyle = '#6b4f2a'; ctx.fillRect(-1, -4, 2, 8);
       ctx.fillStyle = '#c9ced8'; ctx.fillRect(-4, -3, 3, 6); ctx.fillRect(1, -3, 3, 6);
       ctx.restore();
+    } else if (d.k === 'wave') {
+      d.ph = (d.ph || 0) + 0.35;
+      const sg = d.vx > 0 ? 1 : -1, yo = Math.sin(d.ph) * 1.6;
+      ctx.strokeStyle = 'rgba(127,212,232,.45)'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(d.x - sg * 3, d.y + yo, 7, sg > 0 ? -1.2 : Math.PI - 1.2, sg > 0 ? 1.2 : Math.PI + 1.2); ctx.stroke();
+      ctx.strokeStyle = '#dff4ff'; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.arc(d.x, d.y + yo, 5.5, sg > 0 ? -1.2 : Math.PI - 1.2, sg > 0 ? 1.2 : Math.PI + 1.2); ctx.stroke();
+    } else if (d.k === 'bolt') {
+      ctx.fillStyle = '#caa86a'; ctx.fillRect(d.x - 6, d.y - 0.75, 12, 1.5);
+      ctx.fillStyle = '#f4f8ff'; ctx.fillRect(d.x + (d.vx > 0 ? 6 : -7.5), d.y - 1, 1.8, 2);
+      ctx.fillStyle = '#e05050'; ctx.fillRect(d.x - (d.vx > 0 ? 7.5 : -6), d.y - 1.5, 1.6, 3);
     } else {
       ctx.fillStyle = '#f4f8ff';
       ctx.fillRect(d.x - 3, d.y - 1, 6, 2);
@@ -2073,12 +2175,12 @@ function drawHUD() {
   // arma
   ctx.fillStyle = 'rgba(5,6,12,.6)'; ctx.fillRect(4, 4, 20, 20);
   ctx.strokeStyle = '#8b93a6'; ctx.strokeRect(4.5, 4.5, 19, 19);
-  const wicon = player.wtype === 'llanca' ? ITEM_SPEAR : player.wtype === 'destral' ? ITEM_AXE : player.wtype === 'martell' ? ITEM_HAMMER : SWORDICON;
+  const wicon = iconFor(player.wtype);
   pix(wicon, PAL, 9, 9, 1, false);
   for (let i = 0; i < player.weapon; i++) { ctx.fillStyle = i < 2 ? '#d8a23a' : '#ffe9a8'; ctx.fillRect(6 + i * 4.5, 21, 3.5, 2); }
   const cn = comboN();
   drawText(cn ? curW().name + ' ' + TIER_NAMES[cn] : curW().name, 28, 24, TIER_COLS[cn], 7);
-  player.fused.forEach((t, i) => pix(t === 'llanca' ? ITEM_SPEAR : t === 'destral' ? ITEM_AXE : t === 'martell' ? ITEM_HAMMER : SWORDICON, PAL, 116 + i * 11, 22, 1, false));
+  player.fused.forEach((t, i) => pix(iconFor(t), PAL, 116 + i * 11, 22, 1, false));
   drawText('HP', 28, 5, '#e05050', 9);
   ctx.fillStyle = '#14100c'; ctx.fillRect(46, 6, 66, 7);
   ctx.fillStyle = '#a83232'; ctx.fillRect(47, 7, 64, 5);
@@ -2108,7 +2210,7 @@ function drawTitle() {
   if (game.frame % 90 < 60) drawText('PULSA ENTER O TOCA LA PANTALLA', VW / 2, 210, '#e8e4d8', 10, 'center');
   drawText('MOU: creueta/fletxes · SALTAR: espai · ATACAR: X · Avall: agafa\'t', VW / 2, 230, '#8f9aa8', 8, 'center');
   drawText('Agafat+atacar: cop baix · Avall+atacar en l\'aire: atac descendent · Penja\'t dels llamps', VW / 2, 240, '#8f9aa8', 8, 'center');
-  drawText('Trenca vitrines · Troba espasa, llança, destral i martell: combina-les! Cada fusió les fa més destructives', VW / 2, 250, '#8f9aa8', 8, 'center');
+  drawText('Trenca vitrines · 7 armes: espasa, llança, destral, martell, falciò, ballesta i maça. Combina-les!', VW / 2, 250, '#8f9aa8', 8, 'center');
   drawText('Bonus: monedes, cors, temps i millores de nivell · Desvia els orbes · M: silenci', VW / 2, 259, '#8f9aa8', 7, 'center');
   drawText('Sprites i música procedurals · fons pintats generats per a aquest joc', VW / 2, 262, '#5d6672', 7, 'center');
 }
@@ -2368,8 +2470,8 @@ const TEST = {
           } break; }
         case 12.9: { // fusió llança: es combina (l'arma no canvia) i l'atac llença dard perforant
           if (!player.onGround) break;
-          if (!player.fused.includes('llanca') && !this.sp0) { this.sp0 = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'llanca', vy: 0 }); }
-          if (player.fused.includes('llanca') && !this.spAtk) { this.spAtk = true; input.pressAttack(); }
+          if (!hasType('llanca') && !this.sp0) { this.sp0 = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'llanca', vy: 0 }); }
+          if (hasType('llanca') && !this.spAtk) { this.spAtk = true; input.pressAttack(); }
           if (this.spAtk && world.daggers.some(d => d.k === 'dart' && d.pierce)) {
             this.log('fusio-llanca', true, 'wt=' + player.wtype + ' fused=' + player.fused); this.phase = 12.10; this.warp(1000, GY - player.h); player.dir = 1;
           } else if (this.f > (this.cT4 || (this.cT4 = this.f)) + 300) {
@@ -2377,8 +2479,8 @@ const TEST = {
           } break; }
         case 12.10: { // fusió destral: es combina i l'atac també llença destral amb arc
           if (!player.onGround) break;
-          if (!player.fused.includes('destral') && !this.ax0) { this.ax0 = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'destral', vy: 0 }); }
-          if (player.fused.includes('destral') && !this.axAtk) { this.axAtk = true; input.pressAttack(); }
+          if (!hasType('destral') && !this.ax0) { this.ax0 = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'destral', vy: 0 }); }
+          if (hasType('destral') && !this.axAtk) { this.axAtk = true; input.pressAttack(); }
           const axe = world.daggers.find(d => d.k === 'axe');
           if (this.axAtk && axe && axe.vy > -1.0) {
             this.log('fusio-destral', true, 'arc vy=' + axe.vy.toFixed(2) + ' fused=' + player.fused); this.phase = 12.11; this.warp(1000, GY - player.h); player.dir = 1;
@@ -2387,8 +2489,8 @@ const TEST = {
           } break; }
         case 12.11: { // fusió martell: el cop cos a cos guanya retrocés i més dany
           if (!player.onGround) break;
-          if (!player.fused.includes('martell') && !this.hm0) { this.hm0 = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'martell', vy: 0 }); }
-          if (player.fused.includes('martell') && !this.hmAtk) {
+          if (!hasType('martell') && !this.hm0) { this.hm0 = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'martell', vy: 0 }); }
+          if (hasType('martell') && !this.hmAtk) {
             this.hmAtk = true;
             const b = makeEnemy('beast', player.x + 26, GY); b.hp = 99; b.vx = 0; b.dir = -1;
             world.enemies.push(b); this.hmB = b; this.hmX0 = b.x;
@@ -2409,11 +2511,53 @@ const TEST = {
           } break; }
         case 12.12: { // arma llegendaria: 3 fusions -> +3 dany, +12 abast, nom al HUD
           const reach = (curW().reach[player.weapon - 1] || 15) + comboN() * 4;
-          const sb = swordBox;
-          this.log('fusio-llegenda', comboN() === 3 && reach >= 30 && TIER_NAMES[comboN()] === 'LLEGENDÀRIA',
-            'fused=' + comboN() + ' reach=' + reach + ' tier=' + TIER_NAMES[comboN()]);
-          this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
+          player.state = 'attack';
+          const sb = swordBox();
+          player.state = 'idle';
+          this.log('fusio-llegenda', comboN() === 3 && !!sb && sb.w === reach && reach >= 24 && TIER_NAMES[comboN()] === 'LLEGENDÀRIA',
+            'fused=' + comboN() + ' reach=' + reach + ' hitbox=' + (sb && sb.w) + ' tier=' + TIER_NAMES[comboN()]);
+          this.phase = 12.13; this.warp(1000, GY - player.h); player.dir = 1;
           break; }
+        case 12.13: { // falciò trobable: esmolada ampla i onada tallant perforant
+          if (!player.onGround) break;
+          if (!hasType('falcio') && !this.fa0) { this.fa0 = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'falcio', vy: 0 }); }
+          if (hasType('falcio') && !this.faAtk) { this.faAtk = true; input.pressAttack(); }
+          if (this.faAtk && world.daggers.some(d => d.k === 'wave' && d.pierce)) {
+            this.log('fusio-falcio', true, 'wt=' + player.wtype + ' tier=' + TIER_NAMES[comboN()]); this.phase = 12.14; this.warp(1000, GY - player.h); player.dir = 1;
+          } else if (this.f > (this.cT7 || (this.cT7 = this.f)) + 300) {
+            this.log('fusio-falcio', false, 'wt=' + player.wtype + ' fused=' + player.fused); this.phase = 12.14; this.warp(1000, GY - player.h); player.dir = 1;
+          } break; }
+        case 12.14: { // ballesta trobable: virotó ràpid (dispara a tots els nivells)
+          if (!player.onGround) break;
+          if (!hasType('ballesta') && !this.ba0) { this.ba0 = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'ballesta', vy: 0 }); }
+          if (hasType('ballesta') && !this.baAtk) { this.baAtk = true; input.pressAttack(); }
+          if (this.baAtk && world.daggers.some(d => d.k === 'bolt')) {
+            this.log('fusio-ballesta', true, 'wt=' + player.wtype + ' tier=' + TIER_NAMES[comboN()]); this.phase = 12.15; this.warp(1000, GY - player.h); player.dir = 1;
+          } else if (this.f > (this.cT8 || (this.cT8 = this.f)) + 300) {
+            this.log('fusio-ballesta', false, 'wt=' + player.wtype + ' fused=' + player.fused); this.phase = 12.15; this.warp(1000, GY - player.h); player.dir = 1;
+          } break; }
+        case 12.15: { // maça trobable: cop devastador amb gran retrocés (tier DIVINA)
+          if (!player.onGround) break;
+          if (!hasType('maca') && !this.mc0) { this.mc0 = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'maca', vy: 0 }); }
+          if (hasType('maca') && !this.mcAtk) {
+            this.mcAtk = true;
+            const b = makeEnemy('beast', player.x + 26, GY); b.hp = 99; b.vx = 0; b.dir = -1;
+            world.enemies.push(b); this.mcB = b; this.mcX0 = b.x;
+            input.pressAttack();
+          }
+          if (this.mcAtk) {
+            const b = this.mcB;
+            if (b.hp < 99 && b.x > this.mcX0 + 8) {
+              this.log('fusio-maca', true, 'dmg=' + (99 - b.hp) + ' knock=+' + Math.round(b.x - this.mcX0) + ' tier=' + TIER_NAMES[comboN()]);
+              this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
+            } else if (this.f > (this.cT9 || (this.cT9 = this.f)) + 400) {
+              this.log('fusio-maca', false, 'hp=' + (b && b.hp) + ' x=' + (b && Math.round(b.x)));
+              this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
+            }
+          } else if (this.f > (this.cT9 || (this.cT9 = this.f)) + 400) {
+            this.log('fusio-maca', false, 'no pickup');
+            this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
+          } break; }
         case 13: // caure al forat: dany lleu, no mort, pis inferior
           if (player.onGround) {
             this.log('pit-fall-no-death', !player.dead && player.onLower, 'onLower=' + player.onLower);
