@@ -59,7 +59,7 @@
     game.anim++;
     const t = game.anim;
     if (t >= DUR) { endCinema(); return; }
-    if (t > 20 && freshPress()) { endCinema(); return; }   // saltable
+    if (freshPress()) { endCinema(); return; }   // saltable des del primer frame
     prevIn = snapIn();
     /* el tema aquàtic comença quan el guerrer entra al túnel */
     if (t === 280 && sfx.playMusic && sfx.track !== 'stage3') sfx.playMusic('stage3');
