@@ -23,10 +23,14 @@
   });
 
   /* ---------- sprites pintados (masa-art.js) ---------- */
-  const A4 = window.PANTO_ART4 || {};
   function mkImg(src) { const im = new Image(); if (src) im.src = src; return im; }
-  const CORE_IMG = mkImg(A4.CORE);
-  const FIG = [mkImg(A4.MAN), mkImg(A4.WOMAN), mkImg(A4.KID), mkImg(A4.ELDER)];
+  let CORE_IMG = null, FIG = null;
+  function ensureArt() {   // perezoso: aunque masa-art.js cargue después, la primera pintada lo recoge
+    if (FIG) return;
+    const A4 = window.PANTO_ART4 || {};
+    CORE_IMG = mkImg(A4.CORE);
+    FIG = [mkImg(A4.MAN), mkImg(A4.WOMAN), mkImg(A4.KID), mkImg(A4.ELDER)];
+  }
   function imgOk(im) { return im && im.complete && im.naturalWidth; }
 
   const MASA_HP = 360;            // más resistente que Panthokrator y gos (280)
@@ -69,6 +73,7 @@
   const _drawBeastM = drawBeast;
   drawBeast = function (e, anim) {
     if (world.stageIdx !== MASA_STAGE || !e.masa) { _drawBeastM(e, anim); return; }
+    ensureArt();
     const im = FIG[e.seed || 0];
     ctx.save();
     const run = Math.abs(Math.sin(game.frame / 3.5 + e.x));
@@ -89,6 +94,7 @@
 
   /* ---------- inicialización ---------- */
   function initMasa(b) {
+    ensureArt();
     b.tuned = true;                       // tope de 14 por impacto (arsenal fusionado)
     b.bx = 440; b.x = 440;
     b.maxHp = MASA_HP; b.hp = MASA_HP; b.hp0 = MASA_HP;
@@ -295,6 +301,7 @@
 
   /* ---------- dibujo: la esfera de turistas ---------- */
   function drawMasa(b) {
+    ensureArt();
     const T = game.frame, R = radius(b), cy = b.by || (GY - R);
     const flash = b.hurt > 0, ang = b.hp < b.maxHp * 0.4;
     const M = c => flash ? '#fff' : c;
@@ -354,6 +361,7 @@
     ctx.restore();
   }
   function drawKid(o) {
+    ensureArt();
     const im = FIG[2];
     ctx.save();
     ctx.translate(o.x, o.y);
@@ -366,6 +374,7 @@
     ctx.restore();
   }
   function drawElder(o) {
+    ensureArt();
     const im = FIG[3];
     ctx.save();
     ctx.translate(o.x, o.y);
