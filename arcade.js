@@ -1,10 +1,10 @@
-/* PANTHOKRATOR - capa arcade (v23): progresión de armas rápida y devastadora,
+/* PANTHOKRATOR - capa arcade (v24): progresión de armas rápida y devastadora,
    efectos arcade y jefe final visible, atacable y con figura espectral terrorífica.
    Se carga después de game.js y audio.js; no modifica los controles. */
 (function () {
   'use strict';
   const BOSS_HP = 80;
-  const bossBox = b => ({ x: b.bx - 30, y: GY - 108, w: 60, h: 108 });
+  const bossBox = b => ({ x: b.bx - (b.hitW || 60) / 2, y: GY - (b.hitH || 108), w: b.hitW || 60, h: b.hitH || 108 });
   const bodyBox = b => ({ x: b.bx - 20, y: GY - 96, w: 40, h: 96 });
 
   /* ---------- sonido: explosiones, power-up, impactos grandes ---------- */
