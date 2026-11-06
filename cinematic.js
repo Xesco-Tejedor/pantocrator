@@ -1,7 +1,10 @@
-/* PANTHOKRATOR - cinemàtica de transició Font Màgica -> Aigües subterrànies (v1).
+/* PANTHOKRATOR - cinemàtica de transició Font Màgica -> Aigües subterrànies (v2).
    En vèncer el Gos Zombi (final de la 2a gran etapa, davant la gran Font),
    una seqüència cinematogràfica mostra el protagonista entrant en un túnel
    de la gran font que condueix a la part aquàtica subterrània de la 3a etapa.
+
+   v2: escenaris amb l'art pintat del propi joc (PANTO_ART.GARDENS,
+   PANTO_ART.FOUNTAIN i BGIMGS.hall), en lloc de formes geomètriques.
 
    Es carrega l'última; no modifica game.js, audio.js, etapas.js, masa.js,
    sage.js ni festival.js: embolcalla step() i render() i afegeix l'estat
@@ -9,7 +12,7 @@
    Es pot saltar amb una pulsació nova d'ATACAR/SALTAR o qualsevol direcció. */
 (function () {
   'use strict';
-  window.__cinematic = 1;
+  window.__cinematic = 2;
 
   const DOG_IDX = 5;              // EL GOS ZOMBI (arena davant la gran Font)
   const WATER_IDX = 6;            // AIGÜES DE LA FONT (primera fase subterrània)
@@ -66,17 +69,13 @@
   }
 
   /* ------------------------------ helpers de pintada ------------------------------ */
-  function vg(y0, y1, stops) {
-    const g = ctx.createLinearGradient(0, y0, 0, y1);
-    for (const s of stops) g.addColorStop(s[0], s[1]);
-    return g;
-  }
   function rad(x, y, r, stops) {
     const g = ctx.createRadialGradient(x, y, 1, x, y, r);
     for (const s of stops) g.addColorStop(s[0], s[1]);
     return g;
   }
   function h2(a, b) { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }
+  function okIm(im) { return im && im.complete && im.naturalWidth; }
   function hero(x, feetY, st, anim) {
     drawWarrior(x, feetY, 1, st, anim, Math.max(1, (typeof player !== 'undefined' && player.weapon) || 1));
   }
@@ -93,127 +92,80 @@
     drawText(txt, VW / 2, BAR + 6, '#ffe9a8', 9, 'center');
     ctx.globalAlpha = 1;
   }
+  function vignette(strength) {
+    ctx.fillStyle = rad(VW / 2, VH / 2, VW * 0.62, [[0, 'rgba(0,0,0,0)'], [1, 'rgba(0,0,0,' + strength + ')']]);
+    ctx.fillRect(0, 0, VW, VH);
+  }
+
+  /* art pintat del propi joc */
+  function gardensImg() { return (window.PANTO_ART || {}).GARDENS; }
+  function fountainImg() { return (window.PANTO_ART || {}).FOUNTAIN; }
+  function hallImg() { return (typeof BGIMGS !== 'undefined' && BGIMGS.hall) || null; }
 
   /* --------------------------- escena exterior: la gran Font --------------------------- */
-  const FOUNT_X = 322;            // centre de la gran Font a la plaça
-  const PLAZA_Y = 208;            // nivell del terra de l'explanada
+  const FOUNT_X = 332;            // centre de la gran Font
+  const GY_C = 216;               // nivell del terra (mateix GY del joc)
 
-  function drawNightSky(t) {
-    ctx.fillStyle = vg(0, 190, [[0, '#0a0f22'], [0.62, '#23203e'], [1, '#41304c']]);
-    ctx.fillRect(0, 0, VW, 190);
-    for (let i = 0; i < 46; i++) {   // estrelles amb parpelleig
-      const x = h2(i, 3) * VW, y = h2(i, 7) * 108;
-      const tw = 0.35 + 0.6 * Math.abs(Math.sin(t * 0.02 + i * 1.7));
-      ctx.fillStyle = 'rgba(232,236,255,' + (tw * 0.8).toFixed(2) + ')';
-      ctx.fillRect(x, y, 1.4, 1.4);
-    }
-    /* silueta del palau de Montjuïc al fons */
-    ctx.fillStyle = '#0d0e1e';
-    ctx.fillRect(30, 78, 180, 44);
-    ctx.fillRect(52, 62, 26, 20); ctx.fillRect(162, 62, 26, 20);   // torres
-    ctx.beginPath(); ctx.arc(120, 78, 22, Math.PI, 0); ctx.fill(); // cúpula
-    ctx.fillStyle = '#151632';
-    for (let i = 0; i < 9; i++) ctx.fillRect(40 + i * 19, 88, 5, 26); // columnes il·luminades tènues
-  }
-
-  function drawCascadeTier(cx, topY, w, t) {
-    /* graons de la cascada que baixa de la muntanya */
-    ctx.fillStyle = '#38302c';
-    ctx.fillRect(cx - w / 2, topY, w, 8);
-    ctx.fillStyle = '#4a4038';
-    ctx.fillRect(cx - w / 2, topY, w, 2.5);
-    const n = Math.floor(w / 7);
-    for (let i = 0; i < n; i++) {   // fils d'aigua caient pel graó
-      const x = cx - w / 2 + 3 + i * 7 + Math.sin(t * 0.11 + i * 2.3) * 1.2;
-      ctx.fillStyle = 'rgba(150,220,245,' + (0.35 + 0.3 * h2(i, t >> 3)).toFixed(2) + ')';
-      ctx.fillRect(x, topY + 8, 2.2, 14);
-    }
-    ctx.fillStyle = 'rgba(220,245,255,.55)';
-    for (let i = 0; i < n; i += 2) ctx.fillRect(cx - w / 2 + 2 + i * 7, topY + 20 + h2(i, 5) * 2, 3, 1.6);
-  }
-
-  function drawMainJet(cx, baseY, t, open) {
-    /* gran raig central: s'aprima i s'eixampla quan s'obre el túnel */
-    const hJet = 118, wob = Math.sin(t * 0.09) * 2.2;
-    const lw = open ? 4 : 13;       // s'apaga una mica en obrir-se el pas
-    ctx.fillStyle = 'rgba(170,230,250,.75)';
-    ctx.fillRect(cx - lw / 2 + wob * 0.4, baseY - hJet, lw, hJet);
-    ctx.fillStyle = 'rgba(240,252,255,.85)';
-    ctx.fillRect(cx - lw / 4 + wob * 0.5, baseY - hJet + 6, lw / 2, hJet - 12);
-    for (let i = 0; i < 14; i++) {  // espurnes del cim del raig
-      const a = i * 0.9 + t * 0.06, r = 4 + h2(i, 9) * 14 + 5 * Math.sin(t * 0.13 + i);
-      ctx.fillStyle = 'rgba(225,248,255,' + (0.7 - i * 0.04).toFixed(2) + ')';
-      ctx.fillRect(cx + Math.cos(a) * r, baseY - hJet + Math.sin(a) * r * 0.42 - 3, 1.8, 1.8);
-    }
-    /* escuma a la base */
-    for (let i = 0; i < 10; i++) {
-      const fx = cx - 20 + i * 4.4 + Math.sin(t * 0.2 + i * 3.1) * 2;
-      ctx.fillStyle = 'rgba(215,242,252,' + (0.3 + 0.35 * h2(i, t >> 4)).toFixed(2) + ')';
-      ctx.fillRect(fx, baseY - 3 + h2(i, 6) * 2.4, 3.4, 2.2);
+  function drawMagicSparkles(t, cx, top, w, h) {
+    const hue = (t * 2) % 360;
+    ctx.fillStyle = 'hsla(' + hue + ',90%,85%,.85)';
+    for (let s = 0; s < 12; s++) {
+      const sx = cx - w / 2 + (s * 37 + t * 2) % w, sy = top + ((s * 23 + t) % h);
+      ctx.fillRect(sx, sy, 1.6, 1.6);
     }
   }
 
-  function drawSideArcs(cx, baseY, t) {
-    /* arcs parabòlics laterals de la font */
-    for (let s = -1; s <= 1; s += 2) {
-      for (let k = 1; k <= 2; k++) {
-        const R = 34 * k, hgt = 34 + 12 * k;
-        for (let i = 0; i <= 16; i++) {
-          const p = i / 16, off = (t * 0.045 + h2(k, s + 2)) % 1;
-          const pp = (p + off) % 1;
-          const x = cx + s * pp * R;
-          const y = baseY - 6 - Math.sin(pp * Math.PI) * hgt;
-          ctx.fillStyle = 'rgba(160,225,248,' + (0.62 - pp * 0.3).toFixed(2) + ')';
-          ctx.fillRect(x, y, 2, 2.6);
-        }
-      }
+  function drawWaterStreaks(x0, x1, y, h, t, alpha) {
+    /* cortina d'aigua animada sobre la boca del túnel */
+    for (let i = 0; i < x1 - x0; i += 3) {
+      const xx = x0 + i + Math.sin(t * 0.16 + i) * 0.8;
+      ctx.fillStyle = 'rgba(165,225,248,' + (0.8 * alpha).toFixed(2) + ')';
+      ctx.fillRect(xx, y + ((i * 5 + t * 2.2) % 6) - 6, 2, h + 8);
     }
   }
 
-  function drawBasin(cx, baseY, t) {
-    ctx.fillStyle = '#2c2622'; ctx.fillRect(cx - 88, baseY, 176, 7);       // vora del bassal
-    ctx.fillStyle = '#453b32'; ctx.fillRect(cx - 88, baseY, 176, 2);
-    ctx.fillStyle = vg(baseY, baseY + 26, [[0, '#17384a'], [1, '#0a1e2c']]);
-    ctx.fillRect(cx - 84, baseY + 7, 168, 19);                             // aigua del bassal
-    for (let i = 0; i < 12; i++) {                                         // brillantors
-      const x = cx - 80 + ((i * 37 + t * 0.7) % 160);
-      ctx.fillStyle = 'rgba(150,225,250,' + (0.14 + 0.2 * h2(i, t >> 5)).toFixed(2) + ')';
-      ctx.fillRect(x, baseY + 9 + h2(i, 4) * 14, 7, 1.4);
-    }
-  }
-
-  /* boca del túnel a l'estructura central: tancada per una cortina d'aigua que s'obre */
+  /* boca del túnel: obertura en la base de la Font amb pedra pintada (tall de BGIMGS.hall) */
   function drawTunnelMouth(cx, baseY, t, open) {
-    const W = 30, H = 40, x = cx - W / 2, y = baseY - H;
-    /* pòrtic de pedra */
-    ctx.fillStyle = '#4e4338';
-    ctx.fillRect(x - 5, y - 5, W + 10, H + 5);
-    ctx.fillStyle = '#685a48';
-    ctx.fillRect(x - 5, y - 5, W + 10, 3); ctx.fillRect(x - 5, y - 5, 3, H + 5); ctx.fillRect(x + W + 2, y - 5, 3, H + 5);
+    const W = 36, H = 46, x = cx - W / 2, y = baseY - H;
+    const hall = hallImg();
+    ctx.save();
+    /* marc de pedra pintada: retallem un tros de la sala romànica */
+    ctx.beginPath();
+    ctx.moveTo(x - 8, baseY); ctx.lineTo(x - 8, y + 8);
+    ctx.arc(cx, y + 8, W / 2 + 8, Math.PI, 0);
+    ctx.lineTo(x + W + 8, baseY); ctx.closePath();
+    ctx.clip();
+    if (okIm(hall)) {
+      ctx.drawImage(hall, 90, 30, 220, 160, x - 8, y - 8, W + 16, H + 10);
+      ctx.fillStyle = 'rgba(10,8,16,.30)'; ctx.fillRect(x - 8, y - 8, W + 16, H + 10);
+    } else {
+      ctx.fillStyle = '#4e4338'; ctx.fillRect(x - 8, y - 8, W + 16, H + 10);
+    }
+    ctx.restore();
     if (open > 0) {
-      /* interior fosc amb resplendor blau que creix */
-      ctx.fillStyle = '#04101c';
+      /* interior fosc amb resplendor blau creixent */
+      ctx.save();
       ctx.beginPath();
-      ctx.moveTo(x, y + H); ctx.lineTo(x, y + 12); ctx.arc(cx, y + 12, W / 2, Math.PI, 0); ctx.lineTo(x + W, y + H);
-      ctx.closePath(); ctx.fill();
-      ctx.fillStyle = rad(cx, y + H - 8, 26, [[0, 'rgba(90,205,245,' + (0.5 * open).toFixed(2) + ')'], [1, 'rgba(90,205,245,0)']]);
-      ctx.fillRect(x - 6, y - 6, W + 12, H + 6);
+      ctx.moveTo(x, baseY); ctx.lineTo(x, y + 10);
+      ctx.arc(cx, y + 10, W / 2, Math.PI, 0);
+      ctx.lineTo(x + W, baseY); ctx.closePath();
+      ctx.clip();
+      ctx.fillStyle = '#04101c'; ctx.fillRect(x, y, W, H);
+      ctx.fillStyle = rad(cx, baseY - 10, 30, [[0, 'rgba(90,205,245,' + (0.55 * open).toFixed(2) + ')'], [1, 'rgba(90,205,245,0)']]);
+      ctx.fillRect(x, y, W, H);
+      ctx.restore();
       for (let i = 0; i < 4; i++) {   // bombolles que pugen per la boca
         const bt = (t * 0.5 + i * 23) % 40;
         ctx.fillStyle = 'rgba(190,240,255,' + (0.6 * open * (1 - bt / 40)).toFixed(2) + ')';
-        ctx.fillRect(cx - 9 + i * 6 + Math.sin(t * 0.1 + i), y + H - bt, 1.8, 1.8);
+        ctx.fillRect(cx - 9 + i * 6 + Math.sin(t * 0.1 + i), baseY - bt, 1.8, 1.8);
       }
     }
     if (open < 1) {
-      /* cortina d'aigua que cobreix la boca; s'obre en dues fulles */
-      const half = (W / 2) * (1 - open);
-      for (let s = 0; s < 2; s++) {
-        const x0 = s === 0 ? cx - W / 2 : cx + W / 2 - half;
-        for (let i = 0; i < half; i += 3) {
-          const xx = x0 + i + Math.sin(t * 0.16 + i) * 0.8;
-          ctx.fillStyle = 'rgba(165,225,248,.8)';
-          ctx.fillRect(xx, y + ((i * 5 + t * 2.2) % 6) - 6, 2, H + 8);
-        }
+      /* cortina d'aigua que s'obre en dues fulles */
+      const half = (W / 2 + 6) * (1 - open);
+      if (half > 0.5) {
+        drawWaterStreaks(x - 6, cx - (W / 2 + 6) + half + (W / 2 + 6) * 0 + 0, y, H, t, 1);   // fulla esquerra
+        drawWaterStreaks(cx + (W / 2 + 6) - half, x + W + 6, y, H, t, 1);                     // fulla dreta
       }
       /* esprai a la línia d'obertura */
       for (let i = 0; i < 6; i++) {
@@ -225,93 +177,79 @@
   }
 
   function drawExterior(t, heroX, heroFeet, heroSt, open) {
-    drawNightSky(t);
-    /* muntanya i cascades que baixen cap a la Font */
-    ctx.fillStyle = '#141322';
-    ctx.beginPath(); ctx.moveTo(0, 190); ctx.lineTo(90, 128); ctx.lineTo(210, 122); ctx.lineTo(300, 150); ctx.lineTo(VW, 168); ctx.lineTo(VW, 190); ctx.closePath(); ctx.fill();
-    drawCascadeTier(150, 132, 120, t);
-    drawCascadeTier(200, 156, 160, t + 40);
-    /* plaça */
-    ctx.fillStyle = vg(190, VH, [[0, '#241d26'], [1, '#0d0a12']]);
-    ctx.fillRect(0, 190, VW, VH - 190);
-    for (let i = 0; i < 9; i++) {   // reflexos d'aigua sobre la pedra
-      ctx.fillStyle = 'rgba(120,200,235,' + (0.05 + 0.07 * h2(i, t >> 6)).toFixed(2) + ')';
-      ctx.fillRect(60 + i * 44 + Math.sin(t * 0.05 + i) * 3, 214 + h2(i, 8) * 40, 16, 1.4);
+    const G = gardensImg();
+    if (okIm(G)) ctx.drawImage(G, 0, 0, VW, VH);
+    else { ctx.fillStyle = '#060a1c'; ctx.fillRect(0, 0, VW, VH); }
+    /* la gran Font pintada, amb la mateixa llum canvia-color del joc */
+    const F = fountainImg();
+    if (okIm(F)) {
+      const FH = 168, FW = Math.round(FH * F.naturalWidth / F.naturalHeight);
+      const fx = FOUNT_X - Math.round(FW / 2), fy = GY_C - FH;
+      const hue = (t * 2) % 360;
+      ctx.fillStyle = rad(FOUNT_X, fy + FH * 0.45, 120, [[0, 'hsla(' + hue + ',85%,72%,.34)'], [1, 'hsla(' + hue + ',85%,60%,0)']]);
+      ctx.fillRect(fx - 40, fy - 40, FW + 80, FH + 60);
+      ctx.drawImage(F, fx, fy, FW, FH);
+      drawMagicSparkles(t, FOUNT_X, fy + 26, FW, 40);
+      /* bassa il·luminada als peus */
+      ctx.fillStyle = 'rgba(90,180,225,.16)';
+      ctx.fillRect(fx + 12, GY_C - 2, FW - 24, 8);
     }
-    /* estructura central i jocs d'aigua */
-    ctx.fillStyle = '#3c332c';
-    ctx.fillRect(FOUNT_X - 26, PLAZA_Y - 34, 52, 34);                     // pedestal
-    ctx.fillStyle = '#52463a';
-    ctx.fillRect(FOUNT_X - 26, PLAZA_Y - 34, 52, 3);
-    drawMainJet(FOUNT_X, PLAZA_Y - 34, t, open > 0.5);
-    drawSideArcs(FOUNT_X, PLAZA_Y - 6, t);
-    drawBasin(FOUNT_X, PLAZA_Y, t);
-    drawTunnelMouth(FOUNT_X - 2, PLAZA_Y + 2, t, open);
-    /* el guerrer */
+    /* boca del túnel a la base de la Font */
+    drawTunnelMouth(FOUNT_X, GY_C + 8, t, open);
     if (heroSt) hero(heroX, heroFeet, heroSt, t);
-    /* llum màgica ambient */
-    ctx.fillStyle = rad(FOUNT_X, PLAZA_Y - 40, 120, [[0, 'rgba(120,210,245,.10)'], [1, 'rgba(120,210,245,0)']]);
-    ctx.fillRect(FOUNT_X - 120, PLAZA_Y - 160, 240, 190);
+    vignette(0.42);
   }
 
   /* --------------------------- escena interior: el túnel --------------------------- */
-  const TUN_CX = 300;             // centre del fons del túnel (punt de fuga)
-
   function drawTunnel(t, heroX, heroFeet, heroSt) {
-    ctx.fillStyle = '#04060c';
-    ctx.fillRect(0, 0, VW, VH);
-    /* resplendor blau al fons: la part aquàtica */
+    const hall = hallImg();
+    if (okIm(hall)) {
+      ctx.drawImage(hall, 0, 0, VW, VH);
+      /* ambient subterrani: foscor blavosa sobre la pedra pintada */
+      ctx.fillStyle = 'rgba(4,10,24,.62)'; ctx.fillRect(0, 0, VW, VH);
+    } else {
+      ctx.fillStyle = '#04060c'; ctx.fillRect(0, 0, VW, VH);
+    }
+    /* llum càlida de la Font quedant enrere (esquerra) */
+    ctx.fillStyle = rad(10, 190, 130, [[0, 'rgba(216,162,58,.22)'], [1, 'rgba(216,162,58,0)']]);
+    ctx.fillRect(0, 40, 220, VH - 40);
+    /* resplendor blau de les aigües endavant (dreta), palpitant */
     const pulse = 0.75 + 0.25 * Math.sin(t * 0.06);
-    ctx.fillStyle = rad(TUN_CX + 90, 170, 130, [[0, 'rgba(60,170,225,' + (0.34 * pulse).toFixed(2) + ')'], [1, 'rgba(60,170,225,0)']]);
-    ctx.fillRect(0, 0, VW, VH);
-    /* arcs concèntrics cap al fons */
-    for (let i = 6; i >= 0; i--) {
-      const s = 1 - i * 0.125;
-      const w = 460 * s, h = 190 * s;
-      const cx = TUN_CX + (1 - s) * 90, baseY = 216 - (1 - s) * 26;
-      const r_ = Math.round(90 - i * 9), g_ = Math.round(76 - i * 6), b_ = Math.round(58 - i * 3);
-      ctx.strokeStyle = 'rgb(' + Math.max(18, r_) + ',' + Math.max(22, g_) + ',' + Math.max(30, b_) + ')';
-      ctx.lineWidth = 7 * s + 1;
+    ctx.fillStyle = rad(430, 180, 150, [[0, 'rgba(60,170,225,' + (0.36 * pulse).toFixed(2) + ')'], [1, 'rgba(60,170,225,0)']]);
+    ctx.fillRect(180, 20, VW - 180, VH - 20);
+    /* feixos de llum aquàtica que travessen la volta */
+    ctx.fillStyle = 'rgba(160,225,255,.05)';
+    for (let r = 0; r < 3; r++) {
+      const rx = 250 + ((r * 90 + t * 0.35) % 260);
       ctx.beginPath();
-      ctx.moveTo(cx - w / 2, baseY);
-      ctx.lineTo(cx - w / 2, baseY - h * 0.55);
-      ctx.arc(cx, baseY - h * 0.55, w / 2, Math.PI, 0);
-      ctx.lineTo(cx + w / 2, baseY);
-      ctx.stroke();
+      ctx.moveTo(rx, 0); ctx.lineTo(rx + 30, 0); ctx.lineTo(rx + 80, VH); ctx.lineTo(rx + 20, VH);
+      ctx.closePath(); ctx.fill();
     }
-    /* entrada enrere: llum càlida de la Font a l'esquerra */
-    ctx.fillStyle = rad(16, 200, 110, [[0, 'rgba(216,162,58,.20)'], [1, 'rgba(216,162,58,0)']]);
-    ctx.fillRect(0, 60, 200, VH - 60);
-    /* terra del túnel */
-    ctx.fillStyle = vg(200, VH, [[0, '#1c1a18'], [1, '#08080c']]);
-    ctx.beginPath(); ctx.moveTo(0, 216); ctx.lineTo(VW, 206); ctx.lineTo(VW, VH); ctx.lineTo(0, VH); ctx.closePath(); ctx.fill();
-    /* graons que davallen cap a l'aigua */
-    ctx.strokeStyle = 'rgba(120,104,84,.5)'; ctx.lineWidth = 1;
-    for (let i = 0; i < 6; i++) {
-      const gy = 200 + i * 7.5, gx = 120 + i * 46;
-      ctx.beginPath(); ctx.moveTo(gx - 60, gy); ctx.lineTo(gx + 120, gy - 2); ctx.stroke();
-    }
-    /* canal d'aigua que duu a les profunditats */
-    ctx.fillStyle = vg(214, VH, [[0, '#1b4a62'], [1, '#0a2438']]);
+    /* canal d'aigua que s'endinsa cap a les profunditats */
+    ctx.fillStyle = 'rgba(14,52,76,.88)';
     ctx.beginPath();
-    ctx.moveTo(TUN_CX + 40, 210); ctx.lineTo(VW, 216); ctx.lineTo(VW, VH); ctx.lineTo(TUN_CX + 96, VH);
+    ctx.moveTo(330, 212); ctx.lineTo(VW, 216); ctx.lineTo(VW, VH); ctx.lineTo(392, VH);
     ctx.closePath(); ctx.fill();
     for (let i = 0; i < 9; i++) {   // corrents brillants
-      const xx = TUN_CX + 52 + ((i * 29 + t * 1.1) % 130);
+      const xx = 336 + ((i * 29 + t * 1.1) % 130);
       ctx.fillStyle = 'rgba(140,220,250,' + (0.18 + 0.22 * h2(i, t >> 4)).toFixed(2) + ')';
       ctx.fillRect(xx, 216 + h2(i, 2) * 40, 9, 1.5);
     }
     for (let i = 0; i < 10; i++) {  // bombolles
       const bt = (t * 0.8 + i * 31) % 90;
       ctx.fillStyle = 'rgba(190,240,255,' + (0.55 * (1 - bt / 90)).toFixed(2) + ')';
-      ctx.fillRect(TUN_CX + 60 + h2(i, 11) * 90 + Math.sin(t * 0.08 + i * 2) * 2.5, 250 - bt * 0.5, 1.8, 1.8);
+      ctx.fillRect(345 + h2(i, 11) * 90 + Math.sin(t * 0.08 + i * 2) * 2.5, 250 - bt * 0.5, 1.8, 1.8);
     }
-    for (let i = 0; i < 3; i++) {   // degotes del sostre
+    for (let i = 0; i < 3; i++) {   // degotes de la volta
       const dt = (t * 1.4 + i * 67) % 80;
       ctx.fillStyle = 'rgba(200,235,250,' + (0.7 - dt * 0.008).toFixed(2) + ')';
       ctx.fillRect(90 + i * 130, 66 + dt * 1.7, 1.2, 4);
     }
+    /* ombra del terra per asseure el guerrer */
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.fillRect(0, 222, VW, VH - 222);
     if (heroSt) hero(heroX, heroFeet, heroSt, t);
+    vignette(0.5);
   }
 
   /* ------------------------------- seqüència ------------------------------- */
@@ -325,10 +263,10 @@
       let heroX, heroSt = 'run';
       if (t < 100)      { heroX = -20 + t * 1.9; }                        // entra corrent
       else if (t < 150) { heroX = 170; heroSt = 'idle'; }                 // s'atura davant la Font
-      else              { heroX = 170 + (t - 150) * 0.62; heroSt = 'run'; } // s'hi apropa
-      if (heroX > 252) { heroX = 252; heroSt = 'idle'; }
+      else              { heroX = 170 + (t - 150) * 1.3; heroSt = "run"; }   // s'hi apropa
+      if (heroX > 304) { heroX = 304; heroSt = "idle"; }
       const open = t < 150 ? 0 : Math.min(1, (t - 150) / 85);             // la cortina s'obre
-      drawExterior(t, heroX, PLAZA_Y - 2, heroSt, open);
+      drawExterior(t, heroX, GY_C - 2, heroSt, open);
       caption('LA FONT MÀGICA', t, 14, 130);
       caption('LA CORTINA D\'AIGUA S\'OBRE...', t, 168, 246);
       /* foscor de transició cap a l'interior */
@@ -339,8 +277,8 @@
     } else if (t < 400) {
       /* INTERIOR: davallada pel túnel */
       const k = t - 255;
-      const heroX = Math.min(300, 96 + k * 1.55);
-      const heroFeet = Math.min(224, 190 + k * 0.26);
+      const heroX = Math.min(296, 96 + k * 1.55);
+      const heroFeet = Math.min(222, 192 + k * 0.23);
       drawTunnel(t, heroX, heroFeet, 'run');
       caption('UN TÚNEL SOTA LA FONT', t, 268, 350);
       if (k < 16) {   // s'aclareix des del negre
@@ -353,15 +291,15 @@
       drawTunnel(t, 0, 0, null);
       if (k < 26) {   // arc de capbussada
         const p = k / 26;
-        const hx = 300 + p * 74;
-        const hy = 224 - Math.sin(p * Math.PI) * 46 + p * 14;
+        const hx = 296 + p * 76;
+        const hy = 222 - Math.sin(p * Math.PI) * 46 + p * 16;
         hero(hx, hy, 'dive', t);
-      } else {        // esquitxada i espiral d'espurnes
+      } else {        // esquitxada i espurnes
         const sp = k - 26;
         for (let i = 0; i < 16; i++) {
           const a = i * 0.7, r = 4 + sp * 2.6 + h2(i, 3) * 8;
           ctx.fillStyle = 'rgba(215,245,255,' + Math.max(0, 0.85 - sp * 0.045).toFixed(2) + ')';
-          ctx.fillRect(374 + Math.cos(a) * r, 236 - Math.abs(Math.sin(a)) * r * 0.6 + sp * 1.1, 2, 2);
+          ctx.fillRect(372 + Math.cos(a) * r, 236 - Math.abs(Math.sin(a)) * r * 0.6 + sp * 1.1, 2, 2);
         }
       }
       /* la llum blava ho inunda tot */
