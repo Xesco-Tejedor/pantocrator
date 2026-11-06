@@ -1,10 +1,10 @@
-/* PANTHOKRATOR - capa arcade (v25): progresión de armas rápida y devastadora,
+/* PANTHOKRATOR - capa arcade (v26): progresión de armas rápida y devastadora,
    efectos arcade y jefe final visible, atacable y con figura espectral terrorífica.
    Se carga después de game.js y audio.js; no modifica los controles. */
 (function () {
   'use strict';
-  const BOSS_HP = 200;
-  const HIT_CAP = 18;   // tope por impacto: el arsenal fusionado ya no funde al jefe de dos golpes
+  const BOSS_HP = 280;
+  const HIT_CAP = 14;   // tope por impacto: el arsenal fusionado ya no funde al jefe de dos golpes
   const bossBox = b => ({ x: b.bx - (b.hitW || 60) / 2, y: GY - (b.hitH || 108), w: b.hitW || 60, h: b.hitH || 108 });
   const bodyBox = b => ({ x: b.bx - 20, y: GY - 96, w: 40, h: 96 });
 
@@ -139,7 +139,7 @@
     n = Math.min(n, HIT_CAP);
     b.hp -= n; b.flash = 8; b.hurt = 10; b.hitCd = 20;
     b.dmgAcc = (b.dmgAcc || 0) + n;
-    if (b.dmgAcc >= 55 && b.hp > 0) { b.dmgAcc = 0; b.ghostT = 150; sfx.zap(); }  // se vuelve espectral unos segundos
+    if (b.dmgAcc >= 50 && b.hp > 0) { b.dmgAcc = 0; b.ghostT = 160; sfx.zap(); }  // se vuelve espectral unos segundos
     player.score += 20 + n * 5;
     burst(x, y, n >= 12);
     if (n >= 12) sfx.megaHit(); else sfx.bossHit();
@@ -286,5 +286,5 @@
     _dgo();
     if (game.frame % 90 < 60) drawText('PARA CONTINUAR', VW / 2, 182, '#8f9aa8', 9, 'center');
   };
-  window.__arcadeLayer = 'v25';
+  window.__arcadeLayer = 'v26';
 })();
