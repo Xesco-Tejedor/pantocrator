@@ -1,4 +1,4 @@
-/* PANTHOKRATOR - etapas 2 y 3 (v1): Jardines de Montjuïc (x2 recorrido etapa 1)
+/* PANTHOKRATOR - etapas 2 y 3 (v7): Jardines de Montjuïc (x2 recorrido etapa 1)
    y Fuente Mágica acuática (x2,5) con jefe final de lodo, según hoja de ruta.
    Se carga después de arcade.js; no modifica game.js ni la jugabilidad. */
 (function () {
@@ -17,7 +17,7 @@
       const y = 105 + (i % 3) * 28;
       out.push(i % 4 === 3
         ? { x, y: 150, w: 72, h: 8, t: 'moving', ax: x, dx: 70, sp: 0.9 + (i % 3) * 0.2 }
-        : { x, y, w: 76, h: 8, t: i % 2 ? 'stone' : 'bench' });
+        : { x, y, w: 76, h: 8, t: 'bench' });
     }
     return out;
   }
@@ -57,7 +57,7 @@
       name: 'L’AMALGAMA', time: 240, length: 700, mural: 0, boss: true,
       ground: [{ x: 0, w: 700 }],
       lower: [],
-      platforms: [{ x: 140, y: 160, w: 88, h: 8, t: 'stone' }, { x: 420, y: 160, w: 88, h: 8, t: 'stone' }],
+      platforms: [{ x: 140, y: 160, w: 88, h: 8, t: 'bench' }, { x: 420, y: 160, w: 88, h: 8, t: 'bench' }],
       chandeliers: [{ x: 340, y: 36, len: 64 }],
       sages: [{ x: 150 }],
       vitrinas: [{ x: 80, y: GY, c: 'weapon' }, { x: 300, y: GY, c: 'heart' }, { x: 420, y: GY, c: 'maca' }, { x: 500, y: GY, c: 'time' }, { x: 580, y: GY, c: 'heart' }],
@@ -150,12 +150,13 @@
   /* ---------- jefe de lodo: amalgama viscosa de residuos urbanos ---------- */
   function drawMudBoss(b) {
     const x = Math.round(b.bx), g = GY, f = b.face || -1, T = game.frame;
-    const flash = b.hurt > 0, ang = b.hp < 40;
+    const flash = b.hurt > 0, ang = b.hp < (b.maxHp || 80) / 2;
     const warn = b.warn > 0, lunge = b.lunge > 0;
     const wob = Math.sin(T / 14) * 2.2, wob2 = Math.sin(T / 9 + 2) * 1.6;
     const lean = lunge ? (b.lungeDir || f) * 8 : Math.sin(T / 40) * 2;
     const M = c => flash ? '#fff' : c;
     ctx.save();
+    if ((b.ghostT || 0) > 0) ctx.globalAlpha = 0.45;   // forma intangible compartida con el Panthokrator
     ctx.translate(x + lean * 0.4, g);
     // charco base que respira
     ctx.fillStyle = M('#241d0e');
@@ -269,5 +270,200 @@
     } else _drawBeastE(e, anim);
   };
 
-  window.__etapas = 'v3';
+
+  /* ---------- suelo, plataformas, lámparas y pedestales acordes al entorno (v7) ----------
+     El mármol, los bancos de trencadís y las arañas de luces son del interior del MNAC;
+     fuera: tierra y hierba / lecho de la fuente, losas con musgo / roca con coral,
+     farolillos de papel / medusas bioluminiscentes, pedestales con hiedra / burbujas. */
+  function envStrip(kind) {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 130;
+    const g = c.getContext('2d');
+    if (kind === 'garden') {
+      // cara frontal: tierra oscura con raíces
+      const fg = g.createLinearGradient(0, 14, 0, 130);
+      fg.addColorStop(0, '#33291a'); fg.addColorStop(0.35, '#241c10'); fg.addColorStop(1, '#0a0805');
+      g.fillStyle = fg; g.fillRect(0, 14, 256, 116);
+      g.strokeStyle = 'rgba(10,8,4,.4)'; g.lineWidth = 1;
+      for (let i = 0; i < 256; i += 19) {
+        const v = hsh(i, 191);
+        if (v > 0.5) { g.beginPath(); g.moveTo(i + v * 9, 17); g.quadraticCurveTo(i + v * 9 + 4, 40 + v * 28, i + v * 6, 62 + v * 38); g.stroke(); }
+      }
+      speckleOn(g, 0, 20, 256, 100, 'rgba(190,170,120,.06)', 22, 7);
+      // superficie: franjas irregulares de hierba y tierra
+      let i = 0;
+      while (i < 256) {
+        const v = hsh(i, 13);
+        const w = Math.min(16 + Math.floor(v * 18), 256 - i);
+        const grass = v > 0.38;
+        const tone = grass ? (v > 0.7 ? '#4d7a3f' : '#3d6334') : (v > 0.2 ? '#5a4630' : '#4a3826');
+        const lg = g.createLinearGradient(i, 0, i, 14);
+        lg.addColorStop(0, tone); lg.addColorStop(1, grass ? '#2c4a26' : '#33261a');
+        g.fillStyle = lg; g.fillRect(i, 0, w - 1, 14);
+        i += w;
+      }
+      g.fillStyle = '#6f9a52'; g.fillRect(0, 0, 256, 2);              // borde de hierba iluminado
+      g.fillStyle = 'rgba(8,6,4,.4)'; g.fillRect(0, 14, 256, 3);
+      for (let x = 6; x < 252; x += 11) {                              // briznas y flores
+        const v = hsh(x, 61);
+        if (v > 0.5) { g.fillStyle = '#5d8a46'; g.fillRect(x, 0, 2, 4); g.fillRect(x + 3, 0, 2, 6); }
+        if (v > 0.86) { g.fillStyle = v > 0.93 ? '#e8d8f0' : '#f2d78a'; g.fillRect(x + 5, 1, 2, 2); }
+      }
+    } else {
+      // lecho de la fuente: arena y roca azulada
+      const fg = g.createLinearGradient(0, 14, 0, 130);
+      fg.addColorStop(0, '#3d4a52'); fg.addColorStop(0.35, '#26323c'); fg.addColorStop(1, '#060c11');
+      g.fillStyle = fg; g.fillRect(0, 14, 256, 116);
+      g.strokeStyle = 'rgba(6,12,16,.4)'; g.lineWidth = 1;
+      for (let i = 0; i < 256; i += 23) {
+        const v = hsh(i, 293);
+        if (v > 0.5) { g.beginPath(); g.moveTo(i + v * 8, 16); g.lineTo(i + v * 8 + 3, 30 + v * 30); g.stroke(); }
+      }
+      speckleOn(g, 0, 20, 256, 100, 'rgba(150,190,200,.07)', 20, 11);
+      // algas colgando del borde
+      g.strokeStyle = 'rgba(60,120,90,.55)'; g.lineWidth = 1.6;
+      for (let x = 14; x < 250; x += 29) {
+        const v = hsh(x, 77);
+        if (v > 0.45) { g.beginPath(); g.moveTo(x, 15); g.quadraticCurveTo(x + 3 - v * 6, 22 + v * 10, x + 1, 30 + v * 14); g.stroke(); }
+      }
+      // superficie: arena clara con ondas y guijarros
+      let i = 0;
+      while (i < 256) {
+        const v = hsh(i, 17);
+        const w = Math.min(18 + Math.floor(v * 16), 256 - i);
+        const tone = v < 0.33 ? '#8f9583' : v < 0.66 ? '#7d857a' : '#5f6d68';
+        const lg = g.createLinearGradient(i, 0, i, 14);
+        lg.addColorStop(0, tone); lg.addColorStop(1, '#46525a');
+        g.fillStyle = lg; g.fillRect(i, 0, w - 1, 14);
+        if (v > 0.6) {
+          g.strokeStyle = 'rgba(230,240,235,.22)';
+          g.beginPath(); g.moveTo(i + 3, 5 + v * 4); g.quadraticCurveTo(i + w / 2, 8 + v * 3, i + w - 4, 5 + (1 - v) * 5); g.stroke();
+        }
+        i += w;
+      }
+      g.fillStyle = '#a8b8ac'; g.fillRect(0, 0, 256, 2);              // borde de arena iluminado
+      g.fillStyle = 'rgba(6,12,16,.42)'; g.fillRect(0, 14, 256, 3);
+      for (let x = 10; x < 250; x += 31) {                             // conchas y guijarros
+        const v = hsh(x, 97);
+        if (v > 0.62) { g.fillStyle = v > 0.85 ? '#d8c8d8' : '#6a7a72'; g.fillRect(x, 2, 3, 2); }
+      }
+    }
+    return c;
+  }
+  const ENV_STRIPS = {};
+  const _drawFloorE = drawFloor;
+  drawFloor = function (x, w, y) {
+    const i = world.stageIdx;
+    if (i < 3 || y !== GY) return _drawFloorE(x, w, y);
+    const k = i <= 4 ? 'g' : 'a';
+    const strip = ENV_STRIPS[k] || (ENV_STRIPS[k] = envStrip(k === 'g' ? 'garden' : 'aqua'));
+    for (let j = 0; j < w; j += 256) {
+      const sw = Math.min(256, w - j);
+      ctx.drawImage(strip, 0, 0, sw, strip.height, x + j, y, sw, strip.height);
+    }
+  };
+
+  // plataformas: losa con musgo (jardines) / roca con coral (acuático)
+  function drawGardenPlatform(p) {
+    const x0 = p.x, ym = p.y;
+    ctx.fillStyle = lgrad(x0, ym, x0, ym + p.h + 4, '#6a6a58', '#33332a');
+    ctx.fillRect(x0, ym, p.w, p.h + 4);
+    ctx.fillStyle = '#8a8a72'; ctx.fillRect(x0, ym, p.w, 2);
+    ctx.fillStyle = '#4d7a3f';
+    for (let tx = x0 + 1; tx < x0 + p.w - 3; tx += 5) if (hsh(tx, p.y + 5) > 0.35) ctx.fillRect(tx, ym - 1, 4, 2.4);
+    ctx.fillStyle = 'rgba(16,14,10,.5)';
+    for (let k = 4; k < p.w - 4; k += 14) if (hsh(p.x + k, 41) > 0.5) ctx.fillRect(p.x + k, ym + 3, 1, p.h);
+    speckle(x0, ym, p.w, p.h + 4, 'rgba(0,0,0,.2)', 7, p.x);
+    if (p.t === 'moving') {
+      ctx.fillStyle = 'rgba(190,255,150,' + (0.12 + 0.09 * Math.sin(game.frame / 16)) + ')';
+      ctx.fillRect(x0 - 2, ym - 8, p.w + 4, 22);
+    }
+  }
+  function drawAquaPlatform(p) {
+    const x0 = p.x, ym = p.y;
+    ctx.fillStyle = lgrad(x0, ym, x0, ym + p.h + 4, '#5a6a72', '#24303a');
+    ctx.fillRect(x0, ym, p.w, p.h + 4);
+    ctx.fillStyle = '#7e939c'; ctx.fillRect(x0, ym, p.w, 2);
+    for (let tx = x0 + 3; tx < x0 + p.w - 4; tx += 9) {
+      const v = hsh(tx, p.y + 11);
+      if (v > 0.6) {
+        ctx.fillStyle = v > 0.82 ? '#d87a9a' : '#7ac8c0';
+        ctx.fillRect(tx, ym - 3, 2.4, 3); ctx.fillRect(tx + 2, ym - 2, 1.6, 2);
+      }
+    }
+    speckle(x0, ym, p.w, p.h + 4, 'rgba(4,10,14,.25)', 7, p.x);
+    if (p.t === 'moving') {
+      ctx.fillStyle = 'rgba(140,230,255,' + (0.12 + 0.09 * Math.sin(game.frame / 16)) + ')';
+      ctx.fillRect(x0 - 2, ym - 8, p.w + 4, 22);
+    }
+  }
+  const _drawBenchE = drawBench;
+  drawBench = function (p) {
+    const i = world.stageIdx;
+    if (i < 3) return _drawBenchE(p);
+    if (i <= 4) drawGardenPlatform(p); else drawAquaPlatform(p);
+  };
+
+  // lámparas: farolillo de papel (jardines) / medusa bioluminiscente (acuático)
+  const _drawChandelierE = drawChandelier;
+  drawChandelier = function (hx, hy) {
+    const i = world.stageIdx;
+    if (i < 3) return _drawChandelierE(hx, hy);
+    if (i <= 4) {
+      ctx.fillStyle = rgrad(hx, hy, 24, 'rgba(255,190,90,.30)', 'rgba(255,190,90,0)');
+      ctx.fillRect(hx - 24, hy - 24, 48, 48);
+      const fl = (game.frame % 16) < 11;
+      ctx.fillStyle = '#14100c';
+      ctx.beginPath(); ctx.ellipse(hx, hy, 8.5, 10.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = lgrad(hx, hy - 10, hx, hy + 10, fl ? '#ffdf9a' : '#e8b26a', '#b06a28');
+      ctx.beginPath(); ctx.ellipse(hx, hy, 7, 9, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(90,50,16,.55)'; ctx.lineWidth = 1;
+      for (const dx of [-4, 0, 4]) { ctx.beginPath(); ctx.moveTo(hx + dx, hy - 8.4); ctx.quadraticCurveTo(hx + dx * 1.25, hy, hx + dx, hy + 8.4); ctx.stroke(); }
+      ctx.fillStyle = '#14100c'; ctx.fillRect(hx - 4, hy - 12, 8, 3); ctx.fillRect(hx - 3, hy + 9, 6, 2.6);
+      ctx.fillStyle = '#8a6f42'; ctx.fillRect(hx - 3, hy - 11.4, 6, 1.6);
+    } else {
+      ctx.fillStyle = rgrad(hx, hy, 26, 'rgba(120,225,255,.30)', 'rgba(120,225,255,0)');
+      ctx.fillRect(hx - 26, hy - 26, 52, 52);
+      const wob = Math.sin(game.frame / 9 + hx) * 1.4;
+      ctx.fillStyle = 'rgba(160,235,255,.85)';
+      ctx.beginPath(); ctx.ellipse(hx, hy - 2, 9 + wob * 0.4, 7 - wob * 0.3, 0, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = 'rgba(90,170,220,.5)';
+      ctx.beginPath(); ctx.ellipse(hx, hy + 1.4, 9 + wob * 0.4, 3.2, 0, 0, Math.PI); ctx.fill();
+      ctx.fillStyle = '#eafcff'; ctx.fillRect(hx - 1.6, hy - 4, 3.2, 3.2);
+      ctx.strokeStyle = 'rgba(170,235,255,.7)'; ctx.lineWidth = 1.2;
+      for (const dx of [-5, -1.6, 1.6, 5]) {
+        ctx.beginPath(); ctx.moveTo(hx + dx, hy + 3);
+        ctx.quadraticCurveTo(hx + dx + Math.sin(game.frame / 7 + dx) * 2.4, hy + 9, hx + dx * 1.2, hy + 14);
+        ctx.stroke();
+      }
+    }
+  };
+
+  // objetos: pedestal con hiedra (jardines) / burbuja (acuático) en vez de vitrina gótica
+  const _drawVitrinaE = drawVitrina;
+  drawVitrina = function (v) {
+    const i = world.stageIdx;
+    if (i < 3) return _drawVitrinaE(v);
+    const x = v.x, y = v.y;
+    const im = iconFor(v.c);
+    if (i <= 4) {
+      ctx.fillStyle = rgrad(x, y - 26, 16, 'rgba(190,255,150,.22)', 'rgba(190,255,150,0)');
+      ctx.fillRect(x - 16, y - 46, 32, 48);
+      pix(im, PAL, x - 8, y - 36, 2, false);
+      ctx.fillStyle = lgrad(x, y - 12, x, y, '#7a7a66', '#3a3a30');
+      ctx.fillRect(x - 9, y - 12, 18, 12);
+      ctx.fillStyle = '#8a8a72'; ctx.fillRect(x - 10, y - 14, 20, 3);
+      ctx.fillStyle = '#4d7a3f';
+      for (let k = 0; k < 4; k++) ctx.fillRect(x - 9 + k * 5 + (hsh(k, x) > 0.5 ? 1 : 0), y - 12 + k * 2.4, 2.4, 2.4);
+    } else {
+      const bob = Math.sin(game.frame / 12 + x) * 1.6;
+      ctx.strokeStyle = 'rgba(170,235,255,.8)'; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.arc(x, y - 26 + bob, 13, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(140,220,255,.14)';
+      ctx.beginPath(); ctx.arc(x, y - 26 + bob, 12.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(240,255,255,.85)'; ctx.fillRect(x - 6.5, y - 34 + bob, 2.6, 2.6);
+      pix(im, PAL, x - 8, y - 34 + bob, 2, false);
+    }
+  };
+
+  window.__etapas = 'v7';
 })();
