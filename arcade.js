@@ -1,9 +1,10 @@
-/* PANTHOKRATOR - capa arcade (v24): progresión de armas rápida y devastadora,
+/* PANTHOKRATOR - capa arcade (v25): progresión de armas rápida y devastadora,
    efectos arcade y jefe final visible, atacable y con figura espectral terrorífica.
    Se carga después de game.js y audio.js; no modifica los controles. */
 (function () {
   'use strict';
-  const BOSS_HP = 80;
+  const BOSS_HP = 200;
+  const HIT_CAP = 18;   // tope por impacto: el arsenal fusionado ya no funde al jefe de dos golpes
   const bossBox = b => ({ x: b.bx - (b.hitW || 60) / 2, y: GY - (b.hitH || 108), w: b.hitW || 60, h: b.hitH || 108 });
   const bodyBox = b => ({ x: b.bx - 20, y: GY - 96, w: 40, h: 96 });
 
@@ -102,9 +103,8 @@
     trackKills(_swordHits);
     if (!sb) return;
     const b = world.boss;
-    if (b && b.hitCd <= 0 && overlap(sb, bossBox(b))) {
+    if (b && b.hitCd <= 0 && (b.ghostT || 0) <= 0 && overlap(sb, bossBox(b))) {
       hurtBoss(swingDmg(), sb.x + sb.w / 2, player.y + 8);
-      b.hitCd = 9;
     }
     // onda de choque de las armas fusionadas: arrasa en línea
     if (comboN() >= 1 && game.frame - lastWave > 22) {
@@ -122,6 +122,7 @@
     if (b && b.bx !== undefined) {
       for (const d of world.daggers) {
         if (d.dead || (d.hits && d.hits.has('boss'))) continue;
+        if (b.hitCd > 0 || (b.ghostT || 0) > 0) continue;   // forma espectral: los proyectiles lo atraviesan
         if (overlap({ x: d.x - 4, y: d.y - 3, w: 8, h: 6 }, bossBox(b))) {
           hurtBoss(Math.max(1, d.dmg || 1), d.x, d.y);
           if (d.pierce) (d.hits = d.hits || new Set()).add('boss'); else d.dead = true;
@@ -134,7 +135,11 @@
   /* ---------- jefe final: cuerpo visible y atacable ---------- */
   function hurtBoss(n, x, y) {
     const b = world.boss; if (!b) return;
-    b.hp -= n; b.flash = 8; b.hurt = 10;
+    if (b.hitCd > 0 || (b.ghostT || 0) > 0) return;   // breve invulnerabilidad / forma espectral
+    n = Math.min(n, HIT_CAP);
+    b.hp -= n; b.flash = 8; b.hurt = 10; b.hitCd = 20;
+    b.dmgAcc = (b.dmgAcc || 0) + n;
+    if (b.dmgAcc >= 55 && b.hp > 0) { b.dmgAcc = 0; b.ghostT = 150; sfx.zap(); }  // se vuelve espectral unos segundos
     player.score += 20 + n * 5;
     burst(x, y, n >= 12);
     if (n >= 12) sfx.megaHit(); else sfx.bossHit();
@@ -149,11 +154,13 @@
     const b = world.boss; if (!b) return;
     if (b.bx === undefined) {
       b.bx = 440; b.maxHp = BOSS_HP; b.hp = BOSS_HP; b.hitCd = 0; b.hurt = 0; b.face = -1;
-      b.lungeT = 300; b.lunge = 0; b.warn = 0; b.hp0 = b.hp;
+      b.lungeT = 200; b.lunge = 0; b.warn = 0; b.hp0 = b.hp; b.ghostT = 0; b.dmgAcc = 0;
+      b.shootT = 50; b.pillarT = 170;   // orbes y pilar de luz aparecen desde el primer momento
       world.announce = 'ATACA AL PANTHOKRATOR!'; world.announceT = 170;
     }
     if (b.hitCd > 0) b.hitCd--;
     if (b.hurt > 0) b.hurt--;
+    if (b.ghostT > 0) { b.ghostT--; b.shootT--; }   // espectral: orbes al doble de ritmo
     const pcx = player.x + player.w / 2;
     if (!player.dead) {
       const dx = pcx - b.bx; b.face = dx < 0 ? -1 : 1;
@@ -191,8 +198,10 @@
     const flash = b.hurt > 0, ang = b.hp < BOSS_HP / 2;
     const warn = b.warn > 0, lunge = b.lunge > 0;
     const lean = lunge ? (b.lungeDir || f) * 7 : 0;
+    const ghost = (b.ghostT || 0) > 0;
 
     ctx.save();
+    if (ghost) ctx.globalAlpha = 0.45;
     ctx.translate(x + lean * 0.4, g);
 
     // niebla espectral que lo envuelve
@@ -277,5 +286,5 @@
     _dgo();
     if (game.frame % 90 < 60) drawText('PARA CONTINUAR', VW / 2, 182, '#8f9aa8', 9, 'center');
   };
-  window.__arcadeLayer = 'v23';
+  window.__arcadeLayer = 'v25';
 })();
