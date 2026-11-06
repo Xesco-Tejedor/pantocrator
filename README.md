@@ -45,7 +45,7 @@ Funciona al navegador (mòbil i escriptori), sense instal·lació. Al mòbil, mi
 - Canvas intern de 480×270 amb escalat enter i `image-rendering: pixelated`.
 - Personatges, mobiliari i efectes dibuixats amb pintura procedural al codi (degradats, corbes i soroll; cap sprite de tercers).
 - Fons pintats generats amb IA per a aquest projecte, incrustats dins el codi; si no es carreguen, el joc usa un fons procedural de reserva amb paral·laxi.
-- Música i efectes xip sintetitzats amb WebAudio (temes de títol, fase i cap).
+- Música i efectes sintetitzats amb WebAudio: caràcter de màquina recreativa Taito i temes originals de títol, fase i cap inspirats en l'ambient musical de Black Tiger (Capcom, 1987), sense copiar-ne cap melodia.
 - HUD: vida, temporitzador, puntuació, fase, Zenny, nivell d'arma (pips daurats) i pips d'armadura.
 
 Obra original creada com a homenatge; els noms d'obres del MNAC s'usen com a referència cultural. Tot l'art del joc és original i s'ha creat per a aquest projecte (els fons, amb assistència d'IA).
