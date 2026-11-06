@@ -12,7 +12,7 @@
    Es pot saltar amb una pulsació nova d'ATACAR/SALTAR o qualsevol direcció. */
 (function () {
   'use strict';
-  window.__cinematic = 3;
+  window.__cinematic = 4;
 
   const DOG_IDX = 5;              // EL GOS ZOMBI (arena davant la gran Font)
   const WATER_IDX = 6;            // AIGÜES DE LA FONT (primera fase subterrània)
@@ -22,7 +22,7 @@
   let prevIn = null;              // per detectar pulsacions noves (saltar cinemàtica)
 
   function isTransitionPoint() {
-    return game.state === 'stageclear' && game.anim > 130 &&
+    return game.state === 'stageclear' && game.anim > 90 &&
       world.stageIdx === DOG_IDX &&
       STAGES[DOG_IDX] && STAGES[DOG_IDX].name === 'EL GOS ZOMBI' &&
       STAGES[WATER_IDX] && STAGES[WATER_IDX].name === 'AIGÜES DE LA FONT' &&
