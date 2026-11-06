@@ -139,7 +139,7 @@
     if (b.tuned) n = Math.min(n, HIT_CAP);
     b.hp -= n; b.flash = 8; b.hurt = 10; b.hitCd = b.tuned ? 20 : 9;
     b.dmgAcc = (b.dmgAcc || 0) + n;
-    if (b.tuned && b.dmgAcc >= 50 && b.hp > 0) { b.dmgAcc = 0; b.ghostT = 160; sfx.zap(); }  // se vuelve espectral unos segundos
+    if (b.spectralOk && b.dmgAcc >= 50 && b.hp > 0) { b.dmgAcc = 0; b.ghostT = 160; sfx.zap(); }  // forma espectral: solo el Panthokrator
     player.score += 20 + n * 5;
     burst(x, y, n >= 12);
     if (n >= 12) sfx.megaHit(); else sfx.bossHit();
@@ -153,10 +153,10 @@
   updateBoss = function () {
     const b = world.boss; if (!b) return;
     if (b.bx === undefined) {
-      b.tuned = (world.stageIdx === 2);   // el nuevo equilibrio es solo del Panthokrator
+      b.tuned = (world.stageIdx === 2 || world.stageIdx === 5);   // Panthokrator y gos zombi (arena 5 de etapas.js)
       const hp0v = b.tuned ? BOSS_HP : 80;
       b.bx = 440; b.maxHp = hp0v; b.hp = hp0v; b.hitCd = 0; b.hurt = 0; b.face = -1;
-      b.lungeT = b.tuned ? 200 : 300; b.lunge = 0; b.warn = 0; b.hp0 = b.hp; b.ghostT = 0; b.dmgAcc = 0;
+      b.lungeT = b.tuned ? 200 : 300; b.lunge = 0; b.warn = 0; b.hp0 = b.hp; b.ghostT = 0; b.dmgAcc = 0; b.spectralOk = (world.stageIdx === 2);
       if (b.tuned) { b.shootT = 50; b.pillarT = 170; }   // orbes y pilar desde el primer momento
       world.announce = 'ATACA AL PANTHOKRATOR!'; world.announceT = 170;
     }
@@ -288,5 +288,5 @@
     _dgo();
     if (game.frame % 90 < 60) drawText('PARA CONTINUAR', VW / 2, 182, '#8f9aa8', 9, 'center');
   };
-  window.__arcadeLayer = 'v27';
+  window.__arcadeLayer = 'v28';
 })();
