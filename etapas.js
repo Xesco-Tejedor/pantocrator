@@ -65,6 +65,7 @@
     }
   );
   const MUD_STAGE = STAGES.length - 1;   // índice del jefe de lodo
+  let mudAnn = '';               // aviso del jefe redibujado abajo
   const PANTO_STAGE = 2;                 // última fase de la etapa 1 MNAC
 
   // sprites pintados (mismo lenguaje visual que el héroe y el Panthokrator)
@@ -214,11 +215,11 @@
   const _updateBossE = updateBoss;
   updateBoss = function () {
     _updateBossE();
-    if (world.stageIdx !== MUD_STAGE) { world.announceY = 0; return; }
+    if (world.stageIdx !== MUD_STAGE) return;
     if (world.announce === 'ATACA AL PANTHOKRATOR!')
       world.announce = 'ATACA L’AMALGAMA!';
     // zona dañable alineada con el cuerpo visible (sprite ~100px de ancho, 132 de alto)
-    world.announceY = 218;   // aviso junto a la barra inferior, lejos de la silueta del jefe
+    if (world.announceT > 0 && world.announce) { mudAnn = world.announce; world.announce = ''; }
     const mb = world.boss;
     if (mb && mb.bx !== undefined) {
       const im = MUD_IMG;
@@ -235,6 +236,8 @@
     ctx.fillStyle = '#6a7a2a'; ctx.fillRect(x, y, w * Math.max(0, b.hp / b.maxHp), 7);
     ctx.lineWidth = 1; ctx.strokeStyle = '#d8d84a'; ctx.strokeRect(x - 1.5, y - 1.5, w + 3, 10);
     drawText('L’AMALGAMA', VW / 2, y + 11, '#d8d84a', 7, 'center');
+    if (world.announceT > 0 && mudAnn)
+      drawText(mudAnn, VW / 2, y - 20, '#d8d84a', 12, 'center');
   };
 
   // reskins de enemigos por etapa: pucks/pixies voladores (etapas 2 y 3) y anguilas abisales (etapa 3)
