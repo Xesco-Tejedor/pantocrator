@@ -2348,16 +2348,15 @@ function drawPlayer() {
   if (player.armor > 0 && !player.dead) {
     const col = player.armor >= 8 ? '#f2d78a' : player.armor >= 4 ? '#c9ced8' : '#b08a4a';
     const low = st === 'crouch' || st === 'cattack';
-    const cy0 = low ? -37 : -48, chh = low ? 15 : 20;   // tors alt / agachat
+    const cy0 = low ? -33 : -44, chh = low ? 12 : 15;   // tors alt / agachat
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h); ctx.scale(player.dir, 1);
-    ctx.globalAlpha = 0.85; ctx.fillStyle = col;
-    ctx.fillRect(-11, cy0, 16, chh);                    // placa de pit i abdomen
+    ctx.globalAlpha = 0.8; ctx.fillStyle = col;
+    ctx.fillRect(-10, cy0, 14, chh);                    // placa de pit i abdomen
     ctx.globalAlpha = 0.95;
-    ctx.fillRect(-11, cy0, 16, 2.5);                    // vora superior clara
-    ctx.fillRect(-11, cy0 + chh - 2, 16, 2);            // vora inferior
-    ctx.globalAlpha = 0.45; ctx.fillStyle = '#14100c';
-    ctx.fillRect(-4, cy0 + 2, 1.6, chh - 4);            // escot central
+    ctx.fillRect(-10, cy0, 14, 2);                      // vora superior clara
+    ctx.globalAlpha = 0.85; ctx.strokeStyle = '#241a10'; ctx.lineWidth = 1.1;
+    ctx.strokeRect(-10, cy0, 14, chh);                  // contorn fosc de la corassa
     ctx.restore();
   }
   // escut actiu
