@@ -1,5 +1,5 @@
-/* PANTHOKRATOR - capa arcade (v21): progresión de armas más rápida y devastadora,
-   efectos de sonido espectaculares y jefe final visible y atacable.
+/* PANTHOKRATOR - capa arcade (v22): progresión de armas rápida y devastadora,
+   efectos arcade y jefe final visible, atacable y con figura espectral terrorífica.
    Se carga después de game.js y audio.js; no modifica los controles. */
 (function () {
   'use strict';
@@ -179,59 +179,206 @@
     }
   };
 
-  /* dibujo del jefe: figura grande dorada y azul, de pie en la arena */
+  /* dibujo del jefe: figura espectral corrupta, organica e inquietante (v22) */
   function drawBossBody(b) {
     const x = Math.round(b.bx), g = GY, f = b.face || -1, T = game.frame;
     const flash = b.hurt > 0, ang = b.hp < BOSS_HP / 2;
-    const robe = flash ? '#ffffff' : '#2f5f93', robeD = flash ? '#f0e6c8' : '#13293d';
-    const gold = flash ? '#ffffff' : '#e8c25a', goldD = flash ? '#f2e2a0' : '#8a6420';
-    // aura
+    const warn = b.warn > 0, lunge = b.lunge > 0;
+    const breath = Math.sin(T / 40) * 1.6;          // respiracion lenta
+    const sway = Math.sin(T / 55) * 2.2;            // balanceo inquietante
+    const lean = lunge ? (b.lungeDir || f) * 7 : 0;
+
+    ctx.save();
+    ctx.translate(x + lean * 0.4, g);
+
+    // niebla espectral que lo envuelve
     const pulse = 0.5 + 0.5 * Math.sin(T / 9);
-    ctx.fillStyle = 'rgba(242,215,138,' + (0.18 + 0.1 * pulse + (b.warn > 0 ? 0.25 : 0)) + ')';
-    ctx.beginPath(); ctx.ellipse(x, g - 62, 54, 70, 0, 0, Math.PI * 2); ctx.fill();
-    // halo
-    ctx.strokeStyle = gold; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.arc(x, g - 94, 20, 0, Math.PI * 2); ctx.stroke();
-    ctx.strokeStyle = goldD; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(x, g - 94, 22, 0, Math.PI * 2); ctx.stroke();
-    // manto
-    ctx.fillStyle = robe;
-    ctx.beginPath(); ctx.moveTo(x - 17, g - 80); ctx.lineTo(x + 17, g - 80); ctx.lineTo(x + 34, g); ctx.lineTo(x - 34, g); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = robeD;
-    for (const o of [-20, -8, 8, 20]) ctx.fillRect(x + o - 1, g - 62, 2, 62);
-    ctx.fillStyle = gold; ctx.fillRect(x - 3, g - 80, 6, 80);
-    ctx.fillStyle = goldD; ctx.fillRect(x - 28, g - 8, 56, 3);
-    // hombreras
-    ctx.fillStyle = gold; ctx.fillRect(x - 25, g - 84, 14, 9); ctx.fillRect(x + 11, g - 84, 14, 9);
-    ctx.fillStyle = goldD; ctx.fillRect(x - 25, g - 77, 14, 2); ctx.fillRect(x + 11, g - 77, 14, 2);
-    // brazos alzados
-    const sw = Math.sin(T / 12) * 3 + (b.warn > 0 ? -10 : 0);
-    ctx.strokeStyle = robe; ctx.lineWidth = 7; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(x - 20, g - 78); ctx.lineTo(x - 36, g - 66 + sw); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x + 20, g - 78); ctx.lineTo(x + 36, g - 66 - sw); ctx.stroke();
-    ctx.lineCap = 'butt';
-    ctx.fillStyle = flash ? '#fff' : '#e0b890';
-    ctx.fillRect(x - 40, g - 69 + sw, 7, 7); ctx.fillRect(x + 33, g - 69 - sw, 7, 7);
-    // libro dorado en la mano izquierda
-    ctx.fillStyle = gold; ctx.fillRect(x - 50, g - 76 + sw, 12, 15);
-    ctx.fillStyle = goldD; ctx.fillRect(x - 48, g - 74 + sw, 8, 11);
-    // cabeza
-    ctx.fillStyle = flash ? '#fff' : '#e0b890'; ctx.fillRect(x - 9, g - 104, 18, 21);
-    ctx.fillStyle = flash ? '#f0e6c8' : '#3a2415'; ctx.fillRect(x - 10, g - 104, 20, 5); ctx.fillRect(x - 8, g - 88, 16, 8);
-    ctx.fillStyle = ang || b.warn > 0 ? '#ff3030' : '#14100c';
-    ctx.fillRect(x - 6 + f * 1, g - 98, 4, 3); ctx.fillRect(x + 2 + f * 1, g - 98, 4, 3);
-    ctx.fillStyle = gold; ctx.fillRect(x - 11, g - 108, 22, 4);
-    ctx.fillStyle = goldD; for (let i = -9; i <= 7; i += 8) ctx.fillRect(x + i, g - 112, 4, 4);
-    // aviso de embestida
-    if (b.warn > 0 && Math.floor(T / 3) % 2) {
-      ctx.fillStyle = '#ff3030'; ctx.fillRect(x - 3, g - 126, 6, 10); ctx.fillRect(x - 3, g - 113, 6, 4);
+    const mA = flash ? 0.12 : 0.30 + 0.12 * pulse + (warn ? 0.18 : 0) + (ang ? 0.08 : 0);
+    const mg = ctx.createRadialGradient(0, -50, 8, 0, -50, 80);
+    mg.addColorStop(0, 'rgba(46,28,68,' + mA + ')');
+    mg.addColorStop(0.6, 'rgba(26,14,42,' + (mA * 0.55) + ')');
+    mg.addColorStop(1, 'rgba(8,4,16,0)');
+    ctx.fillStyle = mg;
+    ctx.beginPath(); ctx.ellipse(0, -50, 76, 82, 0, 0, Math.PI * 2); ctx.fill();
+
+    // halo roto, torcido y apagado
+    ctx.save();
+    ctx.translate(sway * 0.6, -107 + breath * 0.4);
+    ctx.rotate(-0.30 + Math.sin(T / 70) * 0.06);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = flash ? '#fff' : '#6e5626'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 21, -2.7, 0.4); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, 21, 0.9, 2.1); ctx.stroke();
+    ctx.strokeStyle = flash ? '#fff' : '#3a2c10'; ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.arc(0, 0, 23.5, -2.5, 0.2); ctx.stroke();
+    ctx.fillStyle = flash ? '#fff' : '#6e5626';
+    ctx.fillRect(16, -15, 3, 2); ctx.fillRect(-24, 6, 2, 3); ctx.fillRect(9, 20, 2, 2);
+    ctx.restore();
+
+    // zarcillos de sombra que reptan por el suelo
+    ctx.strokeStyle = flash ? 'rgba(255,255,255,.45)' : 'rgba(22,12,34,.85)';
+    ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+    for (let i = 0; i < 6; i++) {
+      const dir0 = i < 3 ? -1 : 1, k = i % 3;
+      const bx0 = dir0 * (8 + k * 7);
+      const wx = Math.sin(T / 9 + i * 1.7) * 6;
+      ctx.beginPath();
+      ctx.moveTo(bx0 * 0.6, -3);
+      ctx.quadraticCurveTo(bx0 + dir0 * 6, 1, bx0 + dir0 * 12 + wx, -1 - k);
+      ctx.stroke();
     }
+    ctx.lineCap = 'butt';
+
+    // manto harapiento con borde desgarrado
+    const rg = ctx.createLinearGradient(0, -86, 0, 0);
+    rg.addColorStop(0, flash ? '#ffffff' : '#2c2136');
+    rg.addColorStop(0.55, flash ? '#f2f2f2' : '#1a1224');
+    rg.addColorStop(1, flash ? '#e0e0e0' : '#0d0812');
+    ctx.fillStyle = rg;
+    ctx.beginPath();
+    ctx.moveTo(-14 + sway * 0.3, -80 + breath * 0.5);
+    ctx.bezierCurveTo(-27 + sway * 0.5, -64, -31, -38, -28, -12);
+    const teeth = 7;
+    for (let i = 1; i <= teeth; i++) {
+      const hx2 = -28 + (56 / teeth) * i;
+      ctx.lineTo(hx2 - 4, -2 - ((i * 3) % 4));
+      ctx.lineTo(hx2, -11 - ((i * 5) % 6) + Math.sin(T / 11 + i * 2) * 1.6);
+    }
+    ctx.lineTo(28, -12);
+    ctx.bezierCurveTo(31, -38, 27 + sway * 0.5, -64, 14 + sway * 0.3, -80 + breath * 0.5);
+    ctx.quadraticCurveTo(0, -87 + breath * 0.6, -14 + sway * 0.3, -80 + breath * 0.5);
+    ctx.closePath(); ctx.fill();
+
+    // pliegues del manto
+    ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 1.6;
+    for (const o of [-16, -5, 7, 17]) {
+      ctx.beginPath();
+      ctx.moveTo(o * 0.7 + sway * 0.3, -72 + breath * 0.4);
+      ctx.quadraticCurveTo(o * 1.25, -40, o + Math.sin(T / 13 + o) * 2, -8);
+      ctx.stroke();
+    }
+    // luz enfermiza en el borde izquierdo
+    ctx.strokeStyle = flash ? '#fff' : 'rgba(160,200,140,.16)'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(-14 + sway * 0.3, -78);
+    ctx.quadraticCurveTo(-28, -50, -26, -18); ctx.stroke();
+
+    // tiras de tela colgando y ondeando
+    ctx.strokeStyle = flash ? 'rgba(255,255,255,.8)' : '#171020';
+    ctx.lineWidth = 3.4; ctx.lineCap = 'round';
+    for (let i = 0; i < 4; i++) {
+      const sx0 = -18 + i * 12, sw2 = Math.sin(T / 8 + i * 2.3) * 4;
+      ctx.beginPath();
+      ctx.moveTo(sx0, -66 + breath * 0.4);
+      ctx.quadraticCurveTo(sx0 + sw2, -48, sx0 + sw2 * 1.8, -30 - (i % 2) * 8);
+      ctx.stroke();
+    }
+    ctx.lineCap = 'butt';
+
+    // desgarro del pecho con costillas
+    ctx.fillStyle = flash ? '#fff' : '#04020a';
+    ctx.beginPath();
+    ctx.moveTo(-7 + sway * 0.4, -62);
+    ctx.quadraticCurveTo(-11, -48, -4 + sway * 0.3, -34);
+    ctx.quadraticCurveTo(3, -42, 4 + sway * 0.3, -58);
+    ctx.quadraticCurveTo(-1, -64, -7 + sway * 0.4, -62);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = flash ? '#fff' : '#b9b09a'; ctx.lineWidth = 1.3;
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(-6, -57 + i * 7);
+      ctx.quadraticCurveTo(-1, -55 + i * 7, 3, -58 + i * 7);
+      ctx.stroke();
+    }
+
+    // brazos esqueleticos con garras
+    const bone = flash ? '#fff' : '#c9c0a8', boneD = flash ? '#eee' : '#8a8069';
+    const aw = Math.sin(T / 12) * 3 + (warn ? -10 : 0) + (lunge ? 7 : 0);
+    for (const side of [-1, 1]) {
+      const shX = side * 14 + sway * 0.4, shY = -76 + breath * 0.5;
+      const elX = side * (27 + (warn ? 3 : 0)), elY = -62 + aw * 0.6;
+      const haX = side * (32 + (lunge ? 6 : 0)), haY = -44 + aw;
+      ctx.strokeStyle = bone; ctx.lineCap = 'round';
+      ctx.lineWidth = 4.0;
+      ctx.beginPath(); ctx.moveTo(shX, shY);
+      ctx.quadraticCurveTo(side * 22, shY + 2, elX, elY); ctx.stroke();
+      ctx.lineWidth = 2.7;
+      ctx.beginPath(); ctx.moveTo(elX, elY);
+      ctx.quadraticCurveTo(side * 36, elY + 6, haX, haY); ctx.stroke();
+      // garra de tres dedos
+      ctx.strokeStyle = boneD; ctx.lineWidth = 1.7;
+      for (let d = -1; d <= 1; d++) {
+        ctx.beginPath(); ctx.moveTo(haX, haY);
+        ctx.quadraticCurveTo(haX + side * (4 + d), haY + 6, haX + side * (7 + d * 3), haY + 12 + Math.abs(d) * 1.5);
+        ctx.stroke();
+      }
+    }
+    ctx.lineCap = 'butt';
+
+    // cuello y craneo alargado
+    const hx = sway, hy = -92 + breath;
+    ctx.fillStyle = flash ? '#fff' : '#8f8772';
+    ctx.fillRect(hx - 3, hy + 2, 6, 12);
+    const skull = flash ? '#fff' : '#d3cab4', skullD = flash ? '#f0f0f0' : '#9a917c';
+    ctx.fillStyle = skull;
+    ctx.beginPath();
+    ctx.moveTo(hx - 8, hy - 4);
+    ctx.bezierCurveTo(hx - 12, hy - 14, hx - 7, hy - 25, hx, hy - 26);
+    ctx.bezierCurveTo(hx + 7, hy - 25, hx + 12, hy - 14, hx + 8, hy - 4);
+    ctx.quadraticCurveTo(hx + 6, hy + 6, hx, hy + 9);
+    ctx.quadraticCurveTo(hx - 6, hy + 6, hx - 8, hy - 4);
+    ctx.closePath(); ctx.fill();
+    // pomulos hundidos
+    ctx.fillStyle = skullD;
+    ctx.beginPath(); ctx.ellipse(hx - 5, hy - 3, 2.6, 3.4, 0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(hx + 5, hy - 3, 2.6, 3.4, -0.3, 0, Math.PI * 2); ctx.fill();
+    // grietas en el craneo
+    ctx.strokeStyle = 'rgba(42,34,24,.65)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(hx - 4, hy - 23); ctx.lineTo(hx - 1, hy - 15); ctx.lineTo(hx - 4, hy - 9); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hx + 5, hy - 20); ctx.lineTo(hx + 3, hy - 12); ctx.stroke();
+
+    // mechones de pelo ralo ondeando
+    ctx.strokeStyle = flash ? '#fff' : '#16101c'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    for (let i = 0; i < 8; i++) {
+      const side = i < 4 ? -1 : 1, k = i % 4;
+      const sx = hx + side * (6 + k * 1.4), sy = hy - 18 + k * 3;
+      ctx.beginPath(); ctx.moveTo(sx, sy);
+      ctx.quadraticCurveTo(sx + side * 5 + Math.sin(T / 10 + i) * 2, sy + 12,
+        sx + side * 3 + Math.sin(T / 8 + i * 2) * 3, sy + 22 + k * 3);
+      ctx.stroke();
+    }
+    ctx.lineCap = 'butt';
+
+    // ojos hundidos con brillo enfermizo
+    ctx.fillStyle = flash ? '#fff' : '#070408';
+    ctx.beginPath(); ctx.ellipse(hx - 4.5 + f, hy - 12, 3.5, 4.3, 0.22, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(hx + 4.5 + f, hy - 12, 3.5, 4.3, -0.22, 0, Math.PI * 2); ctx.fill();
+    // cejas torvas
+    ctx.strokeStyle = flash ? '#fff' : '#4a4033'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(hx - 8.5 + f, hy - 18.5); ctx.lineTo(hx - 1.5 + f, hy - 15.5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hx + 8.5 + f, hy - 18.5); ctx.lineTo(hx + 1.5 + f, hy - 15.5); ctx.stroke();
+    const flick = 0.55 + 0.45 * Math.sin(T / (ang ? 3 : 7) + 1);
+    ctx.fillStyle = flash ? '#fff' : (ang || warn ? '#ff2a1a' : '#cfe89a');
+    ctx.globalAlpha = flick;
+    ctx.beginPath(); ctx.arc(hx - 4.5 + f * 1.7, hy - 12, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(hx + 4.5 + f * 1.7, hy - 12, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // boca: grito oscuro
+    ctx.fillStyle = flash ? '#fff' : '#070408';
+    ctx.beginPath(); ctx.ellipse(hx + f, hy - 3, 2.3, 3.2 + (warn ? 2.2 : 0), 0, 0, Math.PI * 2); ctx.fill();
+
+    // aviso de embestida
+    if (warn && Math.floor(T / 3) % 2) {
+      ctx.fillStyle = '#ff3030';
+      ctx.fillRect(lean - 3, -128, 6, 10); ctx.fillRect(lean - 3, -115, 6, 4);
+    }
+    ctx.restore();
   }
   const _dw = drawWorld;
   drawWorld = function () {
     _dw();
     const b = world.boss;
-    if (b && b.bx !== undefined && (game.state === 'play' || game.state === 'shop')) {
+    if (b && b.bx !== undefined && (game.state === 'play' || game.state === 'shop' || game.state === 'gameover')) {
       ctx.save(); ctx.translate(-Math.round(world.camX), -Math.round(world.camY));
       drawBossBody(b);
       ctx.restore();
@@ -246,5 +393,24 @@
     ctx.lineWidth = 1; ctx.strokeStyle = '#f2d78a'; ctx.strokeRect(x - 1.5, y - 1.5, w + 3, 10);
     drawText('PANTHOKRATOR', VW / 2, y + 11, '#f2d78a', 7, 'center');
   };
-  window.__arcadeLayer = 'v21';
+
+  /* game over: continuar en la misma etapa en vez de volver al título.
+     Antes cualquier toque en GAME OVER llevaba al título y la partida empezaba
+     desde la etapa 1; con el jefe a la vista parecía que "desaparece y se reinicia". */
+  gameStartGesture = function () {
+    if (game.state === 'title') { startGame(); }
+    else if (game.state === 'win') { game.state = 'title'; sfx.playMusic('title'); }
+    else if (game.state === 'gameover') {
+      player.hp = player.maxHp; player.dead = false; player.lives = 3; player.invuln = 90;
+      loadStage(world.stageIdx);
+      game.state = 'stagecard'; game.anim = 0;
+      sfx.playMusic(world.stage.boss ? 'boss' : 'stage');
+    }
+  };
+  const _dgo = drawGameOver;
+  drawGameOver = function () {
+    _dgo();
+    if (game.frame % 90 < 60) drawText('PARA CONTINUAR', VW / 2, 182, '#8f9aa8', 9, 'center');
+  };
+  window.__arcadeLayer = 'v22';
 })();
