@@ -169,8 +169,10 @@
     const wob = Math.sin(T / 14) * 2.2, wob2 = Math.sin(T / 9 + 2) * 1.6;
     const lean = lunge ? (b.lungeDir || f) * 8 : Math.sin(T / 40) * 2;
     const M = c => flash ? '#fff' : c;
+    const diving = (b.diveT || 0) > 0;
+    const sink = diving ? (b.diveT > 70 ? (120 - b.diveT) / 50 : b.diveT > 30 ? 1 : b.diveT / 30) : 0;
     ctx.save();
-    if ((b.ghostT || 0) > 0) ctx.globalAlpha = 0.45;   // forma intangible compartida con el Panthokrator
+    if ((b.ghostT || 0) > 0 && !diving) ctx.globalAlpha = 0.45;   // forma intangible compartida con el Panthokrator
     ctx.translate(x + lean * 0.4, g);
     // charco base que respira
     ctx.fillStyle = M('#241d0e');
@@ -179,6 +181,7 @@
     const im = MUD_IMG;
     const squash = 1 + Math.sin(T / 16) * 0.025;
     ctx.save();
+    if (diving) { ctx.translate(0, sink * 100); ctx.scale(1 + sink * 0.25, 1 - sink * 0.55); }   // se hunde en la porpera
     ctx.translate(lean * 0.5, 0);
     ctx.scale(f < 0 ? 1 : -1, 1);
     ctx.rotate(-f * 0.03);
@@ -194,16 +197,26 @@
     ctx.filter = 'none';
     ctx.restore();
     // goteo viscoso cayendo
-    for (let d = 0; d < 4; d++) {
+    if (!diving) for (let d = 0; d < 4; d++) {
       const dx = -26 + d * 16, fall = (T * 1.2 + d * 23) % 52;
       ctx.fillStyle = M('#3a2f16');
       ctx.fillRect(dx + Math.sin(d * 7) * 4, -20 + fall * 0.5, 2.4, 4.5);
     }
     // moscas orbitando
     ctx.fillStyle = M('#0a0a06');
-    for (let fl2 = 0; fl2 < 3; fl2++) {
+    if (!diving) for (let fl2 = 0; fl2 < 3; fl2++) {
       const a2 = T / 16 + fl2 * 2.1;
       ctx.fillRect(Math.cos(a2) * 26 - 1, -74 + Math.sin(a2 * 1.3) * 16, 2, 2);
+    }
+    // burbujeo de la porpera mientras está sumergida
+    if (diving && sink >= 1) {
+      ctx.fillStyle = M('#2c2210');
+      ctx.beginPath(); ctx.ellipse(0, -3, 40 + Math.sin(T / 5) * 4, 8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = M('#4a3c1c');
+      for (let bb2 = 0; bb2 < 4; bb2++) {
+        const bx2 = -24 + bb2 * 15, bub = (T * 2 + bb2 * 17) % 26;
+        ctx.fillRect(bx2, -6 - bub * 0.6, 3.4 - bub * 0.08, 3.4 - bub * 0.08);
+      }
     }
     // aviso de embestida
     if (warn && Math.floor(T / 3) % 2) {
@@ -329,6 +342,27 @@
     if (world.announceT > 0 && world.announce) {
       if (dog) dogAnn = world.announce; else mudAnn = world.announce;
       world.announce = '';
+    }
+    if (!dog && mb && mb.bx !== undefined) {
+      // v10: tras daño acumulado se sumerge en la porpera y reaparece al otro lado
+      const dh = mb._lastHp === undefined ? 0 : mb._lastHp - mb.hp;
+      mb._lastHp = mb.hp;
+      if (dh > 0) mb.diveAcc = (mb.diveAcc || 0) + dh;
+      if ((mb.diveT || 0) > 0) {
+        mb.shootT = 99999; mb.pillarT = 99999; mb.pillarWarn = 0; mb.pillarAct = 0;   // no ataca bajo la superficie
+        mb.diveT--;
+        if (mb.diveT === 70) {
+          mb.bx = clamp(world.stage.length - mb.bx + rnd(-40, 40), 120, world.stage.length - 50);
+          spawnParts(mb.bx, GY - 4, '#3a2f16', 10); sfx.smash();
+        }
+        if (mb.diveT === 0) {
+          mb.ghostT = 0; mb.shootT = 40; mb.pillarT = 200;
+          world.shake = 8; sfx.orbS(); spawnParts(mb.bx, GY - 20, '#241d0e', 14);
+        }
+      } else if ((mb.diveAcc || 0) >= 55 && mb.hp > 0) {
+        mb.diveAcc = 0; mb.diveT = 120; mb.ghostT = 120;   // intangible mientras se sumerge
+        spawnParts(mb.bx, GY - 6, '#3a2f16', 12); sfx.zap();
+      }
     }
     if (mb && mb.bx !== undefined) {
       const im = dog ? DOG_IMG : MUD_IMG, hh = dog ? 124 : 132;
@@ -613,5 +647,5 @@
     }
   };
 
-  window.__etapas = 'v9';
+  window.__etapas = 'v10';
 })();
