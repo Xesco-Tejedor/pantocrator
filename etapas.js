@@ -214,10 +214,11 @@
   const _updateBossE = updateBoss;
   updateBoss = function () {
     _updateBossE();
-    if (world.stageIdx !== MUD_STAGE) return;
+    if (world.stageIdx !== MUD_STAGE) { world.announceY = 0; return; }
     if (world.announce === 'ATACA AL PANTHOKRATOR!')
       world.announce = 'ATACA L’AMALGAMA!';
     // zona dañable alineada con el cuerpo visible (sprite ~100px de ancho, 132 de alto)
+    world.announceY = 218;   // aviso junto a la barra inferior, lejos de la silueta del jefe
     const mb = world.boss;
     if (mb && mb.bx !== undefined) {
       const im = MUD_IMG;
