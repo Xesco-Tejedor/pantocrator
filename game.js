@@ -644,6 +644,47 @@ function drawVitrina(v) {
   ctx.fillStyle = '#8a6f42'; ctx.fillRect(x - 13, y - 5.4, 26, 1.2);
 }
 
+/* Savi: petrificat en pedra grisa; alliberat, túnica porpra i rètol de botiga */
+function drawSage(sg) {
+  const x = sg.x, y = sg.y;
+  if (!sg.freed) {
+    // pedestal
+    ctx.fillStyle = '#14100c'; ctx.fillRect(x - 9, y - 4, 18, 4);
+    ctx.fillStyle = lgrad(x, y - 4, x, y, '#6b6560', '#3e3a36'); ctx.fillRect(x - 8, y - 4, 16, 4);
+    // figura de pedra: túnica i cap clavat
+    ctx.fillStyle = lgrad(x, y - 30, x, y - 4, '#8a857e', '#5a5550');
+    ctx.beginPath();
+    ctx.moveTo(x - 6, y - 4); ctx.lineTo(x - 5, y - 22); ctx.quadraticCurveTo(x, y - 30, x + 5, y - 22);
+    ctx.lineTo(x + 6, y - 4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#8a857e'; ctx.beginPath(); ctx.arc(x, y - 27, 4, 0, Math.PI * 2); ctx.fill();
+    // esquerdes i molsa
+    ctx.strokeStyle = '#4a4640'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(x - 2, y - 20); ctx.lineTo(x + 1, y - 12); ctx.moveTo(x + 3, y - 24); ctx.lineTo(x + 1, y - 16); ctx.stroke();
+    ctx.fillStyle = '#5f7a4a'; ctx.fillRect(x - 6, y - 10, 2, 2); ctx.fillRect(x + 4, y - 6, 2, 2);
+    return;
+  }
+  const bob = Math.sin(sg.anim * 0.05) * 1.2;
+  // resplendor
+  ctx.fillStyle = rgrad(x, y - 18, 18, 'rgba(242,215,138,.25)', 'rgba(242,215,138,0)');
+  ctx.fillRect(x - 18, y - 40, 36, 40);
+  // túnica porpra amb volum
+  ctx.fillStyle = lgrad(x, y - 30 + bob, x, y - 2, '#7a5a9a', '#46305e');
+  ctx.beginPath();
+  ctx.moveTo(x - 7, y - 2); ctx.lineTo(x - 5, y - 24 + bob); ctx.quadraticCurveTo(x, y - 32 + bob, x + 5, y - 24 + bob);
+  ctx.lineTo(x + 7, y - 2); ctx.closePath(); ctx.fill();
+  // cap i cabell blanc
+  ctx.fillStyle = '#e8c9a0'; ctx.beginPath(); ctx.arc(x, y - 29 + bob, 3.6, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#e8e4d8'; ctx.beginPath(); ctx.arc(x, y - 31 + bob, 3.2, Math.PI, 0); ctx.fill();
+  ctx.fillRect(x - 2.5, y - 26 + bob, 5, 3);
+  // bastó
+  ctx.strokeStyle = '#8a6f42'; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(x + 7, y - 30 + bob); ctx.lineTo(x + 8, y - 2); ctx.stroke();
+  ctx.fillStyle = '#f2d78a'; ctx.fillRect(x + 6, y - 32 + bob, 3, 3);
+  // rètol
+  const near = Math.abs(player.x + player.w / 2 - x) < 60;
+  if (near && !player.dead) drawText('BOTIGA: PUJA ↑', x, y - 48, '#ffe9a8', 7, 'center');
+}
+
 /* Banc Gaudí: respaldo serpentí de trencadís, seient corbat, potes orgàniques */
 function drawBench(p) {
   const trenc = ['#7fb3d8', '#e8e4d8', '#4a90b8', '#d8a23a', '#8fb8d8', '#c9ced8'];
@@ -836,7 +877,7 @@ const sfx = {
 const input = {
   left: false, right: false, up: false, down: false,
   jump: false, attack: false,
-  jumpBuf: 0, attackBuf: 0,
+  jumpBuf: 0, attackBuf: 0, upBuf: 0, dnBuf: 0,
   jumpHeld: false, attackHeld: false,
   pressJump()   { this.jump = true; this.jumpBuf = 7; },
   pressAttack() { this.attack = true; this.attackBuf = 7; }
@@ -847,7 +888,7 @@ const KEYMAP = {
 };
 window.addEventListener('keydown', e => {
   const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-  if (KEYMAP[k]) { input[KEYMAP[k]] = true; e.preventDefault(); }
+  if (KEYMAP[k]) { if (KEYMAP[k] === 'up' && !input.up) input.upBuf = 10; if (KEYMAP[k] === 'down' && !input.down) input.dnBuf = 10; input[KEYMAP[k]] = true; e.preventDefault(); }
   if (k === ' ' || k === 'z' || k === 'Z') { if (!input.jumpHeld) input.pressJump(); input.jumpHeld = true; e.preventDefault(); }
   if (k === 'x' || k === 'X' || k === 'j' || k === 'J') { if (!input.attackHeld) input.pressAttack(); input.attackHeld = true; e.preventDefault(); }
   if (k === 'm' || k === 'M') { sfx.init(); sfx.toggleMute(); }
@@ -878,12 +919,18 @@ function padVector(t) {
     d: (o >= 1 && o <= 3) ? 1 : 0
   };
 }
-function applyPad(v) { input.left = !!v.l; input.right = !!v.r; input.up = !!v.u; input.down = !!v.d; }
+function applyPad(v) { if (v.u && !input.up) input.upBuf = 10; if (v.d && !input.down) input.dnBuf = 10; input.left = !!v.l; input.right = !!v.r; input.up = !!v.u; input.down = !!v.d; }
 const btnA = document.getElementById('btnAttack');
 const btnJ = document.getElementById('btnJump');
 function touchHandler(e) {
   e.preventDefault();
   sfx.init(); sfx.resume(); gameStartGesture();
+  if (game.state === 'shop' && e.type === 'touchstart') {
+    const r = cvs.getBoundingClientRect();
+    for (const t of e.changedTouches)
+      shopTap((t.clientX - r.left) * VW / r.width, (t.clientY - r.top) * VH / r.height);
+    return;
+  }
   for (const t of e.changedTouches) {
     const el = document.elementFromPoint(t.clientX, t.clientY);
     if (e.type === 'touchstart') {
@@ -937,6 +984,7 @@ const STAGES = [
       { x: 1730, y: 250, w: 60, h: 8, t: 'stone' }, { x: 1950, y: 160, w: 88, h: 8, t: 'bench' }
     ],
     chandeliers: [{ x: 880, y: 40, len: 60 }, { x: 1500, y: 30, len: 66 }],
+    sages: [{ x: 1000 }, { x: 1850 }],
     vitrinas: [{ x: 420, y: GY, c: 'sword' }, { x: 820, y: GY, c: 'llanca' }, { x: 950, y: GY, c: 'time' }, { x: 1100, y: GY, c: 'falcio' }, { x: 1400, y: GY, c: 'shield' }, { x: 1650, y: GY, c: 'ballesta' }, { x: 1900, y: GY, c: 'coinbig' }, { x: 2050, y: GY, c: 'destral' }, { x: 620, y: LY, c: 'heart' }],
     enemies: [
       { x: 480, y: GY, t: 'beast' }, { x: 760, y: GY, t: 'beast' }, { x: 1050, y: GY, t: 'demon' },
@@ -956,6 +1004,7 @@ const STAGES = [
       { x: 2100, y: 140, w: 88, h: 8, t: 'bench' }, { x: 2300, y: 100, w: 72, h: 8, t: 'bench' }
     ],
     chandeliers: [{ x: 480, y: 36, len: 62 }, { x: 1000, y: 30, len: 70 }, { x: 1560, y: 34, len: 60 }, { x: 2050, y: 40, len: 56 }],
+    sages: [{ x: 300 }, { x: 1700 }],
     vitrinas: [{ x: 250, y: GY, c: 'armor' }, { x: 700, y: GY, c: 'pow' }, { x: 950, y: GY, c: 'martell' }, { x: 1080, y: GY, c: 'maca' }, { x: 1200, y: GY, c: 'sword' }, { x: 1500, y: GY, c: 'weapon' }, { x: 1800, y: GY, c: 'destral' }, { x: 2050, y: GY, c: 'time' }, { x: 2150, y: GY, c: 'shield' }, { x: 500, y: LY, c: 'coinbig' }],
     enemies: [
       { x: 320, y: GY, t: 'beast' }, { x: 620, y: GY, t: 'demon' }, { x: 800, y: GY, t: 'beast' },
@@ -970,6 +1019,7 @@ const STAGES = [
     lower: [],
     platforms: [{ x: 140, y: 160, w: 88, h: 8, t: 'bench' }, { x: 420, y: 160, w: 88, h: 8, t: 'bench' }],
     chandeliers: [{ x: 340, y: 36, len: 64 }],
+    sages: [{ x: 150 }],
     vitrinas: [{ x: 80, y: GY, c: 'sword' }, { x: 300, y: GY, c: 'heart' }, { x: 420, y: GY, c: 'llanca' }, { x: 500, y: GY, c: 'time' }, { x: 580, y: GY, c: 'falcio' }],
     enemies: []
   }
@@ -977,7 +1027,7 @@ const STAGES = [
 
 /* ------------------------------------------------------------------- món */
 const world = {
-  stageIdx: 0, stage: null, enemies: [], vitrinas: [], orbs: [], parts: [], items: [], daggers: [],
+  stageIdx: 0, stage: null, enemies: [], vitrinas: [], sages: [], orbs: [], parts: [], items: [], daggers: [],
   camX: 0, camY: 0, shake: 0, boss: null, announce: '', announceT: 0
 };
 
@@ -987,6 +1037,7 @@ function loadStage(i) {
   world.stage = s;
   world.enemies = s.enemies.map(e => makeEnemy(e.t, e.x, e.y));
   world.vitrinas = s.vitrinas.map(v => ({ x: v.x, y: v.y, w: 14, h: 22, c: v.c, broken: false }));
+  world.sages = (s.sages || []).map(v => ({ x: v.x, y: v.y || GY, w: 14, h: 30, freed: false, anim: 0 }));
   world.orbs = []; world.parts = []; world.items = []; world.daggers = [];
   world.boss = s.boss ? {
     x: 400, y: 40, hp: 8, maxHp: 8, phase: 0, t: 0, shootT: 90, pillarT: 260,
@@ -1009,7 +1060,7 @@ const MAGNETIC_RADIUS = 48;  // ancoratge magnètic als elements penjants
 const player = {
   x: 40, y: 100, w: 13, h: 24, vx: 0, vy: 0, dir: 1,
   state: 'idle', anim: 0, coyote: 0, invuln: 0, timer: 0,
-  hp: 12, maxHp: 12, lives: 3, score: 0, weapon: 1, wtype: 'espasa', fused: [], armor: 0, shield: 0,
+  hp: 12, maxHp: 12, lives: 3, score: 0, weapon: 1, wtype: 'espasa', fused: [], armor: 0, armorMax: 0, shield: 0, zenny: 0,
   onGround: false, onLower: false, hangCh: null, hangSwing: 0, fellFromY: null, airJumps: 0,
   attackT: 0, dead: false
 };
@@ -1017,7 +1068,17 @@ const player = {
 function playerDamage(n, fromX) {
   if (player.invuln > 0 || player.dead) return;
   if (player.shield > 0) { player.shield--; sfx.smash(); player.invuln = 60; spawnParts(player.x + 6, player.y + 8, '#7fd4e8', 8); return; }
-  const dmg = player.armor > 0 ? Math.max(1, Math.floor(n / 2)) : n;
+  /* ARMADURA PER COPS (referència Black Tiger): cada impacte enemic desgasta
+     un punt d'armadura en lloc de vida; quan s'esgotça, el guerrer queda exposat. */
+  if (player.armor > 0) {
+    player.armor--;
+    sfx.smash(); player.invuln = 60;
+    spawnParts(player.x + 6, player.y + 8, '#d8a23a', 8);
+    world.shake = 4;
+    if (player.armor <= 0) { player.armorMax = 0; world.announce = 'ARMADURA DESTRUÏDA!'; world.announceT = 120; }
+    return;
+  }
+  const dmg = n;
   player.hp -= dmg;
   player.invuln = 70;
   sfx.hurtS();
@@ -1202,6 +1263,14 @@ function updatePlayer() {
   }
   player.anim++;
 
+  /* ---------- botiga del savi ---------- */
+  if (input.upBuf > 0) input.upBuf--;
+  if (input.upBuf > 0 && player.onGround) {
+    for (const sg of world.sages) {
+      if (sg.freed && Math.abs(player.x + player.w / 2 - sg.x) < 22 && Math.abs(player.y + player.h - sg.y) < 30) { openShop(); break; }
+    }
+  }
+
   /* ---------- fi de fase ---------- */
   if (player.x > world.stage.length - 50 && !world.stage.boss) nextStage();
 
@@ -1223,13 +1292,13 @@ function swordBox() {
 /* Arsenal estil placa 1987 (referència Black Tiger): quatre armes trobables,
    cadascuna amb nivells de poder (1-4) i caràcter propi; projectil a nivell 3+. */
 const WEAPONS = {
-  espasa:  { name: 'ESPASA',  reach: [26, 31, 36, 41], dmg: [1, 2, 2, 3], frames: 14 },
-  llanca:  { name: 'LLANÇA',  reach: [34, 40, 46, 52], dmg: [1, 1, 2, 2], frames: 11 },
-  destral: { name: 'DESTRAL', reach: [24, 27, 31, 35], dmg: [2, 2, 3, 4], frames: 18 },
-  martell: { name: 'MARTELL', reach: [20, 23, 26, 30], dmg: [2, 3, 4, 5], frames: 18 },
-  falcio:  { name: 'FALCIÓ',  reach: [26, 30, 34, 38], dmg: [1, 2, 3, 3], frames: 10 },
-  ballesta:{ name: 'BALLESTA', reach: [12, 14, 16, 18], dmg: [1, 1, 2, 2], frames: 12 },
-  maca:    { name: 'MAÇA',    reach: [26, 29, 32, 36], dmg: [3, 4, 5, 6], frames: 22 }
+  espasa:  { name: 'ESPASA',  reach: [26, 31, 36, 41, 46], dmg: [1, 2, 2, 3, 4], frames: 14 },
+  llanca:  { name: 'LLANÇA',  reach: [34, 40, 46, 52, 58], dmg: [1, 1, 2, 2, 3], frames: 11 },
+  destral: { name: 'DESTRAL', reach: [24, 27, 31, 35, 40], dmg: [2, 2, 3, 4, 5], frames: 18 },
+  martell: { name: 'MARTELL', reach: [20, 23, 26, 30, 34], dmg: [2, 3, 4, 5, 6], frames: 18 },
+  falcio:  { name: 'FALCIÓ',  reach: [26, 30, 34, 38, 42], dmg: [1, 2, 3, 3, 4], frames: 10 },
+  ballesta:{ name: 'BALLESTA', reach: [12, 14, 16, 18, 20], dmg: [1, 1, 2, 2, 3], frames: 12 },
+  maca:    { name: 'MAÇA',    reach: [26, 29, 32, 36, 40], dmg: [3, 4, 5, 6, 8], frames: 22 }
 };
 const WTYPES = ['llanca', 'destral', 'martell', 'falcio', 'ballesta', 'maca'];
 const curW = () => WEAPONS[player.wtype] || WEAPONS.espasa;
@@ -1257,31 +1326,30 @@ function fuseFX() {
   sfx.clearS();
 }
 function throwDaggers() {
-  /* amb fusió, l'atac dispara els projectils de TOTES les armes combinades */
-  const types = [player.wtype || 'espasa', ...player.fused];
+  /* Referència Black Tiger: cada atac és un cop frontal de l'arma empunyada MÉS
+     un ventall automàtic de tres dagues (dalt / recte / baix), a tots els nivells.
+     El nivell d'arma no desbloqueja projectils: n'augmenta el DANY. */
   const y = player.state === 'cattack' ? player.y + player.h - 10 : player.y + 11;
   const x = player.x + player.w / 2 + player.dir * 9;
   const bonus = comboN();
+  const dagDmg = 1 + Math.floor((player.weapon - 1) / 2) + bonus; // fins a 3 al nivell 5
+  for (const a of [-0.8, 0, 0.8])
+    world.daggers.push({ x, y: y - 2, vx: player.dir * 3.3, vy: a, life: 90, k: 'dagger', dmg: dagDmg });
   const fire = t => {
     if (t === 'llanca') {         // dard ràpid que FORADA enemics
       world.daggers.push({ x, y, vx: player.dir * 4.4, vy: 0, life: 110, k: 'dart', pierce: true, dmg: 1 + bonus });
     } else if (t === 'destral') { // destral pesant amb trajectòria en arc, dany 2
       world.daggers.push({ x, y: y - 4, vx: player.dir * 2.3, vy: -1.6, life: 120, k: 'axe', grav: true, dmg: 2 + bonus, spin: 0 });
-    } else if (t === 'espasa') {  // dagues clàssiques
-      const n = player.weapon >= 4 ? 2 : 1;
-      for (let i = 0; i < n; i++)
-        world.daggers.push({ x, y, vx: player.dir * 3.2, vy: i === 0 ? 0 : -0.7, life: 90, k: 'dagger', dmg: 1 + bonus });
     } else if (t === 'falcio') {  // onada tallant que travessa enemics
       world.daggers.push({ x, y, vx: player.dir * 3.8, vy: 0, life: 100, k: 'wave', pierce: true, dmg: 2 + bonus, ph: 0 });
-    } else if (t === 'ballesta') { // virotó ràpid i precís; forada a nivell 3+, doble a 4
+    } else if (t === 'ballesta') { // virotó ràpid i precís; forada a nivell 3+, doble a 4+
       const n = player.weapon >= 4 ? 2 : 1;
       for (let i = 0; i < n; i++)
         world.daggers.push({ x, y: y - 2, vx: player.dir * 5.5, vy: i === 0 ? 0 : -0.5, life: 130, k: 'bolt', pierce: player.weapon >= 3, dmg: 2 + bonus });
     }
-    // martell i maça: sense projectil; el seu joc és el cop cos a cos amb retrocés
+    // espasa: coberta pel ventall de dagues; martell i maça: joc cos a cos amb retrocés
   };
-  if (player.weapon >= 3) { for (const t of types) fire(t); }
-  else if (player.wtype === 'ballesta') fire('ballesta');  // la ballesta dispara a TOTS els nivells
+  for (const t of [player.wtype || 'espasa', ...player.fused]) fire(t);
 }
 
 function updateDaggers() {
@@ -1351,6 +1419,15 @@ function swordHits() {
       v.broken = true; sfx.smash(); player.score += 50;
       spawnParts(v.x, v.y - 12, '#7fd4e8', 10);
       world.items.push({ x: v.x - 6, y: v.y - 26, w: 12, h: 10, c: v.c, vy: -2.2 });
+    }
+  }
+  // savis petrificats: el cop els allibera i obren botiga (referència Black Tiger)
+  for (const sg of world.sages) {
+    if (sg.freed) continue;
+    if (overlap(sb, { x: sg.x - 8, y: sg.y - 30, w: 16, h: 30 })) {
+      sg.freed = true; sg.anim = 0; sfx.clearS(); player.score += 200;
+      spawnParts(sg.x, sg.y - 16, '#f2d78a', 14);
+      world.announce = 'SAVI ALLIBERAT!'; world.announceT = 120;
     }
   }
   // orbes del cap: desviar amb l'espasa
@@ -1438,10 +1515,10 @@ function updateItems() {
         } else fuseOrSwitch(t);
       }
       if (it.c === 'weapon') { player.weapon = Math.min(4, player.weapon + 1); sfx.clearS(); }
-      if (it.c === 'armor') { player.armor = 1; if (player.maxHp < 16) { player.maxHp = 16; player.hp = Math.min(player.maxHp, player.hp + 4); } }
+      if (it.c === 'armor') { if (player.armor < 2) { player.armor = 2; player.armorMax = 2; } if (player.maxHp < 16) { player.maxHp = 16; player.hp = Math.min(player.maxHp, player.hp + 4); } }
       if (it.c === 'shield') { player.shield = 1; }
-      if (it.c === 'coin') { player.score += 50; }
-      if (it.c === 'coinbig') { player.score += 150; }
+      if (it.c === 'coin') { player.score += 50; player.zenny += 10; }
+      if (it.c === 'coinbig') { player.score += 150; player.zenny += 30; }
       if (it.c === 'heart') { player.hp = Math.min(player.maxHp, player.hp + 2); player.score += 50; }
       if (it.c === 'time') { player.timer += 1800; player.score += 50; }
       if (it.c === 'pow') {
@@ -1525,6 +1602,8 @@ function bossDefeated() {
 }
 
 /* --------------------------------------------------------------- partícules */
+function updateSages() { for (const sg of world.sages) if (sg.freed) sg.anim++; }
+
 function updateParts() {
   for (const p of world.parts) { p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.life--; }
   world.parts = world.parts.filter(p => p.life > 0);
@@ -1539,6 +1618,50 @@ function updateMovingPlatforms() {
   }
 }
 
+/* --------------------------------------------------------------- botiga */
+/* Els savis alliberats obren botiga: el Zenny de les monedes compra poder
+   d'arma (5 nivells), armadures per cops (2/4/6/8), cura i vitalitat. */
+const SHOP_ITEMS = [
+  { id: 'weapon', name: "PODER D'ARMA +1", price: () => [0, 80, 140, 220, 320][player.weapon] || 0,
+    can: () => player.weapon < 5, buy() { player.weapon++; } },
+  { id: 'ar2', name: 'ARMADURA (2 cops)', price: () => 60,
+    can: () => player.armor < 2, buy() { player.armor = 2; player.armorMax = 2; } },
+  { id: 'ar4', name: 'ARMADURA FORTA (4 cops)', price: () => 140,
+    can: () => player.armor < 4, buy() { player.armor = 4; player.armorMax = 4; } },
+  { id: 'ar6', name: 'ARMADURA PESANT (6 cops)', price: () => 260,
+    can: () => player.armor < 6, buy() { player.armor = 6; player.armorMax = 6; } },
+  { id: 'ar8', name: "ARMADURA D'OR (8 cops)", price: () => 420,
+    can: () => player.armor < 8, buy() { player.armor = 8; player.armorMax = 8; } },
+  { id: 'heal', name: 'COR (+4 HP)', price: () => 60,
+    can: () => player.hp < player.maxHp, buy() { player.hp = Math.min(player.maxHp, player.hp + 4); } },
+  { id: 'vita', name: 'VITALITAT (+4 HP màx)', price: () => 300,
+    can: () => player.maxHp < 24, buy() { player.maxHp += 4; player.hp = Math.min(player.maxHp, player.hp + 4); } },
+  { id: 'exit', name: 'SORTIR', price: () => 0, can: () => true, buy() {} }
+];
+const shop = { sel: 0 };
+function openShop() { game.state = 'shop'; shop.sel = 0; input.attackBuf = 0; input.jumpBuf = 0; input.upBuf = 0; input.dnBuf = 0; sfx.init(); sfx.pickup(); }
+function closeShop() { game.state = 'play'; input.attackBuf = 0; input.jumpBuf = 0; input.upBuf = 0; input.dnBuf = 0; sfx.swing(); }
+function shopBuy(i) {
+  const it = SHOP_ITEMS[i];
+  if (it.id === 'exit') { closeShop(); return; }
+  const p = it.price();
+  if (!it.can() || player.zenny < p) { sfx.hurtS(); return; }
+  player.zenny -= p; it.buy(); sfx.clearS();
+  spawnParts(player.x + 6, player.y + 8, '#f2d78a', 10);
+}
+function updateShop() {
+  if (input.upBuf > 0) { input.upBuf = 0; shop.sel = (shop.sel + SHOP_ITEMS.length - 1) % SHOP_ITEMS.length; sfx.pickup(); }
+  if (input.dnBuf > 0) { input.dnBuf = 0; shop.sel = (shop.sel + 1) % SHOP_ITEMS.length; sfx.pickup(); }
+  if (input.attackBuf > 0) { input.attackBuf = 0; shopBuy(shop.sel); }
+  if (input.jumpBuf > 0) { input.jumpBuf = 0; closeShop(); }
+}
+const SHOP_ROW_Y = 86, SHOP_ROW_H = 15;
+function shopTap(px, py) {
+  if (py < SHOP_ROW_Y || py >= SHOP_ROW_Y + SHOP_ITEMS.length * SHOP_ROW_H) return;
+  shop.sel = Math.floor((py - SHOP_ROW_Y) / SHOP_ROW_H);
+  shopBuy(shop.sel);
+}
+
 /* ----------------------------------------------------------------- flux joc */
 const game = { state: 'title', frame: 0, anim: 0 };
 
@@ -1548,7 +1671,7 @@ function gameStartGesture() {
 }
 function startGame() {
   player.hp = player.maxHp = 12; player.lives = 3; player.score = 0;
-  player.weapon = 1; player.wtype = 'espasa'; player.fused = []; player.armor = 0; player.shield = 0; player.dead = false;
+  player.weapon = 1; player.wtype = 'espasa'; player.fused = []; player.armor = 0; player.armorMax = 0; player.shield = 0; player.zenny = 0; player.dead = false;
   loadStage(0);
   game.state = 'stagecard'; game.anim = 0;
   sfx.playMusic('stage');
@@ -2110,6 +2233,9 @@ function drawWorld() {
     drawVitrina(v);
   }
 
+  // savis petrificats / botiguers
+  for (const sg of world.sages) drawSage(sg);
+
   // ítems
   for (const it of world.items) {
     const bob = Math.sin(game.frame / 14) * 2;
@@ -2144,10 +2270,13 @@ function drawWorld() {
       ctx.fillStyle = '#f4f8ff'; ctx.fillRect(d.x + (d.vx > 0 ? 6 : -7.5), d.y - 1, 1.8, 2);
       ctx.fillStyle = '#e05050'; ctx.fillRect(d.x - (d.vx > 0 ? 7.5 : -6), d.y - 1.5, 1.6, 3);
     } else {
+      // daga del ventall: fulla llarga amb punta brillant i empunyadura daurada
       ctx.fillStyle = '#f4f8ff';
-      ctx.fillRect(d.x - 3, d.y - 1, 6, 2);
+      ctx.fillRect(d.x - 4, d.y - 1, 8, 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(d.x + (d.vx > 0 ? 3 : -4), d.y - 1, 2, 2);
       ctx.fillStyle = '#d8a23a';
-      ctx.fillRect(d.x - (d.vx > 0 ? 5 : -3), d.y - 1, 2, 2);
+      ctx.fillRect(d.x - (d.vx > 0 ? 6 : -4), d.y - 1.5, 2, 3);
     }
   }
 
@@ -2214,6 +2343,16 @@ function drawPlayer() {
   const anim = (st === 'attack' || st === 'cattack') ? player.attackT : player.anim;
   const hangDrop = st === 'hang' ? 12 : 0;
   drawWarrior(player.x + player.w / 2, player.y + player.h + hangDrop, player.dir, st, anim, player.weapon);
+  // armadura per cops: cuirassa de bronze/argent/or segons el nivell; sense armadura, en taparrabos
+  if (player.armor > 0 && !player.dead) {
+    const col = player.armor >= 8 ? '#f2d78a' : player.armor >= 4 ? '#c9ced8' : '#b08a4a';
+    ctx.save();
+    ctx.translate(player.x + player.w / 2, player.y + player.h); ctx.scale(player.dir, 1);
+    ctx.globalAlpha = 0.55; ctx.fillStyle = col;
+    ctx.fillRect(-5, -23, 10, 7);
+    ctx.globalAlpha = 0.9; ctx.fillRect(-5, -23, 10, 2);
+    ctx.restore();
+  }
   // escut actiu
   if (player.shield > 0) {
     ctx.strokeStyle = 'rgba(127,212,232,.7)'; ctx.lineWidth = 1.4;
@@ -2240,15 +2379,44 @@ function drawHUD() {
   ctx.fillStyle = '#a83232'; ctx.fillRect(47, 7, 64, 5);
   ctx.fillStyle = '#e05050'; ctx.fillRect(47, 7, 64 * Math.max(0, player.hp) / player.maxHp, 5);
   drawText(String(Math.max(0, player.hp)), 28, 16, '#e8e4d8', 8);
-  if (player.armor > 0) drawText('ARM', 116, 6, '#d8a23a', 7);
+  if (player.armor > 0) {
+    drawText('ARM', 116, 6, '#d8a23a', 7);
+    for (let i = 0; i < player.armor; i++) { ctx.fillStyle = i < player.armorMax ? '#d8a23a' : '#5d5342'; ctx.fillRect(134 + i * 4, 5, 3, 5); }
+  }
   if (player.shield > 0) drawText('ESC', 116, 14, '#7fd4e8', 7);
   drawText('♥' + player.lives, 4, 28, '#e05050', 8);
   drawText('TIME: ' + Math.max(0, Math.ceil(player.timer / 60)), VW / 2, 5, player.timer < 1800 ? '#e05050' : '#f2d78a', 10, 'center');
   drawText('SCORE: ' + String(player.score).padStart(7, '0'), VW - 8, 5, '#e8e4d8', 9, 'right');
   drawText('STAGE 0' + (world.stageIdx + 1), VW - 8, 16, '#e8e4d8', 9, 'right');
   if (world.announceT > 0) { world.announceT--; drawText(world.announce, VW / 2, 40, TIER_COLS[comboN()], 12, 'center'); }
-  if (sfx.muted) drawText('MUT', VW - 8, 27, '#5d6672', 7, 'right');
+  drawText('ZENNY: ' + player.zenny, VW - 8, 27, '#f2d78a', 8, 'right');
+  if (sfx.muted) drawText('MUT', VW / 2, 16, '#5d6672', 7, 'center');
   drawBossBar();
+}
+
+function drawShop() {
+  drawBackground(); drawWorld(); drawHUD();
+  ctx.fillStyle = 'rgba(5,6,12,.82)'; ctx.fillRect(70, 34, VW - 140, VH - 62);
+  ctx.strokeStyle = '#8a6f42'; ctx.lineWidth = 2; ctx.strokeRect(71.5, 35.5, VW - 143, VH - 65);
+  ctx.strokeStyle = '#d8a23a'; ctx.lineWidth = 0.8; ctx.strokeRect(74.5, 38.5, VW - 149, VH - 71);
+  drawText('BOTIGA DEL SAVI', VW / 2, 44, '#d8a23a', 13, 'center');
+  drawText('ZENNY: ' + player.zenny + ' Z', VW / 2, 62, '#f2d78a', 9, 'center');
+  for (let i = 0; i < SHOP_ITEMS.length; i++) {
+    const it = SHOP_ITEMS[i], y = SHOP_ROW_Y + i * SHOP_ROW_H;
+    const can = it.can(), p = it.price();
+    if (i === shop.sel) {
+      ctx.fillStyle = 'rgba(216,162,58,.16)'; ctx.fillRect(84, y - 2, VW - 168, SHOP_ROW_H);
+      drawText('▶', 90, y, '#ffe9a8', 8);
+    }
+    let label = it.name;
+    if (it.id === 'weapon') label += can ? '  (nivell ' + player.weapon + ' → ' + (player.weapon + 1) + ')' : '  (màxim)';
+    const col = !can ? '#5d6672' : i === shop.sel ? '#ffe9a8' : '#e8e4d8';
+    drawText(label, 102, y, col, 8);
+    const pt = it.id === 'exit' ? '' : !can ? '—' : p + ' Z';
+    drawText(pt, VW - 96, y, !can ? '#5d6672' : player.zenny >= p ? '#f2d78a' : '#e05050', 8, 'right');
+  }
+  drawText('AMUNT/AVALL tria · ATACAR compra · SALTAR surt', VW / 2, SHOP_ROW_Y + SHOP_ITEMS.length * SHOP_ROW_H + 8, '#8f9aa8', 7, 'center');
+  drawText('Al mòbil: toca una fila per comprar', VW / 2, SHOP_ROW_Y + SHOP_ITEMS.length * SHOP_ROW_H + 18, '#5d6672', 7, 'center');
 }
 
 /* ------------------------------------------------------------------ pantalles */
@@ -2265,7 +2433,7 @@ function drawTitle() {
   drawText('MOU: creueta/fletxes · SALTAR: espai · ATACAR: X · Avall: agafa\'t', VW / 2, 230, '#8f9aa8', 8, 'center');
   drawText('Agafat+atacar: cop baix · Avall+atacar en l\'aire: atac descendent · Penja\'t dels llamps', VW / 2, 240, '#8f9aa8', 8, 'center');
   drawText('Trenca vitrines · 7 armes: espasa, llança, destral, martell, falciò, ballesta i maça. Combina-les!', VW / 2, 250, '#8f9aa8', 8, 'center');
-  drawText('Bonus: monedes, cors, temps i millores de nivell · Desvia els orbes · M: silenci', VW / 2, 259, '#8f9aa8', 7, 'center');
+  drawText('Cada atac llença 3 dagues en ventall · Les monedes són Zenny: allibera savis i compra a la botiga · M: silenci', VW / 2, 259, '#8f9aa8', 7, 'center');
   drawText('Sprites i música procedurals · fons pintats generats per a aquest joc', VW / 2, 262, '#5d6672', 7, 'center');
 }
 
@@ -2320,10 +2488,13 @@ function step() {
         sfx.playMusic(world.stage.boss ? 'boss' : 'stage');
       }
     }
+  } else if (game.state === 'shop') {
+    updateShop();
+    updateParts();
   } else if (game.state === 'play') {
     updateMovingPlatforms();
     updatePlayer();
-    if (!player.dead) { updateEnemies(); updateItems(); updateDaggers(); updateBoss(); }
+    if (!player.dead) { updateEnemies(); updateItems(); updateDaggers(); updateBoss(); updateSages(); }
     updateParts();
     updateCamera();
   } else if (game.state === 'gameover' || game.state === 'win') {
@@ -2342,6 +2513,7 @@ function render() {
     drawText('STAGE CLEAR', VW / 2, 106, '#d8a23a', 16, 'center');
     drawText('BONUS TEMPS: +' + Math.floor(player.timer / 60) * 20, VW / 2, 128, '#e8e4d8', 8, 'center');
   }
+  if (game.state === 'shop') drawShop();
   if (game.state === 'gameover') drawGameOver();
   if (game.state === 'win') drawWin();
 }
@@ -2373,7 +2545,7 @@ const TEST = {
   step() {
     this.f++;
     const F = this.f;
-    if (F > 11000 && this.phase < 19) { this.log('timeout@phase' + this.phase, false); this.phase = 19; this.finish(); return; }
+    if (F > 14000 && this.phase < 19) { this.log('timeout@phase' + this.phase, false); this.phase = 19; this.finish(); return; }
     try {
       switch (this.phase) {
         case 0: // inici
@@ -2489,18 +2661,28 @@ const TEST = {
             this.log('crouch-attack', false, 'st=' + player.state);
             this.key('down', false); this.phase = 12.6;
           } break; }
-        case 12.6: { // millora d'arma -> nivell 3 i dagues llançables
-          if (player.weapon < 3 && !this.wSpawned) { this.wSpawned = true; world.items.push({ x: player.x, y: player.y, w: 12, h: 10, c: 'weapon', vy: 0 }); }
-          if (player.weapon >= 3 && !this.dCheck) {
-            if (player.state === 'idle' || player.state === 'run') { this.dCheck = true; this.attSeen = false; input.pressAttack(); }
+        case 12.6: { // ventall automàtic de 3 dagues ja a nivell 1 (referència Black Tiger)
+          if (!player.onGround) break;
+          if (!this.fan0) {
+            this.fan0 = true;
+            this._w0 = player.weapon; this._t0 = player.wtype; this._f0 = player.fused;
+            player.weapon = 1; player.wtype = 'espasa'; player.fused = [];
+            world.daggers = [];
           }
-          if (this.dCheck) {
-            if (!this.attSeen && input.attackBuf === 0 && (player.state === 'idle' || player.state === 'run')) input.pressAttack();
-            if (!this.attSeen && (player.state === 'attack' || player.state === 'cattack') && player.attackT < 3) this.attSeen = true;
-            if (world.daggers.length > 0) { this.log('weapon-up-daggers', player.weapon >= 3, 'weapon=' + player.weapon); this.phase = 12.7; this.warp(690, GY - player.h); player.dir = 1; }
-            else if (this.attSeen && player.attackT > 6) { this.log('weapon-up-daggers', false, 'cap daga weapon=' + player.weapon); this.phase = 12.7; this.warp(690, GY - player.h); player.dir = 1; }
+          const dags = world.daggers.filter(d => d.k === 'dagger');
+          const done = ok => {
+            this.log('dagger-fan-3', ok, 'vy=' + dags.slice(0, 3).map(d => d.vy).join(','));
+            player.weapon = this._w0; player.wtype = this._t0; player.fused = this._f0;
+            world.daggers = [];
+            this.phase = 12.7; this.warp(690, GY - player.h); player.dir = 1;
+          };
+          if (dags.length >= 3) {
+            const vys = dags.slice(0, 3).map(d => d.vy);
+            done(vys.some(v => v < -0.3) && vys.some(v => v === 0) && vys.some(v => v > 0.3));
+          } else {
+            if (input.attackBuf === 0 && player.state !== 'attack' && player.state !== 'cattack') input.pressAttack();
+            if (this.f > (this.cT1 || (this.cT1 = this.f)) + 300) done(false);
           }
-          if (this.f > (this.cT1 || (this.cT1 = this.f)) + 400) { this.log('weapon-up-daggers', false, 'timeout weapon=' + player.weapon); this.phase = 12.7; this.warp(690, GY - player.h); player.dir = 1; }
           break; }
         case 12.7: { // daga mata la bèstia de x=760 i deixa botí
           if (!player.onGround) break;
@@ -2622,15 +2804,59 @@ const TEST = {
             const b = this.mcB;
             if (b.hp < 99 && b.x > this.mcX0 + 8) {
               this.log('fusio-maca', true, 'dmg=' + (99 - b.hp) + ' knock=+' + Math.round(b.x - this.mcX0) + ' tier=' + TIER_NAMES[comboN()]);
-              this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
+              this.phase = 12.16;
             } else if (this.f > (this.cT9 || (this.cT9 = this.f)) + 400) {
               this.log('fusio-maca', false, 'hp=' + (b && b.hp) + ' x=' + (b && Math.round(b.x)));
-              this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
+              this.phase = 12.16;
             }
           } else if (this.f > (this.cT9 || (this.cT9 = this.f)) + 400) {
             this.log('fusio-maca', false, 'no pickup');
-            this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
+            this.phase = 12.16;
           } break; }
+        case 12.16: { // savi petrificat: el cop l'allibera i AMUNT obre la botiga
+          if (!this.sg0) {
+            this.sg0 = true;
+            this.warp(984, GY - player.h); player.state = 'idle'; player.onGround = true; player.dir = 1;
+            world.sages = [{ x: 1000, y: GY, w: 14, h: 30, freed: false, anim: 0 }];
+            input.pressAttack(); this.sgT = this.f;
+          }
+          const sg = world.sages[0];
+          if (sg.freed && game.state !== 'shop') input.upBuf = 10;
+          if (game.state === 'shop') {
+            this.log('sage-free-shop', true);
+            input.up = false;
+            player.zenny = 1000; shop.sel = 4;      // ARMADURA D'OR (8 cops)
+            input.pressAttack();                     // compra
+            this.phase = 12.17; this.shopT = this.f;
+          } else if (!sg.freed && this.f - this.sgT > 240) {
+            this.log('sage-free-shop', false, 'no alliberat'); input.up = false;
+            this.phase = 12.18; this.exitT = this.f;
+          }
+          break; }
+        case 12.17: {
+          if (player.armor === 8) {
+            this.log('shop-armor', true, 'zenny restant=' + player.zenny);
+            input.pressJump();                       // SALTAR surt de la botiga
+            this.phase = 12.18; this.exitT = this.f;
+          } else if (this.f - this.shopT > 150) {
+            this.log('shop-armor', false, 'armor=' + player.armor + ' zenny=' + player.zenny);
+            input.pressJump(); this.phase = 12.18; this.exitT = this.f;
+          }
+          break; }
+        case 12.18: { // l'armadura absorbeix cops sense perdre vida; sense armadura, resta HP
+          if (game.state !== 'play' && this.f - (this.exitT || this.f) < 150) break;
+          player.hp = player.maxHp; player.dead = false; player.state = 'idle';
+          const hp0 = player.hp;
+          player.invuln = 0; playerDamage(1, player.x + 30);
+          player.invuln = 0; playerDamage(1, player.x + 30);
+          player.invuln = 0; playerDamage(1, player.x + 30);
+          this.log('armor-absorbs-hits', player.hp === hp0 && player.armor === 5, 'hp=' + player.hp + ' armor=' + player.armor);
+          player.armor = 0; player.armorMax = 0; player.invuln = 0;
+          playerDamage(1, player.x + 30);
+          this.log('no-armor-hp-loss', player.hp === hp0 - 1, 'hp=' + player.hp);
+          player.hp = player.maxHp; player.invuln = 90; player.dead = false; player.state = 'idle';
+          this.phase = 13; this.warp(600, GY - 60); player.vy = 0.5; player.invuln = 0; this.hpBeforeFall = player.hp;
+          break; }
         case 13: // caure al forat: SENSE dany, no mort, pis inferior
           if (player.onGround) {
             this.log('pit-fall-no-death', !player.dead && player.onLower, 'onLower=' + player.onLower);
@@ -2676,7 +2902,7 @@ const TEST = {
           if (game.state === 'win') { this.log('boss-defeat-win', true); this.phase = 19; this.finish(); break; }
           if (!world.boss) { game.state = 'win'; break; }
           this.keepAlive();
-          if (this.f > 10500) { this.log('boss-defeat-win', false, 'state=' + game.state); this.phase = 19; this.finish(); }
+          if (this.f > 13500) { this.log('boss-defeat-win', false, 'state=' + game.state); this.phase = 19; this.finish(); }
           break;
       }
     } catch (err) {
