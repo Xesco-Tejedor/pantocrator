@@ -2343,14 +2343,21 @@ function drawPlayer() {
   const anim = (st === 'attack' || st === 'cattack') ? player.attackT : player.anim;
   const hangDrop = st === 'hang' ? 12 : 0;
   drawWarrior(player.x + player.w / 2, player.y + player.h + hangDrop, player.dir, st, anim, player.weapon);
-  // armadura per cops: cuirassa de bronze/argent/or segons el nivell; sense armadura, en taparrabos
+  // armadura per cops: corassa visible de bronze/argent/or sobre pit i abdomen;
+  // sense armadura, el guerrer queda en taparrabos (referència Black Tiger)
   if (player.armor > 0 && !player.dead) {
     const col = player.armor >= 8 ? '#f2d78a' : player.armor >= 4 ? '#c9ced8' : '#b08a4a';
+    const low = st === 'crouch' || st === 'cattack';
+    const cy0 = low ? -37 : -48, chh = low ? 15 : 20;   // tors alt / agachat
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h); ctx.scale(player.dir, 1);
-    ctx.globalAlpha = 0.55; ctx.fillStyle = col;
-    ctx.fillRect(-5, -23, 10, 7);
-    ctx.globalAlpha = 0.9; ctx.fillRect(-5, -23, 10, 2);
+    ctx.globalAlpha = 0.85; ctx.fillStyle = col;
+    ctx.fillRect(-11, cy0, 16, chh);                    // placa de pit i abdomen
+    ctx.globalAlpha = 0.95;
+    ctx.fillRect(-11, cy0, 16, 2.5);                    // vora superior clara
+    ctx.fillRect(-11, cy0 + chh - 2, 16, 2);            // vora inferior
+    ctx.globalAlpha = 0.45; ctx.fillStyle = '#14100c';
+    ctx.fillRect(-4, cy0 + 2, 1.6, chh - 4);            // escot central
     ctx.restore();
   }
   // escut actiu
