@@ -214,14 +214,22 @@
   const _updateBossE = updateBoss;
   updateBoss = function () {
     _updateBossE();
-    if (world.stageIdx === MUD_STAGE && world.announce === 'ATACA AL PANTHOKRATOR!')
+    if (world.stageIdx !== MUD_STAGE) return;
+    if (world.announce === 'ATACA AL PANTHOKRATOR!')
       world.announce = 'ATACA L’AMALGAMA!';
+    // zona dañable alineada con el cuerpo visible (sprite ~100px de ancho, 132 de alto)
+    const mb = world.boss;
+    if (mb && mb.bx !== undefined) {
+      const im = MUD_IMG;
+      mb.hitW = im && im.naturalWidth ? Math.round(132 * im.naturalWidth / im.naturalHeight) - 6 : 96;
+      mb.hitH = 132;
+    }
   };
   const _drawBossBarE = drawBossBar;
   drawBossBar = function () {
     const b = world.boss; if (!b || b.bx === undefined) return;
     if (world.stageIdx !== MUD_STAGE) { _drawBossBarE(); return; }
-    const w = 200, x = VW / 2 - w / 2, y = 56;
+    const w = 200, x = VW / 2 - w / 2, y = 238;
     ctx.fillStyle = 'rgba(5,6,12,.7)'; ctx.fillRect(x - 2, y - 2, w + 4, 11);
     ctx.fillStyle = '#6a7a2a'; ctx.fillRect(x, y, w * Math.max(0, b.hp / b.maxHp), 7);
     ctx.lineWidth = 1; ctx.strokeStyle = '#d8d84a'; ctx.strokeRect(x - 1.5, y - 1.5, w + 3, 10);
