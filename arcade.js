@@ -153,7 +153,7 @@
   updateBoss = function () {
     const b = world.boss; if (!b) return;
     if (b.bx === undefined) {
-      b.tuned = (world.stageIdx === 2 || world.stageIdx === 5);   // Panthokrator y gos zombi (arena 5 de etapas.js)
+      b.tuned = (world.stageIdx === 2 || world.stageIdx === 5 || world.stageIdx === 8);   // Panthokrator, gos zombi y Amalgama (v29: ya no cae de un golpe fusionado)
       const hp0v = b.tuned ? BOSS_HP : 80;
       b.bx = 440; b.maxHp = hp0v; b.hp = hp0v; b.hitCd = 0; b.hurt = 0; b.face = -1;
       b.lungeT = b.tuned ? 200 : 300; b.lunge = 0; b.warn = 0; b.hp0 = b.hp; b.ghostT = 0; b.dmgAcc = 0; b.spectralOk = (world.stageIdx === 2);
@@ -288,5 +288,5 @@
     _dgo();
     if (game.frame % 90 < 60) drawText('PARA CONTINUAR', VW / 2, 182, '#8f9aa8', 9, 'center');
   };
-  window.__arcadeLayer = 'v28';
+  window.__arcadeLayer = 'v29';
 })();
