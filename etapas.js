@@ -1,4 +1,4 @@
-/* PANTHOKRATOR - etapas 2 y 3 (v7): Jardines de Montjuïc (x2 recorrido etapa 1)
+/* PANTHOKRATOR - etapas 2 y 3 (v8): Jardines de Montjuïc (x2 recorrido etapa 1)
    y Fuente Mágica acuática (x2,5) con jefe final de lodo, según hoja de ruta.
    Se carga después de arcade.js; no modifica game.js ni la jugabilidad. */
 (function () {
@@ -354,16 +354,44 @@
   drawFloor = function (x, w, y) {
     const i = world.stageIdx;
     if (i < 3 || y !== GY) return _drawFloorE(x, w, y);
-    const k = i <= 4 ? 'g' : 'a';
-    const strip = ENV_STRIPS[k] || (ENV_STRIPS[k] = envStrip(k === 'g' ? 'garden' : 'aqua'));
+    const g = i <= 4, A2 = window.PANTO_ART2 || {};
+    const im = g ? A2.GROUND_G : A2.GROUND_A;
+    if (im && im.complete && im.naturalWidth) {   // textura pintada con borde organico
+      const surf = g ? A2.SURF_G : A2.SURF_A;
+      for (let j = 0; j < w; j += 256) {
+        const sw = Math.min(256, w - j);
+        ctx.drawImage(im, 0, 0, sw, im.naturalHeight, x + j, y - surf, sw, im.naturalHeight);
+      }
+      return;
+    }
+    const k = g ? 'g' : 'a';
+    const strip = ENV_STRIPS[k] || (ENV_STRIPS[k] = envStrip(g ? 'garden' : 'aqua'));
     for (let j = 0; j < w; j += 256) {
       const sw = Math.min(256, w - j);
       ctx.drawImage(strip, 0, 0, sw, strip.height, x + j, y, sw, strip.height);
     }
   };
 
-  // plataformas: losa con musgo (jardines) / roca con coral (acuático)
+  // plataformas: losa pintada con musgo (jardines) / roca pintada con coral (acuático)
+  function drawSlabArt(im, flat, p) {
+    const W = p.w + 34, H = Math.round(W * im.naturalHeight / im.naturalWidth);
+    const dy = p.y - Math.round(flat * W / im.naturalWidth);
+    ctx.save();
+    ctx.filter = 'drop-shadow(0 2px 2px rgba(0,0,0,.55))';
+    ctx.drawImage(im, p.x + p.w / 2 - W / 2, dy, W, H);
+    ctx.filter = 'none';
+    ctx.restore();
+  }
   function drawGardenPlatform(p) {
+    const A2 = window.PANTO_ART2 || {};
+    if (A2.SLAB_G && A2.SLAB_G.complete && A2.SLAB_G.naturalWidth) {
+      drawSlabArt(A2.SLAB_G, A2.FLAT_G, p);
+      if (p.t === 'moving') {
+        ctx.fillStyle = 'rgba(190,255,150,' + (0.12 + 0.09 * Math.sin(game.frame / 16)) + ')';
+        ctx.fillRect(p.x - 2, p.y - 8, p.w + 4, 22);
+      }
+      return;
+    }
     const x0 = p.x, ym = p.y;
     ctx.fillStyle = lgrad(x0, ym, x0, ym + p.h + 4, '#6a6a58', '#33332a');
     ctx.fillRect(x0, ym, p.w, p.h + 4);
@@ -379,6 +407,15 @@
     }
   }
   function drawAquaPlatform(p) {
+    const A2 = window.PANTO_ART2 || {};
+    if (A2.SLAB_A && A2.SLAB_A.complete && A2.SLAB_A.naturalWidth) {
+      drawSlabArt(A2.SLAB_A, A2.FLAT_A, p);
+      if (p.t === 'moving') {
+        ctx.fillStyle = 'rgba(140,230,255,' + (0.12 + 0.09 * Math.sin(game.frame / 16)) + ')';
+        ctx.fillRect(p.x - 2, p.y - 8, p.w + 4, 22);
+      }
+      return;
+    }
     const x0 = p.x, ym = p.y;
     ctx.fillStyle = lgrad(x0, ym, x0, ym + p.h + 4, '#5a6a72', '#24303a');
     ctx.fillRect(x0, ym, p.w, p.h + 4);
@@ -465,5 +502,5 @@
     }
   };
 
-  window.__etapas = 'v7';
+  window.__etapas = 'v8';
 })();
