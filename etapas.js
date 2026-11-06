@@ -1,4 +1,4 @@
-/* PANTHOKRATOR - etapas 2 y 3 (v8): Jardines de Montjuïc (x2 recorrido etapa 1)
+/* PANTHOKRATOR - etapas 2 y 3 (v9): Jardines de Montjuïc (x2 recorrido etapa 1)
    y Fuente Mágica acuática (x2,5) con jefe final de lodo, según hoja de ruta.
    Se carga después de arcade.js; no modifica game.js ni la jugabilidad. */
 (function () {
@@ -51,6 +51,16 @@
   STAGES.push(
     longStage('JARDINS DE MONTJUÏC', 480, 5500, 230),
     longStage('LA FONT MÀGICA', 480, 5500, 215),
+    {
+      name: 'EL GOS ZOMBI', time: 240, length: 700, mural: 0, boss: true,
+      ground: [{ x: 0, w: 700 }],
+      lower: [],
+      platforms: [{ x: 140, y: 160, w: 88, h: 8, t: 'bench' }, { x: 420, y: 160, w: 88, h: 8, t: 'bench' }],
+      chandeliers: [{ x: 340, y: 36, len: 64 }],
+      sages: [{ x: 150 }],
+      vitrinas: [{ x: 80, y: GY, c: 'weapon' }, { x: 300, y: GY, c: 'heart' }, { x: 420, y: GY, c: 'falcio' }, { x: 500, y: GY, c: 'time' }, { x: 580, y: GY, c: 'heart' }],
+      enemies: []
+    },
     longStage('AIGÜES DE LA FONT', 540, 6200, 225),
     longStage('LES PROFUNDITATS', 600, 6850, 210),
     {
@@ -65,6 +75,10 @@
     }
   );
   const MUD_STAGE = STAGES.length - 1;   // índice del jefe de lodo
+  const DOG_STAGE = MUD_STAGE - 3;   // arena ante la gran Font: el gos zombi
+  let dogAnn = '';                   // aviso del gos redibujado abajo
+  const DOG_IMG = new Image();
+  DOG_IMG.src = (window.PANTO_ART3 && window.PANTO_ART3.DOGSRC) || '';
   let mudAnn = '';               // aviso del jefe redibujado abajo
   const PANTO_STAGE = 2;                 // última fase de la etapa 1 MNAC
 
@@ -79,7 +93,7 @@
   /* ---------- flujo: derrotar al Panthokrator abre la etapa 2; el lodo da la victoria ---------- */
   const _bossDefeated = bossDefeated;
   bossDefeated = function () {
-    if (world.stageIdx === PANTO_STAGE) {
+    if (world.stageIdx === PANTO_STAGE || world.stageIdx === DOG_STAGE) {
       world.boss = null;
       sfx.stopMusic(); sfx.clearS();
       player.score += 5000 + Math.floor(player.timer / 60) * 50;
@@ -96,7 +110,7 @@
     if (i < 3) { _drawBackground(); return; }
     const cx = world.camX;
     const ART = window.PANTO_ART || {};
-    if (i <= 4) {                       // JARDINS DE MONTJUÏC (noche)
+    if (i <= 4 || i === DOG_STAGE) {    // JARDINS DE MONTJUÏC (noche) y arena de la gran Font
       if (ART.GARDENS && ART.GARDENS.complete && ART.GARDENS.naturalWidth)
         ctx.drawImage(ART.GARDENS, 0, 0, VW, VH);
       else { ctx.fillStyle = '#060a1c'; ctx.fillRect(0, 0, VW, VH); }
@@ -107,8 +121,8 @@
         if ((k + Math.floor(T / 22)) % 4 === 0) ctx.fillRect(sx, sy, 1.4, 1.4);
       }
       // Font Màgica al final del segundo jardín (anclada al mundo)
-      if (i === 4 && ART.FOUNTAIN && ART.FOUNTAIN.complete && ART.FOUNTAIN.naturalWidth) {
-        const fx = world.stage.length - 320 - cx;
+      if ((i === 4 || i === DOG_STAGE) && ART.FOUNTAIN && ART.FOUNTAIN.complete && ART.FOUNTAIN.naturalWidth) {
+        const fx = (i === DOG_STAGE ? 336 : world.stage.length - 320) - cx;
         const FH = 118, FW = Math.round(FH * ART.FOUNTAIN.naturalWidth / ART.FOUNTAIN.naturalHeight);
         if (fx > -FW - 40 && fx < VW + 60) {
           const hue = (T * 2) % 360;
@@ -198,17 +212,108 @@
     }
     ctx.restore();
   }
+
+  /* ---------- jefe de los jardines: gos doméstico gigante medio zombi ---------- */
+  function drawDogBoss(b) {
+    const x = Math.round(b.bx), g = GY, f = b.face || -1, T = game.frame;
+    const flash = b.hurt > 0, ang = b.hp < (b.maxHp || 280) / 2;
+    const warn = b.warn > 0, lunge = b.lunge > 0;
+    const lean = lunge ? (b.lungeDir || f) * 9 : Math.sin(T / 34) * 1.6;
+    const M = c => flash ? '#fff' : c;
+    ctx.save();
+    ctx.translate(x + lean * 0.4, g);
+    ctx.fillStyle = 'rgba(8,6,4,.35)';   // sombra del cuerpo
+    ctx.beginPath(); ctx.ellipse(0, -1, 52, 6, 0, 0, Math.PI * 2); ctx.fill();
+    const im = DOG_IMG;
+    ctx.save();
+    ctx.translate(lean * 0.5, 0);
+    ctx.scale(f < 0 ? 1 : -1, 1);
+    ctx.rotate(-f * 0.02);
+    const bob = 1 + Math.sin(T / 12) * 0.018;   // respiración agitada
+    ctx.scale(1, bob);
+    let flt = 'drop-shadow(0 0 3px rgba(10,8,4,.9))';
+    if (flash) flt = 'brightness(2.6) ' + flt;
+    else if (ang) flt = 'saturate(1.4) hue-rotate(18deg) ' + flt;   // verde rabioso
+    ctx.filter = flt;
+    if (im && im.complete && im.naturalWidth) {
+      const H = 124, W = H * im.naturalWidth / im.naturalHeight;
+      ctx.drawImage(im, -W / 2, -H + 2, W, H);
+    } else {   // reserva: silueta reconocible
+      ctx.fillStyle = M('#4a3a28');
+      ctx.beginPath(); ctx.ellipse(0, -52, 46, 30, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(34, -84, 18, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.filter = 'none';
+    ctx.restore();
+    // baba infecta goteando del hocico
+    for (let d = 0; d < 3; d++) {
+      const fall = (T * 1.6 + d * 31) % 60;
+      ctx.fillStyle = M('rgba(190,220,170,.85)');
+      ctx.fillRect((f < 0 ? -40 : 34) + d * 3, -66 + fall, 1.8, 4);
+    }
+    // moscas orbitando
+    ctx.fillStyle = M('#0a0a06');
+    for (let fl2 = 0; fl2 < 4; fl2++) {
+      const a2 = T / 13 + fl2 * 1.57;
+      ctx.fillRect(Math.cos(a2) * 34 - 1, -70 + Math.sin(a2 * 1.4) * 20, 2, 2);
+    }
+    if (warn && Math.floor(T / 3) % 2) {   // aviso de zarpazo
+      ctx.fillStyle = '#ff3030';
+      ctx.fillRect(lean - 3, -146, 6, 10); ctx.fillRect(lean - 3, -133, 6, 4);
+    }
+    ctx.restore();
+  }
+  function drawTurd(o) {   // excremento lanzado; al devolverlo conserva la mecánica de orbe
+    ctx.save();
+    ctx.translate(o.x, o.y);
+    ctx.rotate(Math.atan2(o.vy, o.vx) * 0.3);
+    ctx.fillStyle = o.returning ? '#8a5a20' : '#5a3a16';
+    ctx.beginPath(); ctx.ellipse(0, 2, 6, 3.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, -1, 4.4, 2.6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, -3.4, 2.6, 1.8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#c8a060'; ctx.fillRect(-1.4, -4.4, 1.6, 1.2);
+    ctx.strokeStyle = 'rgba(190,220,140,.5)'; ctx.lineWidth = 1;   // miasma
+    for (let s = -1; s <= 1; s++) {
+      ctx.beginPath(); ctx.moveTo(s * 4, -6);
+      ctx.quadraticCurveTo(s * 4 + Math.sin(game.frame / 4 + s) * 2, -9, s * 3, -12);
+      ctx.stroke();
+    }
+    if (o.returning) { ctx.fillStyle = '#fff8e0'; ctx.fillRect(-1, -1, 2, 2); }
+    ctx.restore();
+  }
+  function drawWaterPillar(b) {   // surtidor de la gran Font en lugar del pilar de luz
+    if (b.pillarWarn > 0) {
+      ctx.fillStyle = 'rgba(140,220,255,' + (0.22 + 0.2 * Math.sin(game.frame / 3)) + ')';
+      ctx.fillRect(b.pillarX - 14, 40, 28, GY - 40);
+    }
+    if (b.pillarAct > 0) {
+      ctx.fillStyle = 'rgba(120,200,255,.5)'; ctx.fillRect(b.pillarX - 20, 40, 40, GY - 40);
+      ctx.fillStyle = 'rgba(190,240,255,.92)'; ctx.fillRect(b.pillarX - 12, 40, 24, GY - 40);
+      ctx.fillStyle = '#e8faff';
+      for (let k = 0; k < 8; k++)
+        ctx.fillRect(b.pillarX - 16 + hsh(k, game.frame % 8) * 32, 44 + ((k * 37 + game.frame * 6) % (GY - 60)), 2, 3);
+      ctx.beginPath(); ctx.ellipse(b.pillarX, GY - 2, 26, 5, 0, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
   const _drawWorldE = drawWorld;
   drawWorld = function () {
-    const b = world.boss;
-    if (world.stageIdx === MUD_STAGE && b && b.bx !== undefined &&
+    const b = world.boss, dog = world.stageIdx === DOG_STAGE;
+    if ((world.stageIdx === MUD_STAGE || dog) && b && b.bx !== undefined &&
         (game.state === 'play' || game.state === 'shop' || game.state === 'gameover')) {
       const save = world.boss;
+      const saveOrbs = dog ? world.orbs : null;
       world.boss = { bx: undefined };       // oculta la figura espectral del Panthokrator
+      if (dog) world.orbs = [];             // los excrementos se dibujan aparte
       _drawWorldE();
       world.boss = save;
+      if (dog) world.orbs = saveOrbs;
       ctx.save(); ctx.translate(-Math.round(world.camX), -Math.round(world.camY));
-      drawMudBoss(b);
+      if (dog) {
+        for (const o of world.orbs) drawTurd(o);
+        drawWaterPillar(b);
+        drawDogBoss(b);
+      } else drawMudBoss(b);
       ctx.restore();
     } else _drawWorldE();
   };
@@ -216,29 +321,35 @@
   const _updateBossE = updateBoss;
   updateBoss = function () {
     _updateBossE();
-    if (world.stageIdx !== MUD_STAGE) return;
+    const mb = world.boss, dog = world.stageIdx === DOG_STAGE;
+    if (world.stageIdx !== MUD_STAGE && !dog) return;
     if (world.announce === 'ATACA AL PANTHOKRATOR!')
-      world.announce = 'ATACA L’AMALGAMA!';
-    // zona dañable alineada con el cuerpo visible (sprite ~100px de ancho, 132 de alto)
-    if (world.announceT > 0 && world.announce) { mudAnn = world.announce; world.announce = ''; }
-    const mb = world.boss;
+      world.announce = dog ? 'ATACA AL GOS ZOMBI!' : 'ATACA L’AMALGAMA!';
+    // zona dañable alineada con el cuerpo visible
+    if (world.announceT > 0 && world.announce) {
+      if (dog) dogAnn = world.announce; else mudAnn = world.announce;
+      world.announce = '';
+    }
     if (mb && mb.bx !== undefined) {
-      const im = MUD_IMG;
-      mb.hitW = im && im.naturalWidth ? Math.round(132 * im.naturalWidth / im.naturalHeight) - 6 : 96;
-      mb.hitH = 132;
+      const im = dog ? DOG_IMG : MUD_IMG, hh = dog ? 124 : 132;
+      mb.hitW = im && im.naturalWidth ? Math.round(hh * im.naturalWidth / im.naturalHeight) - 6 : 96;
+      mb.hitH = hh;
     }
   };
   const _drawBossBarE = drawBossBar;
   drawBossBar = function () {
     const b = world.boss; if (!b || b.bx === undefined) return;
-    if (world.stageIdx !== MUD_STAGE) { _drawBossBarE(); return; }
+    const dog = world.stageIdx === DOG_STAGE;
+    if (world.stageIdx !== MUD_STAGE && !dog) { _drawBossBarE(); return; }
     const w = 200, x = VW / 2 - w / 2, y = 238;
+    const fill = dog ? '#d8a03a' : '#6a7a2a', edge = dog ? '#f2d78a' : '#d8d84a';
     ctx.fillStyle = 'rgba(5,6,12,.7)'; ctx.fillRect(x - 2, y - 2, w + 4, 11);
-    ctx.fillStyle = '#6a7a2a'; ctx.fillRect(x, y, w * Math.max(0, b.hp / b.maxHp), 7);
-    ctx.lineWidth = 1; ctx.strokeStyle = '#d8d84a'; ctx.strokeRect(x - 1.5, y - 1.5, w + 3, 10);
-    drawText('L’AMALGAMA', VW / 2, y + 11, '#d8d84a', 7, 'center');
-    if (world.announceT > 0 && mudAnn)
-      drawText(mudAnn, VW / 2, y - 20, '#d8d84a', 12, 'center');
+    ctx.fillStyle = fill; ctx.fillRect(x, y, w * Math.max(0, b.hp / b.maxHp), 7);
+    ctx.lineWidth = 1; ctx.strokeStyle = edge; ctx.strokeRect(x - 1.5, y - 1.5, w + 3, 10);
+    drawText(dog ? 'EL GOS ZOMBI' : 'L’AMALGAMA', VW / 2, y + 11, edge, 7, 'center');
+    const ann = dog ? dogAnn : mudAnn;
+    if (world.announceT > 0 && ann)
+      drawText(ann, VW / 2, y - 20, edge, 12, 'center');
   };
 
   // reskins de enemigos por etapa: pucks/pixies voladores (etapas 2 y 3) y anguilas abisales (etapa 3)
@@ -257,7 +368,7 @@
   };
   const _drawBeastE = drawBeast;
   drawBeast = function (e, anim) {
-    if (world.stageIdx >= 5 && EEL_IMG.complete && EEL_IMG.naturalWidth) {
+    if (world.stageIdx >= 6 && EEL_IMG.complete && EEL_IMG.naturalWidth) {
       const und = Math.sin(game.frame / 7 + e.x * 0.7);
       ctx.save();
       ctx.translate(e.x + e.w / 2, e.y + e.h / 2 + und * 1.2);
@@ -354,7 +465,7 @@
   drawFloor = function (x, w, y) {
     const i = world.stageIdx;
     if (i < 3 || y !== GY) return _drawFloorE(x, w, y);
-    const g = i <= 4, A2 = window.PANTO_ART2 || {};
+    const g = i <= 4 || i === DOG_STAGE, A2 = window.PANTO_ART2 || {};
     const im = g ? A2.GROUND_G : A2.GROUND_A;
     if (im && im.complete && im.naturalWidth) {   // textura pintada con borde organico
       const surf = g ? A2.SURF_G : A2.SURF_A;
@@ -437,7 +548,7 @@
   drawBench = function (p) {
     const i = world.stageIdx;
     if (i < 3) return _drawBenchE(p);
-    if (i <= 4) drawGardenPlatform(p); else drawAquaPlatform(p);
+    if (i <= 4 || i === DOG_STAGE) drawGardenPlatform(p); else drawAquaPlatform(p);
   };
 
   // lámparas: farolillo de papel (jardines) / medusa bioluminiscente (acuático)
@@ -445,7 +556,7 @@
   drawChandelier = function (hx, hy) {
     const i = world.stageIdx;
     if (i < 3) return _drawChandelierE(hx, hy);
-    if (i <= 4) {
+    if (i <= 4 || i === DOG_STAGE) {
       ctx.fillStyle = rgrad(hx, hy, 24, 'rgba(255,190,90,.30)', 'rgba(255,190,90,0)');
       ctx.fillRect(hx - 24, hy - 24, 48, 48);
       const fl = (game.frame % 16) < 11;
@@ -482,7 +593,7 @@
     if (i < 3) return _drawVitrinaE(v);
     const x = v.x, y = v.y;
     const im = iconFor(v.c);
-    if (i <= 4) {
+    if (i <= 4 || i === DOG_STAGE) {
       ctx.fillStyle = rgrad(x, y - 26, 16, 'rgba(190,255,150,.22)', 'rgba(190,255,150,0)');
       ctx.fillRect(x - 16, y - 46, 32, 48);
       pix(im, PAL, x - 8, y - 36, 2, false);
@@ -502,5 +613,5 @@
     }
   };
 
-  window.__etapas = 'v8';
+  window.__etapas = 'v9';
 })();
