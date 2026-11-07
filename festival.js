@@ -1,81 +1,139 @@
-/* PANTHOKRATOR - varietat musical i celebració final de savis (v1).
+/* PANTHOKRATOR - varietat musical i celebració final de savis (v2, coherent andante èpic).
    Petició de Francesc (6 nov 2026): «variedad en la música» i, després de
    guanyar l'últim boss, «un gran número de sabios libres que celebran
    eufóricamente la victoria del jugador».
 
    Es carrega l'últim; no modifica game.js, audio.js, etapas.js ni masa.js:
-   - Afegeix 5 temes nous al seqüenciador FM d'audio.js (composicions
-     originals amb caràcter de recreativa Taito, sense copiar Black Tiger)
-     i tria tema segons l'etapa: cada fase i cada boss sona diferent.
+   - v2 (7 nov 2026): temes recompostos en pas andante i èpic, coherents amb
+     el tema principal aprovat de melodia.js (la menor amb sensible, frases
+     llargues, baix per negres/corxeres, percussió processional): stage2 100 BPM,
+     stage3 88, boss 112, boss2 118, massa 126. Composicions originals, sense
+     copiar Black Tiger. La fanfara de victoria (win) es conserva sense canvis.
+     Tria tema segons l'etapa: cada fase i cada boss sona diferent.
    - Fanfara de victoria en to major en vèncer la Massa del Consum.
    - A la pantalla de victoria, una multitud de savis alliberats (sprites
      pintats de sage-art.js) salta eufòrica amb els braços amunt, amb
      confeti i espurnes daurades, al voltant del guerrer. */
 (function () {
   'use strict';
-  window.__festival = 1;
+  window.__festival = 2;
 
   /* ================= 1. VARIETAT MUSICAL ================= */
   if (typeof sfx !== 'undefined' && sfx.THEMES) {
-    /* fase alternativa A: més lluminosa i emprenedora (Jardins, Font) */
-    sfx.THEMES.stage2 = { bpm: 160, legato: 1.9,
-      bass: [0,12,0,12, 0,12,10,12, 5,17,5,17, 5,17,15,17,
-             -4,8,-4,8, -4,8,6,8, -5,7,-5,7, -5,7,10,12],
-      mel:  [29,null,null,29, 31,null,29,null, 27,null,29,null, 24,null,null,null,
-             26,null,null,26, 27,null,26,null, 24,null,26,null, 27,null,null,null,
-             29,null,null,29, 32,null,31,null, 29,null,27,null, 29,null,null,null,
-             31,null,32,null, 34,null,31,null, 29,null,27,null, 26,null,null,null],
-      harm: [12,null,null,null, null,null,null,null, 17,null,null,null, null,null,null,null,
-             8,null,null,null, null,null,null,null, 7,null,null,null, 10,null,null,null],
-      arp:  [36,39,43,39, 36,39,43,39, 41,45,48,45, 41,45,48,45,
-             32,36,39,36, 32,36,39,36, 31,35,38,35, 31,35,38,35],
+    /* fase alternativa A (Jardins, Font): andante lluminós, Am|F|C|E, 100 BPM */
+    sfx.THEMES.stage2 = { bpm: 100, legato: 6.5,
+      bass: [0,null,null,null, 12,null,null,null, 0,null,null,null, 12,null,12,null,
+             -4,null,null,null, 8,null,null,null, -4,null,null,null, 8,null,8,null,
+             3,null,null,null, 15,null,null,null, 3,null,null,null, 15,null,15,null,
+             -5,null,null,null, 7,null,null,null, -5,null,null,null, 7,null,7,null],
+      mel:  [27,null,null,null, null,null,31,null, 29,null,null,null, 27,null,null,null,
+             24,null,null,null, null,null,27,null, 32,null,null,null, 31,null,null,null,
+             29,null,null,null, null,null,27,null, 31,null,null,null, 34,null,null,null,
+             31,null,null,null, 35,null,null,null, 36,null,null,null, null,null,null,null],
+      harm: [12,null,null,null, 12,null,null,null, 12,null,null,null, 12,null,null,null,
+             8,null,null,null, 8,null,null,null, 8,null,null,null, 8,null,null,null,
+             15,null,null,null, 15,null,null,null, 15,null,null,null, 15,null,null,null,
+             7,null,null,null, 7,null,null,null, 7,null,null,null, 7,null,null,null],
+      arp:  [24,null,27,null, 31,null,27,null, 24,null,27,null, 31,null,27,null,
+             20,null,24,null, 29,null,24,null, 20,null,24,null, 29,null,24,null,
+             27,null,31,null, 34,null,31,null, 27,null,31,null, 34,null,31,null,
+             19,null,23,null, 26,null,23,null, 19,null,23,null, 26,null,23,null],
+      perc: [1,0,2,0, 4,0,2,0, 1,0,2,0, 4,0,2,0,
+             1,0,2,0, 4,0,2,0, 1,0,2,0, 4,0,2,0,
+             1,0,2,0, 4,0,2,0, 1,0,2,0, 4,0,2,0,
+             1,0,2,0, 4,0,2,0, 1,0,2,0, 5,0,6,0] };
+
+    /* fase alternativa B (Aigües, Profunditats): andante fosc, Am|Dm|Am|E, 88 BPM */
+    sfx.THEMES.stage3 = { bpm: 88, legato: 7,
+      bass: [0,null,null,null, 12,null,null,null, 0,null,null,null, 12,null,null,null,
+             -2,null,null,null, 10,null,null,null, -2,null,null,null, 10,null,null,null,
+             0,null,null,null, 12,null,null,null, 0,null,null,null, 12,null,12,null,
+             -5,null,null,null, 7,null,null,null, -5,null,null,null, 7,null,7,null],
+      mel:  [24,null,null,null, null,null,22,null, 19,null,null,null, null,null,null,null,
+             24,null,null,null, null,null,21,null, 29,null,null,null, null,null,null,null,
+             27,null,null,null, null,null,24,null, 22,null,null,null, 19,null,null,null,
+             19,null,null,null, null,null,23,null, 24,null,null,null, null,null,null,null],
+      harm: [12,null,null,null, null,null,null,null, 12,null,null,null, null,null,null,null,
+             10,null,null,null, null,null,null,null, 10,null,null,null, null,null,null,null,
+             12,null,null,null, null,null,null,null, 12,null,null,null, null,null,null,null,
+             7,null,null,null, null,null,null,null, 7,null,null,null, null,null,null,null],
+      arp:  [19,null,24,null, 27,null,24,null, 19,null,24,null, 27,null,24,null,
+             17,null,21,null, 24,null,21,null, 17,null,21,null, 24,null,21,null,
+             19,null,24,null, 27,null,24,null, 19,null,24,null, 27,null,24,null,
+             19,null,23,null, 26,null,23,null, 19,null,23,null, 26,null,23,null],
+      perc: [1,0,0,0, 0,0,2,0, 4,0,0,0, 0,0,2,0,
+             1,0,0,0, 0,0,2,0, 4,0,0,0, 0,0,2,0,
+             1,0,0,0, 0,0,2,0, 4,0,0,0, 0,0,2,0,
+             1,0,0,0, 0,0,2,0, 4,0,0,0, 5,0,6,0] };
+
+    /* boss de l'etapa 2: marxa èpica, Am|F|G|E, 112 BPM, baix per corxeres */
+    sfx.THEMES.boss = { bpm: 112, legato: 4.5,
+      bass: [0,null,0,null, 12,null,0,null, 0,null,0,null, 12,null,12,null,
+             -4,null,-4,null, 8,null,-4,null, -4,null,-4,null, 8,null,8,null,
+             -2,null,-2,null, 10,null,-2,null, -2,null,-2,null, 10,null,10,null,
+             -5,null,-5,null, 7,null,-5,null, -5,null,-5,null, 7,null,7,null],
+      mel:  [24,null,null,null, 27,null,26,null, 27,null,null,null, 31,null,null,null,
+             29,null,null,null, 27,null,null,null, 24,null,null,null, null,null,null,null,
+             29,null,null,null, 31,null,null,null, 34,null,null,null, null,null,32,null,
+             35,null,null,null, 36,null,null,null, 36,null,null,null, null,null,null,null],
+      harm: [12,null,null,null, null,null,null,null, 12,null,null,null, 12,null,null,null,
+             8,null,null,null, null,null,null,null, 8,null,null,null, 8,null,null,null,
+             10,null,null,null, null,null,null,null, 10,null,null,null, 10,null,null,null,
+             7,null,null,null, null,null,null,null, 7,null,null,null, 7,null,null,null],
+      arp:  [24,null,27,null, 31,null,27,null, 24,null,27,null, 31,null,27,null,
+             20,null,24,null, 29,null,24,null, 20,null,24,null, 29,null,24,null,
+             22,null,26,null, 31,null,26,null, 22,null,26,null, 31,null,26,null,
+             19,null,23,null, 26,null,23,null, 19,null,23,null, 26,null,23,null],
+      perc: [1,0,2,0, 4,0,2,1, 1,0,2,0, 4,0,2,0,
+             1,0,2,0, 4,0,2,1, 1,0,2,0, 4,0,2,2,
+             1,0,2,0, 4,0,2,1, 1,0,2,0, 4,0,2,0,
+             1,0,2,0, 4,0,2,1, 1,0,2,2, 4,2,6,0] };
+
+    /* boss alternatiu (Gos zombi): amenaça amb tríton, 118 BPM */
+    sfx.THEMES.boss2 = { bpm: 118, legato: 4,
+      bass: [0,null,0,null, 12,null,0,null, 0,null,0,null, 12,null,12,null,
+             0,null,6,null, 0,null,6,null, 0,null,6,null, 12,null,6,null,
+             -4,null,-4,null, 8,null,-4,null, -4,null,-4,null, 8,null,8,null,
+             -5,null,-5,null, 7,null,-5,null, -5,null,6,null, 7,null,7,null],
+      mel:  [24,null,null,null, null,null,27,null, 30,null,null,null, 27,null,null,null,
+             26,null,null,null, null,null,27,null, 30,null,null,null, 27,null,null,null,
+             29,null,null,null, null,null,27,null, 32,null,null,null, 31,null,null,null,
+             30,null,null,null, 31,null,35,null, 36,null,null,null, null,null,null,null],
+      harm: [12,null,null,null, null,null,null,null, 12,null,null,null, null,null,null,null,
+             18,null,null,null, 12,null,null,null, 18,null,null,null, 12,null,null,null,
+             8,null,null,null, null,null,null,null, 8,null,null,null, 8,null,null,null,
+             7,null,null,null, null,null,null,null, 7,null,null,null, 7,null,null,null],
+      arp:  [24,null,27,null, 31,null,27,null, 24,null,27,null, 31,null,27,null,
+             24,null,30,null, 27,null,30,null, 24,null,30,null, 27,null,30,null,
+             20,null,24,null, 29,null,24,null, 20,null,24,null, 29,null,24,null,
+             19,null,23,null, 26,null,23,null, 19,null,23,null, 26,null,23,null],
+      perc: [1,0,0,0, 4,0,1,0, 1,0,0,0, 4,0,2,0,
+             1,0,0,0, 4,0,1,0, 1,0,0,0, 4,2,2,0,
+             1,0,0,0, 4,0,1,0, 1,0,0,0, 4,0,2,0,
+             1,0,0,0, 4,0,1,0, 1,0,2,2, 4,2,6,0] };
+
+    /* boss final (La Massa del Consum): clímax èpic amb descens cromàtic, 126 BPM */
+    sfx.THEMES.massa = { bpm: 126, legato: 3.5,
+      bass: [0,null,0,null, 12,null,0,null, 0,null,0,null, 12,null,12,null,
+             -4,null,-4,null, 8,null,-4,null, -4,null,-4,null, 8,null,8,null,
+             -2,null,-2,null, 10,null,-2,null, -2,null,-2,null, 10,null,10,null,
+             -5,null,-5,null, 7,null,-5,null, -5,null,-5,null, 7,null,11,null],
+      mel:  [36,null,null,null, null,null,35,null, 34,null,null,null, 32,null,null,null,
+             31,null,null,null, null,null,29,null, 27,null,null,null, 29,null,null,null,
+             34,null,null,null, 32,null,31,null, 29,null,null,null, 31,null,null,null,
+             35,null,null,null, 36,null,null,null, 36,null,null,null, null,null,null,null],
+      harm: [12,null,null,null, 12,null,null,null, 12,null,null,null, 12,null,null,null,
+             8,null,null,null, 8,null,null,null, 8,null,null,null, 8,null,null,null,
+             10,null,null,null, 10,null,null,null, 10,null,null,null, 10,null,null,null,
+             7,null,null,null, 7,null,null,null, 7,null,null,null, 7,null,null,null],
+      arp:  [24,null,27,null, 31,null,27,null, 24,null,27,null, 31,null,27,null,
+             20,null,24,null, 29,null,24,null, 20,null,24,null, 29,null,24,null,
+             22,null,26,null, 31,null,26,null, 22,null,26,null, 31,null,26,null,
+             19,null,23,null, 26,null,23,null, 19,null,23,null, 26,null,23,null],
       perc: [1,0,2,0, 4,0,2,0, 1,0,2,0, 4,0,2,2,
-             1,0,2,0, 4,0,2,0, 1,0,2,2, 4,2,4,6] };
-
-    /* fase alternativa B: lenta i fosca (Aigües, Profunditats) */
-    sfx.THEMES.stage3 = { bpm: 138, legato: 2.2,
-      bass: [0,null,0,null, 12,null,0,null, -4,null,-4,null, 8,null,-4,null,
-             -2,null,-2,null, 10,null,-2,null, -5,null,7,null, 12,null,7,null],
-      mel:  [24,null,null,null, 26,null,27,null, null,null,26,null, 24,null,null,null,
-             22,null,null,null, 24,null,26,null, null,null,27,null, 26,null,null,null,
-             24,null,null,null, 29,null,27,null, null,null,26,null, 27,null,null,null,
-             31,null,29,null, 27,null,26,null, 24,null,null,null, null,null,null,null],
-      harm: [12,null,null,null, null,null,null,null, 8,null,null,null, null,null,null,null,
-             10,null,null,null, null,null,null,null, 7,null,null,null, null,null,null,null],
-      arp:  [24,null,27,null, 31,null,27,null, 20,null,24,null, 27,null,24,null,
-             22,null,26,null, 29,null,26,null, 19,null,22,null, 26,null,22,null],
-      perc: [1,0,0,0, 4,0,0,0, 1,0,0,2, 4,0,0,0,
-             1,0,0,0, 4,0,0,0, 1,0,0,2, 4,0,2,0] };
-
-    /* boss alternatiu: amenaça amb tríton (Gos zombi) */
-    sfx.THEMES.boss2 = { bpm: 178, legato: 1.5,
-      bass: [0,0,12,0, 6,6,12,6, 0,0,12,0, 1,1,13,1,
-             0,0,12,0, 6,6,12,6, -1,-1,11,-1, -2,-2,10,11],
-      mel:  [24,null,27,26, 27,null,null,null, 30,null,29,27, 26,null,null,null,
-             24,null,27,26, 27,null,null,null, 31,null,30,27, 26,null,27,null,
-             24,null,27,26, 27,null,null,null, 30,null,29,27, 26,null,null,null,
-             27,null,30,null, 31,null,null,null, 27,null,26,24, 23,null,null,null],
-      harm: [12,null,null,null, 18,null,null,null, 12,null,null,null, 13,null,null,null,
-             12,null,null,null, 18,null,null,null, 11,null,null,null, 10,null,null,null],
-      arp:  [36,39,42,39, 36,39,42,39, 37,40,43,40, 37,40,43,40,
-             36,39,42,39, 36,39,42,39, 35,38,41,38, 34,37,40,37],
-      perc: [1,0,2,1, 4,2,1,2, 1,0,2,1, 4,2,2,2,
-             1,0,2,1, 4,2,1,2, 1,2,1,2, 4,2,6,2] };
-
-    /* boss final: frenesí cromàtic (La Massa del Consum) */
-    sfx.THEMES.massa = { bpm: 186, legato: 1.3,
-      bass: [0,12,0,12, 1,13,1,13, 0,12,0,12, -1,11,-1,11,
-             0,12,0,12, 1,13,1,13, 2,14,2,14, 1,13,2,14],
-      mel:  [36,null,34,32, 31,null,29,null, 27,null,29,31, 32,null,null,null,
-             34,null,32,31, 29,null,27,null, 26,null,27,29, 31,null,null,null,
-             36,null,34,32, 31,null,29,null, 27,null,29,31, 32,null,null,null,
-             38,null,36,34, 32,null,31,null, 29,null,31,32, 34,null,null,null],
-      harm: [12,null,13,null, 12,null,13,null, 12,null,13,null, 11,null,12,null,
-             12,null,13,null, 12,null,13,null, 14,null,15,null, 13,null,14,null],
-      arp:  [36,40,43,40, 36,40,43,40, 37,41,44,41, 37,41,44,41,
-             36,40,43,40, 36,40,43,40, 38,42,45,42, 37,41,44,41],
-      perc: [1,2,2,1, 4,2,1,2, 1,2,2,1, 4,2,2,2,
-             1,2,2,1, 4,2,1,2, 1,2,1,2, 4,2,6,6] };
+             1,0,2,0, 4,0,2,0, 1,0,2,0, 4,2,4,2,
+             1,0,2,0, 4,0,2,0, 1,0,2,0, 4,0,2,2,
+             1,0,2,2, 4,0,2,0, 1,2,1,2, 4,2,6,6] };
 
     /* victoria: fanfara en to major, alegre i celebrativa */
     sfx.THEMES.win = { bpm: 132, legato: 1.7,
