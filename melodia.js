@@ -67,7 +67,7 @@
     drawTitle = function () {
       _drawTitleM();
       if (typeof drawText === 'function') {
-        drawText('v.07-11b', VW - 5, VH - 6, '#6f6a8c', 5, 'right');
+        drawText('v.07-11c', VW - 5, VH - 6, '#6f6a8c', 5, 'right');
       }
     };
   }
