@@ -17,9 +17,11 @@
     s.chests = s.chests || [];
     let n = 0;
     for (let x = 430; x < s.length - 380; x += 640, n++) {
-      const y = 48 + (n % 3) * 16, w = 110;
+      const y = 76 + (n % 3) * 10, w = 110;
       const p = { x, y, w, h: 8, t: 'secret', revealed: 0 };
       s.platforms.push(p);
+      // Una cornisa ordinaria permite ascender sin revelar el premio desde el suelo.
+      s.platforms.push({ x: x - 95, y: 150, w: 74, h: 8, t: 'bench' });
       const loot = ['coinbig', 'coinbig', 'coin', WROT[(si + n) % WROT.length], 'coin'];
       if (n % 3 === 1) loot.push('heart');
       if (n % 4 === 2) loot.push('weapon');
@@ -37,6 +39,7 @@
   loadStage = function (i) {
     _loadStageS(i);
     const s = STAGES[i];
+    s.platforms.forEach(p => { if (p.t === 'secret') p.revealed = 0; });
     world.chests = (s.chests || []).map(c => ({ x: c.x, y: c.y, w: 14, h: 12, loot: c.loot, plat: c.plat || null, opened: false }));
     snap = null;
   };
@@ -90,7 +93,7 @@
       vitrinas: JSON.parse(JSON.stringify(world.vitrinas)),
       sages: JSON.parse(JSON.stringify(world.sages)),
       items: JSON.parse(JSON.stringify(world.items)),
-      chests: JSON.parse(JSON.stringify(world.chests)),
+      chests: world.chests.map(c => ({ ...c })),
       plats: world.stage.platforms.map(p => ({ p, r: p.revealed || 0 })),
       camX: world.camX, camY: world.camY,
       px: player.x, py: player.y, timer: player.timer, score: player.score
@@ -115,7 +118,7 @@
     world.enemies = snap.enemies; world.vitrinas = snap.vitrinas; world.sages = snap.sages;
     world.items = snap.items; world.chests = snap.chests;
     for (const r of snap.plats) r.p.revealed = r.r;
-    world.orbs = []; world.daggers = []; world.boss = null;
+    world.orbs = []; world.daggers = []; world.parts = []; world.boss = null;
     player.x = end ? snap.px : TRUNK.x - 30; player.y = GY - player.h;
     player.vx = 0; player.vy = 0; player.state = 'idle'; player.onGround = true;
     player.invuln = 90; player.hangCh = null;
@@ -212,20 +215,26 @@
   function drawTrunk() {   // tronco hueco, medio oculto tras la vegetación
     const x = TRUNK.x, g = GY, T = game.frame;
     if (x - world.camX < -60 || x - world.camX > VW + 60) return;
-    // copa y hojarasca (queda detrás del personaje)
-    ctx.fillStyle = '#1e3a1c';
-    ctx.beginPath(); ctx.ellipse(x - 12, g - 78, 26, 18, -0.3, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(x + 14, g - 84, 24, 16, 0.25, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#2a4d24';
-    ctx.beginPath(); ctx.ellipse(x, g - 88, 20, 14, 0, 0, Math.PI * 2); ctx.fill();
-    speckle(x - 30, g - 100, 60, 30, 'rgba(120,180,90,.25)', 16, x);
-    speckle(x - 26, g - 96, 52, 24, 'rgba(8,20,6,.3)', 12, x + 7);
-    // tronco con vetas
-    ctx.fillStyle = lgrad(x - 16, g - 70, x + 16, g, '#4a3420', '#241708');
-    ctx.fillRect(x - 15, g - 72, 30, 72);
-    ctx.fillStyle = 'rgba(20,12,4,.5)';
-    for (let i = -11; i < 14; i += 6) ctx.fillRect(x + i, g - 68, 1.6, 64);
-    ctx.fillStyle = '#5a4128'; ctx.fillRect(x - 15, g - 72, 3, 72);
+    // Tocón antiguo de corteza irregular, raíces y musgo.
+    ctx.fillStyle = lgrad(x - 24, g - 62, x + 24, g, '#856346', '#291a0d');
+    ctx.beginPath(); ctx.moveTo(x - 29, g); ctx.lineTo(x - 18, g - 15);
+    ctx.lineTo(x - 21, g - 60); ctx.lineTo(x - 12, g - 66);
+    ctx.lineTo(x - 3, g - 61); ctx.lineTo(x + 8, g - 65);
+    ctx.lineTo(x + 20, g - 59); ctx.lineTo(x + 17, g - 14);
+    ctx.lineTo(x + 30, g); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#24180e'; ctx.lineWidth = 1.5;
+    for (let i = -16; i < 19; i += 5) {
+      ctx.beginPath(); ctx.moveTo(x + i, g - 58);
+      ctx.bezierCurveTo(x + i - 4, g - 42, x + i + 4, g - 23, x + i * 1.3, g - 2); ctx.stroke();
+    }
+    ctx.fillStyle = '#b28a5c';
+    ctx.beginPath(); ctx.ellipse(x, g - 61, 19, 5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#5f4129'; ctx.lineWidth = 1;
+    for (let r = 5; r < 19; r += 4) {
+      ctx.beginPath(); ctx.ellipse(x, g - 61, r, r / 4, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    speckle(x - 18, g - 58, 36, 56, 'rgba(211,164,105,.35)', 40, x);
+    speckle(x - 20, g - 20, 40, 20, 'rgba(72,110,43,.85)', 38, x + 2);
     // hueco cálido: el acceso (parcialmente tapado por el matojo de delante)
     const near = Math.abs(player.x + player.w / 2 - TRUNK.x) < 46;
     ctx.fillStyle = '#120a04';
@@ -352,10 +361,16 @@
   drawHUD = function () {
     _drawHUDS();
     if (world.stageIdx === DIM) {
-      ctx.fillStyle = 'rgba(5,6,12,.85)'; ctx.fillRect(VW - 96, 14, 92, 12);
+      ctx.fillStyle = '#0a0c14'; ctx.fillRect(VW - 108, 14, 108, 12);
       drawText('TRESOR', VW - 8, 16, '#f2d78a', 9, 'right');
     }
   };
 
-  window.__secrets = 'v1';
+  const _drawTitleS = drawTitle;
+  drawTitle = function () {
+    _drawTitleS();
+    ctx.fillStyle = '#0a0c14'; ctx.fillRect(VW - 50, VH - 8, 50, 8);
+    drawText('v.07-11d', VW - 5, VH - 6, '#9a8cb5', 5, 'right');
+  };
+  window.__secrets = 'v2';
 })();
