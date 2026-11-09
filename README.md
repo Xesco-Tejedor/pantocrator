@@ -30,14 +30,14 @@ Funciona al navegador (mòbil i escriptori), sense instal·lació. Al mòbil, mi
 - **Savis petrificats i botigues:** escampats per les fases hi ha savis convertits en pedra. Allibera'ls amb un cop i obriran botiga: vora el savi, prem **amunt** per entrar-hi. Les monedes que reculls són **Zenny**, la moneda del joc: compra-hi poder d'arma (+1 nivell, fins a 5), armadures, un cor (+4 HP) o vitalitat (+4 HP màxim).
 - **Armadura per cops:** funciona d'escut amb punts de cop: cada impacte enemic desgasta l'armadura en lloc de la vida. A la botiga n'hi ha de bàsica (2 cops), forta (4), pesant (6) i d'or (8); quan es trenca, el guerrer queda en taparrabos fins que en compri una altra.
 - **Botí i bonus:** els enemics deixen monedes d'or (+50/+150 punts i +10/+30 de Zenny); a les vitrines també hi ha cors (+2 HP), rellotges de sorra (+30 s) i el POW, que escombra tots els enemics de la pantalla.
-- **Enemics:** bèsties dels capitells romànics, dimonis dels frescos de Sant Climent de Taüll i, al final, el Panthokrator: dispara projectils de llum des del fons cap al pla d'acció. **Desvia els orbes amb l'espasa** per fer-li mal i esquiva el pilar de llum telegrafia't.
+- **Enemics:** bèsties dels capitells romànics, dimonis dels frescos de Sant Climent de Taüll i, al final, El Mal Amorf (el cap de la fase 3): dispara projectils de llum des del fons cap al pla d'acció. **Desvia els orbes amb l'espasa** per fer-li mal i esquiva el pilar de llum telegrafia't.
 - **M:** silencia la música.
 
 ## Fases
 
 1. Vestíbul en ruïnes
 2. Sala romànica
-3. El Panthokrator (arena de cap)
+3. El Mal Amorf (arena de cap)
 
 ## Tècnica
 
