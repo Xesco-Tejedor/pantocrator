@@ -1,11 +1,9 @@
 /* PANTHOKRATOR - introduccio cinematica de l'aventura (v1).
    Peticio de Francesc (9 nov 2026): una cinematica molt atractiva que expliqui el
    problema del protagonista i que els ha passat als savis (savis).
-   En pulsar COMENCAR al titol, abans de la primera fase, es mostra la cinematica:
-     1. els savis custodien la llum del museu,
-     2. el Panthokrator es corromp (la gana de la Massa),
-     3. el seu esguard els converteix en pedra,
-     4. el guerrer arriba i jura alliberar-los.
+   Guio aprovat per Francesc (9 nov 2026): els savis animaven la humanitat; un mal amorf,
+   terrible i poderos amenaca de devorar els bens culturals; per fer-los callar, els ha
+   convertit en pedra; nomes un heroi (el guerrer PANTHOKRATOR) pot capgirar la situacio.
    Es pot saltar en qualsevol moment (tecla, boto o toc). No modifica game.js ni cap altre
    fitxer: embolcalla startGame(), step() i render() com cinematic.js. No s'activa a ?test=1. */
 (function () {
@@ -104,19 +102,19 @@
     ctx.fillStyle = '#05060c'; ctx.fillRect(0, 0, VW, VH);
     const cx = VW / 2;
     /* arc romanic daurat */
-    const g = rad(cx, 150, 190, [[0, corr > 0.5 ? '#6a1c1c' : '#7a5c1e'], [0.6, corr > 0.5 ? '#2a0c10' : '#3a2a0c'], [1, '#0a0806']]);
+    const g = rad(cx, 150, 190, [[0, corr > 0.5 ? '#2c1d3a' : '#7a5c1e'], [0.6, corr > 0.5 ? '#120a1c' : '#3a2a0c'], [1, '#0a0806']]);
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(cx, 165, 200, Math.PI, 0); ctx.fill();
     ctx.fillRect(cx - 200, 165, 400, FLOOR - 165);
     /* mescla de color per corrupcio */
     if (corr > 0) {
-      ctx.fillStyle = 'rgba(150,20,28,' + (0.45 * corr).toFixed(2) + ')';
+      ctx.fillStyle = 'rgba(20,8,34,' + (0.38 * corr).toFixed(2) + ')';
       ctx.beginPath(); ctx.arc(cx, 165, 200, Math.PI, 0); ctx.fill();
       ctx.fillRect(cx - 200, 165, 400, FLOOR - 165);
     }
     /* bandes de mosaic */
     for (const [r, col] of [[188, '#54401e'], [172, '#6b4f22'], [156, '#3f2f14']]) {
-      ctx.strokeStyle = corr > 0.6 ? 'rgba(90,30,26,.85)' : col; ctx.lineWidth = 8;
+      ctx.strokeStyle = corr > 0.6 ? 'rgba(48,30,70,.85)' : col; ctx.lineWidth = 8;
       ctx.beginPath(); ctx.arc(cx, 165, r, Math.PI, 0); ctx.stroke();
     }
     /* columnes */
@@ -125,30 +123,14 @@
       ctx.fillStyle = '#3c352b'; ctx.fillRect(px - 12, 0, 6, FLOOR);
     }
     /* el Panthokrator: la mandorla pintada del propi joc */
-    const pulse = 1 + Math.sin(t * 0.08) * 0.04 * corr;
+    const pulse = 1;
     ctx.save();
     ctx.translate(cx, 92); ctx.scale(pulse, pulse); ctx.translate(-cx, -92);
     drawTitleEmblem(cx, 92);
     ctx.restore();
-    if (corr > 0) {
-      /* esguard vermell: ulls que s'encenen i esquerdes */
-      const e = 0.55 + 0.45 * Math.sin(t * 0.12);
-      ctx.fillStyle = rad(cx, 84, 62, [[0, 'rgba(255,40,30,' + (0.55 * corr * e).toFixed(2) + ')'], [1, 'rgba(255,40,30,0)']]);
-      ctx.fillRect(cx - 62, 22, 124, 124);
-      ctx.fillStyle = 'rgba(255,70,50,' + (corr * (0.7 + 0.3 * e)).toFixed(2) + ')';
-      ctx.fillRect(cx - 11, 83, 7, 3); ctx.fillRect(cx + 4, 83, 7, 3);
-      ctx.strokeStyle = 'rgba(10,4,6,' + (0.85 * corr).toFixed(2) + ')'; ctx.lineWidth = 1;
-      for (let i = 0; i < 6; i++) {
-        const sx = cx - 40 + i * 16, n = Math.floor(corr * 6);
-        if (i >= n) break;
-        ctx.beginPath(); ctx.moveTo(sx, 54 + h2(i, 1) * 12);
-        for (let k = 1; k < 5; k++) ctx.lineTo(sx + (h2(i, k) - 0.5) * 14, 54 + k * 18);
-        ctx.stroke();
-      }
-    }
     /* terra de pedra */
-    ctx.fillStyle = corr > 0.6 ? '#1c1414' : '#2a241c'; ctx.fillRect(0, FLOOR, VW, VH - FLOOR);
-    ctx.fillStyle = corr > 0.6 ? '#2e1c1c' : '#463c2c'; ctx.fillRect(0, FLOOR, VW, 2);
+    ctx.fillStyle = corr > 0.6 ? '#171320' : '#2a241c'; ctx.fillRect(0, FLOOR, VW, VH - FLOOR);
+    ctx.fillStyle = corr > 0.6 ? '#2a2038' : '#463c2c'; ctx.fillRect(0, FLOOR, VW, 2);
   }
 
   /* llum dels savis: halo daurat que s'apaga amb la petrificacio */
@@ -165,101 +147,119 @@
       if (s > 0) spr(IM.stone, x, FLOOR, 62, s);
       /* ressons de l'impacte: flaix blanc i esquerdes */
       if (stoneAt && t >= stoneAt[i] && t < stoneAt[i] + 16) {
-        ctx.fillStyle = 'rgba(255,240,230,' + (0.7 * (1 - (t - stoneAt[i]) / 16)).toFixed(2) + ')';
+        ctx.fillStyle = 'rgba(190,160,230,' + (0.6 * (1 - (t - stoneAt[i]) / 16)).toFixed(2) + ')';
         ctx.fillRect(x - 22, FLOOR - 64, 44, 64);
       }
     }
   }
 
+  /* ---------------------------- el mal amorf ---------------------------- */
+  /* massa fosca sense forma: bulk (0..1) creix des de dalt a la dreta; tip = x de la punta del tentacle */
+  function drawMass(t, bulk, tipX, hide) {
+    if (bulk <= 0) return;
+    const R = 70 + bulk * 170;
+    for (let i = 0; i < 9; i++) {
+      const a = t * 0.02 + i * 1.7;
+      const bx = 500 - bulk * 120 + Math.cos(a) * 30 - i * 6, by = 40 + Math.sin(a * 1.3) * 26 + i * 8 * bulk;
+      const r = R * (0.5 + 0.5 * h2(i, 2)) + Math.sin(t * 0.05 + i) * 6;
+      ctx.fillStyle = rad(bx, by, r, [[0, 'rgba(16,7,30,.96)'], [0.6, 'rgba(38,16,66,.88)'], [0.84, 'rgba(125,75,200,.38)'], [1, 'rgba(125,75,200,0)']]);
+      ctx.fillRect(bx - r, by - r, r * 2, r * 2);
+    }
+    /* tentacle al terra: de la massa fins a la punta */
+    if (tipX !== null && tipX < 520) {
+      const x0 = 500, len = x0 - tipX;
+      ctx.fillStyle = 'rgba(20,9,38,.97)'; ctx.strokeStyle = 'rgba(150,100,220,.7)'; ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(x0, FLOOR - 70 * bulk);
+      for (let k = 0; k <= 24; k++) {
+        const u = k / 24, x = x0 - u * len;
+        const y = FLOOR - 6 - (1 - u) * 30 - Math.sin(t * 0.1 + u * 9) * 3 * (1 - u * 0.5);
+        ctx.lineTo(x, y - (1 - u * 0.85) * 12);
+      }
+      for (let k = 24; k >= 0; k--) {
+        const u = k / 24, x = x0 - u * len;
+        ctx.lineTo(x, FLOOR + 1);
+      }
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = rad(tipX, FLOOR - 8, 22, [[0, 'rgba(120,70,170,.45)'], [1, 'rgba(120,70,170,0)']]);
+      ctx.fillRect(tipX - 22, FLOOR - 30, 44, 34);
+    }
+    /* mirades/espurnes dins la massa */
+    for (let i = 0; i < 14; i++) {
+      const px = 380 + h2(i, 11) * 100 + Math.sin(t * 0.03 + i) * 6, py = 10 + h2(i, 12) * 110;
+      ctx.fillStyle = 'rgba(150,100,200,' + (0.25 * bulk * (0.5 + 0.5 * Math.sin(t * 0.1 + i))).toFixed(2) + ')';
+      ctx.fillRect(px, py, 2, 2);
+    }
+  }
+
   /* ---------------------------- escenes ---------------------------- */
   function drawIntro(t) {
-    const stoneAt = [905, 945, 985, 1025, 1065];
-    let corr = 0;
-    if (t >= 420) corr = seg(t, 420, 620);
-    if (t >= 1200) corr = 1;
+    /* escena 1: 0-380 | 2: 380-800 | 3: 800-1130 | 4: 1130-1450 | 5: 1450-1780 */
+    const bulk = t < 380 ? 0 : (t < 800 ? seg(t, 400, 760) * 0.75 : (t < 1130 ? 0.75 + 0.25 * seg(t, 800, 900) : 1 - 0.15 * seg(t, 1130, 1250)));
+    const tipX = (t >= 830 && t < 1130) ? 470 - seg(t, 830, 1090) * 440 : (t >= 1130 ? Math.max(-9999, 30 - seg(t, 1130, 1230) * 200) : null);
+    const stoneAt = SAV_X.map(x => 830 + (470 - x) / 440 * 260 + 6);   // la punta petrifica cada savi en passar
+    const corr = seg(t, 400, 800);
     drawApse(t, corr);
 
-    /* feix vermell que escombra els savis (escena 3) */
-    if (t >= 860 && t < 1120) {
-      const p = seg(t, 880, 1090);
-      const bx = 60 + p * 370;
-      ctx.fillStyle = rad(bx, FLOOR - 30, 80, [[0, 'rgba(255,60,40,.55)'], [1, 'rgba(255,60,40,0)']]);
-      ctx.fillRect(bx - 80, 60, 160, 170);
-      ctx.strokeStyle = 'rgba(255,90,70,.75)'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(VW / 2 + 0, 88); ctx.lineTo(bx, FLOOR - 30); ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,230,220,.9)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(VW / 2, 88); ctx.lineTo(bx, FLOOR - 30); ctx.stroke();
+    /* l'emblema/mural es va engolint durant l'escena 2 */
+    if (t >= 520) {
+      const e = seg(t, 520, 800);
+      ctx.fillStyle = rad(VW / 2, 92, 70, [[0, 'rgba(16,7,30,' + (0.9 * e).toFixed(2) + ')'], [1, 'rgba(16,7,30,0)']]);
+      ctx.fillRect(VW / 2 - 70, 22, 140, 140);
     }
 
-    /* savis (escenes 1-4) */
-    drawSavis(t, t >= 860 ? stoneAt : null);
+    drawMass(t, bulk, tipX, false);
+    drawSavis(t, t >= 830 ? stoneAt : null);
 
-    /* pols / cendres flotant a partir de la corrupcio */
-    if (corr > 0) {
-      for (let i = 0; i < 26; i++) {
-        const px = (h2(i, 3) * VW + t * (0.2 + h2(i, 5) * 0.4)) % VW;
-        const py = (h2(i, 7) * VH - t * (0.3 + h2(i, 9) * 0.5) + VH * 4) % VH;
-        ctx.fillStyle = 'rgba(230,110,90,' + (0.45 * corr).toFixed(2) + ')';
-        ctx.fillRect(px, py, 1.6, 1.6);
-      }
-    } else {
-      for (let i = 0; i < 18; i++) {
-        const px = (h2(i, 3) * VW + Math.sin(t * 0.02 + i) * 6);
-        const py = (h2(i, 7) * 180 - t * 0.2 + 1800) % 180 + 20;
-        ctx.fillStyle = 'rgba(255,230,150,.55)'; ctx.fillRect(px, py, 1.6, 1.6);
-      }
+    /* particules: espurnes daurades en calma, cendra fosca amb el mal */
+    for (let i = 0; i < 20; i++) {
+      const px = (h2(i, 3) * VW + Math.sin(t * 0.02 + i) * 6) % VW;
+      const py = (h2(i, 7) * 180 - t * 0.2 + 1800) % 180 + 20;
+      ctx.fillStyle = corr < 0.5 ? 'rgba(255,230,150,.55)' : 'rgba(150,110,200,' + (0.35 * corr).toFixed(2) + ')';
+      ctx.fillRect(px, py, 1.6, 1.6);
     }
 
-    /* escena 4: el guerrer arriba i s'acosta als savis de pedra */
-    if (t >= 1180) {
-      const wk = seg(t, 1190, 1400);
-      const hx = -20 + wk * 118;
-      const moving = wk < 1;
-      if (t >= 1400) {
-        /* aixeca l'arma: flaix i atac */
-        const a = t - 1400;
-        drawWarrior(hx, FLOOR + 10, 1, a % 50 < 14 ? 'attack' : 'idle', t, 1);
-      } else {
-        drawWarrior(hx, FLOOR + 10, 1, moving ? 'run' : 'idle', t, 1);
+    /* escenes 4-5: el guerrer Panthokrator */
+    if (t >= 1150) {
+      const arrive = seg(t, 1160, 1330);
+      const hx = -20 + arrive * 110 + (t > 1460 ? seg(t, 1460, 1650) * 230 : 0);
+      const moving = arrive < 1 || (t > 1460 && t < 1650);
+      /* llum a l'arma quan comença a avançar */
+      if (t > 1400) {
+        ctx.fillStyle = rad(hx + 12, FLOOR - 22, 36, [[0, 'rgba(255,225,150,' + (0.4 * seg(t, 1400, 1480)).toFixed(2) + ')'], [1, 'rgba(255,225,150,0)']]);
+        ctx.fillRect(hx - 24, FLOOR - 58, 72, 72);
       }
-      /* un parell d'ulls vermells des de l'ombra: l'amenaca roman */
-      const eyes = 0.5 + 0.5 * Math.sin(t * 0.1);
-      ctx.fillStyle = 'rgba(255,60,40,' + (0.4 + 0.5 * eyes).toFixed(2) + ')';
-      ctx.fillRect(VW / 2 - 11, 83, 7, 3); ctx.fillRect(VW / 2 + 4, 83, 7, 3);
+      drawWarrior(hx, FLOOR + 10, 1, moving ? 'run' : 'idle', t, 1);
     }
 
-    /* vinyeta */
     ctx.fillStyle = rad(VW / 2, VH / 2, VW * 0.62, [[0, 'rgba(0,0,0,0)'], [1, 'rgba(0,0,0,.55)']]);
     ctx.fillRect(0, 0, VW, VH);
 
-    /* subtitols (catala, com la resta del joc) */
-    caption('Durant segles, els SAVIS van guardar la llum del MNAC. Sota la seva mirada, les pintures dormien en pau.', t, 40, 380);
-    caption('Fins que la gana de la Massa, el consum sense fi, va despertar el PANTHOKRATOR... i el seu esguard es va tornar vermell.', t, 430, 800, '#ffb09a');
-    caption('Un sol raig d\'aquells ulls, i els savis es van fer PEDRA. Ara resten presos, escampats per les sales, els jardins i la Font.', t, 890, 1180, '#ffb09a');
-    caption('Només un guerrer es manté dempeus entre les runes. Allibera els savis: sense ells, el museu no tornarà a obrir els ulls.', t, 1210, 1580);
+    /* subtitols aprovats (catala, com la resta del joc) */
+    caption('Els savis, filòsofs i mags del bé comú, animaven la humanitat a ser reflexiva, culta, bona, bella i amable.', t, 40, 370);
+    caption('Però un mal amorf, terrible i poderós amenaça de devorar els béns culturals que alimenten l\'esperit de la humanitat.', t, 430, 790, '#d8c4f0');
+    caption('Per fer-los callar, els ha convertit en pedra.', t, 860, 1110, '#d8c4f0');
+    caption('Només un heroi pot capgirar aquesta situació.', t, 1200, 1500);
 
-    /* fosa final i titol */
-    if (t >= 1590) {
-      const f = seg(t, 1590, 1640);
+    /* final: titol */
+    if (t >= 1600) {
+      const f = seg(t, 1600, 1650);
       ctx.fillStyle = 'rgba(5,6,12,' + (0.92 * f).toFixed(2) + ')'; ctx.fillRect(0, 0, VW, VH);
       drawTitleEmblem(VW / 2, 84);
       const T = 'PANTHOKRATOR';
-      ctx.globalAlpha = seg(t, 1620, 1670);
+      ctx.globalAlpha = seg(t, 1630, 1680);
       ctx.font = 'bold 34px "Courier New", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
       ctx.fillStyle = '#14100c'; ctx.fillText(T, VW / 2 + 2, 146);
       ctx.fillStyle = '#d8a23a'; ctx.fillText(T, VW / 2, 144);
-      drawText('Allibera els savis. Apaivaga el Panthokrator.', VW / 2, 190, '#e8e4d8', 9, 'center');
       ctx.globalAlpha = 1;
     }
 
-    /* fosa inicial i entre escenes */
     let black = 0;
     if (t < 60) black = 1 - t / 60;
-    for (const c of [400, 850, 1170]) { if (Math.abs(t - c) < 30) black = Math.max(black, 1 - Math.abs(t - c) / 30); }
+    for (const c of [400, 850, 1180]) { if (Math.abs(t - c) < 20) black = Math.max(black, 0.6 * (1 - Math.abs(t - c) / 20)); }
     if (t > DUR - 30) black = Math.max(black, (t - (DUR - 30)) / 30);
     if (black > 0) { ctx.fillStyle = 'rgba(0,0,0,' + black.toFixed(2) + ')'; ctx.fillRect(0, 0, VW, VH); }
 
-    /* franges cinematografiques i ajuda */
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VW, BAR); ctx.fillRect(0, VH - BAR, VW, BAR);
     if (t > 30 && (t % 60) < 40) drawText('Toca o prem una tecla per saltar >>', VW - 8, VH - BAR + 6, '#8a8a96', 7, 'right');
   }
