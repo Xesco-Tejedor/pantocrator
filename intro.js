@@ -38,9 +38,14 @@
     if (game.state === 'intro' && game.anim > 25 && ['Enter', ' ', 'Escape', 'x', 'X', 'z', 'Z'].indexOf(e.key) >= 0) skipReq = true;
   }, true);
 
+  const SLOW = 0.85;              // 1 fotograma logic = 1/0.85 reals: subtitols mes temps en pantalla (~6,5 s)
+  function showControls(on) {
+    for (const id of ['pad', 'btns']) { const e = document.getElementById(id); if (e) e.style.visibility = on ? '' : 'hidden'; }
+  }
   const _startGame = startGame;
   function beginIntro() {
     game.state = 'intro'; game.anim = 0; skipReq = false;
+    showControls(false);
     prevIn = snapIn();
     input.jump = input.attack = false;
     input.jumpBuf = input.attackBuf = input.upBuf = input.dnBuf = 0;
@@ -48,6 +53,7 @@
   }
   function endIntro() {
     game.state = 'title';
+    showControls(true);
     prevIn = null; skipReq = false;
     _startGame();
     input.jump = input.attack = false;
@@ -271,7 +277,7 @@
       game.frame++;
       if (dbgT !== null) { game.anim = dbgT; return; }
       game.anim++;
-      if (game.anim >= DUR || skipReq || (game.anim > 25 && freshPress())) { endIntro(); return; }
+      if (game.anim * SLOW >= DUR || skipReq || (game.anim > 25 && freshPress())) { endIntro(); return; }
       prevIn = snapIn();
       return;
     }
@@ -279,7 +285,7 @@
   };
   const _renderI = render;
   render = function () {
-    if (game.state === 'intro') { drawIntro(game.anim); return; }
+    if (game.state === 'intro') { drawIntro(game.anim * SLOW); return; }
     _renderI.apply(null, arguments);
   };
 
@@ -287,6 +293,6 @@
   const m = /[?&]intro=(\d+)/.exec(location.search);
   if (m) {
     dbgT = parseInt(m[1], 10);
-    window.addEventListener('load', () => { game.state = 'intro'; game.anim = dbgT; });
+    window.addEventListener('load', () => { game.state = 'intro'; game.anim = dbgT; showControls(false); });
   }
 })();
