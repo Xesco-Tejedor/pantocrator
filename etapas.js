@@ -336,7 +336,7 @@
     _updateBossE();
     const mb = world.boss, dog = world.stageIdx === DOG_STAGE;
     if (world.stageIdx !== MUD_STAGE && !dog) return;
-    if (world.announce === 'ATACA AL PANTHOKRATOR!')
+    if (world.announce === 'ATACA AL MAL AMORF!')
       world.announce = dog ? 'ATACA AL GOS ZOMBI!' : 'ATACA L’AMALGAMA!';
     // zona dañable alineada con el cuerpo visible
     if (world.announceT > 0 && world.announce) {
