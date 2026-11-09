@@ -433,7 +433,7 @@
     drawWorld();
     ctx.fillStyle = 'rgba(5,6,12,.65)'; ctx.fillRect(0, 0, VW, VH);
     drawText('EL PALAU RESPIRA', VW / 2, 70, '#d8a23a', 22, 'center');
-    drawText('Has apaivagat el Panthokrator i desfet la Massa del Consum.', VW / 2, 106, '#e8e4d8', 9, 'center');
+    drawText('Has apaivagat el mal amorf i desfet la Massa del Consum.', VW / 2, 106, '#e8e4d8', 9, 'center');
     drawText('L\'art romànic del MNAC segueix en peu, píxel a píxel.', VW / 2, 118, '#e8e4d8', 9, 'center');
     drawText('SCORE FINAL: ' + String(player.score).padStart(7, '0'), VW / 2, 146, '#f2d78a', 12, 'center');
     if (game.frame % 90 < 60) drawText('PULSA ENTER O TOCA PER TORNAR', VW / 2, 190, '#8f9aa8', 9, 'center');
