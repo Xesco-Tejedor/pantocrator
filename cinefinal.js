@@ -91,7 +91,7 @@
   /* subtitol amb el mateix estil que la intro (caixa fosca amb marc daurat) */
   function caption(txt, t, t0, t1) {
     if (t < t0 || t > t1) return;
-    const a = Math.min(1, (t - t0) / 24, (t1 - t) / 24);
+    const a = Math.min(1, (t - t0) / 10, (t1 - t) / 10);
     const lines = wrap(txt, 70);
     const h = lines.length * 13 + 8, y0 = VH - BAR - h - 4;
     ctx.globalAlpha = Math.max(0, a) * 0.78;
