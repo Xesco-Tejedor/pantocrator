@@ -158,7 +158,7 @@
       b.bx = 440; b.maxHp = hp0v; b.hp = hp0v; b.hitCd = 0; b.hurt = 0; b.face = -1;
       b.lungeT = b.tuned ? 200 : 300; b.lunge = 0; b.warn = 0; b.hp0 = b.hp; b.ghostT = 0; b.dmgAcc = 0; b.spectralOk = (world.stageIdx === 2);
       if (b.tuned) { b.shootT = 50; b.pillarT = 170; }   // orbes y pilar desde el primer momento
-      world.announce = 'ATACA AL PANTHOKRATOR!'; world.announceT = 170;
+      world.announce = 'ATACA AL MAL AMORF!'; world.announceT = 170;
     }
     if (b.hitCd > 0) b.hitCd--;
     if (b.hurt > 0) b.hurt--;
@@ -267,7 +267,7 @@
     ctx.fillStyle = 'rgba(5,6,12,.7)'; ctx.fillRect(x - 2, y - 2, w + 4, 11);
     ctx.fillStyle = '#a83232'; ctx.fillRect(x, y, w * Math.max(0, b.hp / b.maxHp), 7);
     ctx.lineWidth = 1; ctx.strokeStyle = '#f2d78a'; ctx.strokeRect(x - 1.5, y - 1.5, w + 3, 10);
-    drawText('PANTHOKRATOR', VW / 2, y + 11, '#f2d78a', 7, 'center');
+    drawText('EL MAL AMORF', VW / 2, y + 11, '#f2d78a', 7, 'center');
   };
 
   /* game over: continuar en la misma etapa en vez de volver al título.
