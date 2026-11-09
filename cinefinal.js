@@ -280,18 +280,14 @@
     const R = 170 + seg(t, 1140, 1500) * 14;
     drawMassa(VW / 2, GYF - R * 0.62, R, t * 0.05, t);
     ctx.restore();
-    /* l'espasa puja dins del quadre (braç i fulla del sprite pintat, en primera persona) */
+    /* el guerrer puja dins del quadre: cap i esquena sencers, amb l'espasa alçada (sprite pintat) */
     const im = WARRIOR_IMG.attack;
     if (okIm(im)) {
       const p = seg(t, 1140, 1300), e = 1 - Math.pow(1 - p, 3);
-      const sx = VW / 2 - 40 + Math.sin(t * 0.5) * 1.5;
-      const sy = VH + 30 - e * 108 + Math.cos(t * 0.7) * 1.2;
-      ctx.save();
-      ctx.translate(sx, sy);
-      ctx.rotate(-0.38);
-      const sc = 4.2;
-      ctx.drawImage(im, 38, 36, 82, 26, -10, -13 * sc / 2, 82 * sc, 26 * sc);
-      ctx.restore();
+      const sc = 3.2, sw = 106, sh = 46;
+      const sx = VW / 2 - 150 + Math.sin(t * 0.5) * 1.2;
+      const sy = VH - BAR - sh * sc + 14 + (1 - e) * 120 + Math.cos(t * 0.7) * 1.0;
+      ctx.drawImage(im, 14, 22, sw, sh, sx, sy, sw * sc, sh * sc);
     }
     caption('Pels savis, pels béns culturals, per la humanitat: l\'últim combat.', t, 1170, 1440);
     if (t > 1440) {
