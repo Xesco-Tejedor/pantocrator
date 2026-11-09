@@ -1014,7 +1014,7 @@ const STAGES = [
     ]
   },
   {
-    name: 'EL PANTHOKRATOR', time: 240, length: 700, mural: 2, boss: true,
+    name: 'EL MAL AMORF', time: 240, length: 700, mural: 2, boss: true,
     ground: [{ x: 0, w: 700 }],
     lower: [],
     platforms: [{ x: 140, y: 160, w: 88, h: 8, t: 'bench' }, { x: 420, y: 160, w: 88, h: 8, t: 'bench' }],
@@ -2109,7 +2109,7 @@ function drawBossBar() {
   ctx.fillStyle = 'rgba(5,6,12,.6)'; ctx.fillRect(VW / 2 - 62, 32, 124, 11);
   ctx.strokeStyle = '#8a6f42'; ctx.strokeRect(VW / 2 - 61.5, 32.5, 123, 10);
   ctx.fillStyle = '#a83232'; ctx.fillRect(VW / 2 - 59, 35, 118 * (b.hp / b.maxHp), 5);
-  drawText('PANTHOKRATOR', VW / 2, 45, '#f2d78a', 7, 'center');
+  drawText('EL MAL AMORF', VW / 2, 45, '#f2d78a', 7, 'center');
 }
 
 /* Emblema del Panthokrator per a la pantalla de títol (pintat, coherent amb el mural) */
@@ -2462,7 +2462,7 @@ function drawWin() {
   drawWorld();
   ctx.fillStyle = 'rgba(5,6,12,.65)'; ctx.fillRect(0, 0, VW, VH);
   drawText('EL PALAU RESPIRA', VW / 2, 70, '#d8a23a', 22, 'center');
-  drawText('Has travessat les ruïnes i apaivagat el Panthokrator.', VW / 2, 106, '#e8e4d8', 9, 'center');
+  drawText('Has travessat les ruïnes i apaivagat el mal amorf.', VW / 2, 106, '#e8e4d8', 9, 'center');
   drawText('L\'art romànic del MNAC segueix en peu, píxel a píxel.', VW / 2, 118, '#e8e4d8', 9, 'center');
   drawText('SCORE FINAL: ' + String(player.score).padStart(7, '0'), VW / 2, 146, '#f2d78a', 12, 'center');
   if (game.frame % 90 < 60) drawText('PULSA ENTER O TOCA PER TORNAR', VW / 2, 190, '#8f9aa8', 9, 'center');
