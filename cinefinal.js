@@ -288,6 +288,36 @@
       const sx = VW / 2 - 150 + Math.sin(t * 0.5) * 1.2;
       const sy = VH - BAR - sh * sc + 14 + (1 - e) * 120 + Math.cos(t * 0.7) * 1.0;
       ctx.drawImage(im, 14, 22, sw, sh, sx, sy, sw * sc, sh * sc);
+      /* la fulla continua mes enlla de la vora del sprite: s'hi dibuixa la punta
+         (acer amb carena central, continuant els tons de la fulla pintada) */
+      const bx = sx + sw * sc - 1;             // vora on el sprite talla la fulla
+      const by = sy + (46 - 22) * sc;          // part superior del nucli de la fulla
+      const bh = 4 * sc, tip = 14 * sc;
+      const grad = ctx.createLinearGradient(0, by, 0, by + bh);
+      grad.addColorStop(0, '#99978e');
+      grad.addColorStop(0.33, '#d7d4ca');
+      grad.addColorStop(0.5, '#5f5e55');
+      grad.addColorStop(1, '#484741');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + tip, by + bh / 2);
+      ctx.lineTo(bx, by + bh);
+      ctx.closePath();
+      ctx.fill();
+      /* carena il·luminada fins a la punta */
+      ctx.strokeStyle = 'rgba(238,236,226,.8)';
+      ctx.lineWidth = 1.1;
+      ctx.beginPath();
+      ctx.moveTo(bx, by + bh * 0.33);
+      ctx.lineTo(bx + tip, by + bh / 2);
+      ctx.stroke();
+    }
+    /* flaix que omple tota la pantalla just abans que el protagonista emergisca */
+    if (t < 1178) {
+      const fa = t < 1146 ? seg(t, 1140, 1146) : 1 - seg(t, 1152, 1178);
+      ctx.fillStyle = 'rgba(255,255,255,' + (fa * 0.96).toFixed(2) + ')';
+      ctx.fillRect(0, 0, VW, VH);
     }
     caption('Pels savis, pels béns culturals, per la humanitat: l\'últim combat.', t, 1170, 1440);
     if (t > 1440) {
